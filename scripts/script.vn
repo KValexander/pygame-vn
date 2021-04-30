@@ -1,0 +1,17 @@
+dialog start:
+
+	bg "medley/bg.jpg";
+	
+	sound "background.ogg";
+
+	"Первая реплика";
+
+	bg "medley/bg1.jpg";
+
+	"Вторая реплика";
+
+	bg "medley/bg2.jpg";
+
+	"Третья реплика";
+
+	return
