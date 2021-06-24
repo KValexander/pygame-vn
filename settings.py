@@ -1,0 +1,15 @@
+# Colors
+BLACK = (0,0,0)
+GRAY  = (128,128,128)
+WHITE = (255,255,255)
+
+# Main settings
+WIDTH 	= 1024
+HEIGHT 	= 768
+FPS 	= 60
+SIZE 	= (WIDTH, HEIGHT)
+
+# Grid settings
+GRIDLINEX = 16
+GRIDLINEY = 16
+GRIDSIZE  = (GRIDLINEX, GRIDLINEY)

@@ -1,30 +1,51 @@
-# Подключение библиотек
 import pygame
 
-# Работа над созданием проекта началась 10.04.2021
-# Велась:
-# 10.04.21 - 2 ч
-# 11.04.21 - 2 ч
-# 14.04.21 - 2.5 ч
-# 15.04.21 - 2.5 ч
-# 16.04.21 - 3 ч
+from settings import *
+from storage import *
+from other import *
 
-# Подключение классов
-from game import Game
+from interface import Interface
 
-pygame.init()
+class Main:
+	def __init__(self):
+		pygame.init()
 
-# Создание экземпляра игры
-game = Game()
+		self.screen = pygame.display.set_mode(SIZE)
+		pygame.display.set_caption("VN")
 
-# Игровой цикл
-while game.loop.main_loop:
+		self.clock = pygame.time.Clock()
+		self.running = False
 
-	# Вызов метода обновления данных игры
-	game.update()
+		self.loading()
 
-	# Вызовы метода отрисовки данных игры
-	game.render()
+	def loading(self):
+		self.start()
 
-# Выход при окончании игрового цикла
+	def start(self):
+		self.running = True
+		self.loop()
+
+	def events(self):
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT: self.end()
+
+	def update(self):
+		self.clock.tick(FPS)
+
+		self.events()
+
+	def render(self):
+		self.screen.fill((153, 204, 255))
+
+		pygame.display.flip()
+
+	def loop(self):
+		while self.running:
+			self.update()
+			self.render()
+
+	def end(self):
+		self.running = False
+
+Main()
 pygame.quit()
