@@ -74,7 +74,7 @@ class Menu:
 	# Метод обновления данных меню
 	def update(self):
 		# Изображение на задний фон
-		self.bg = Background(self.screen, "assets/gui/background.jpg", [0,0])
+		# self.bg = Background(self.screen, "assets/gui/background.jpg", [0,0])
 		
 		# Создание поверхностей
 		# Поверхность для кнопко меню
