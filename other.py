@@ -10,6 +10,12 @@ def loadImage(src):
 	image = pygame.image.load(src)
 	return image
 
+# Scalable load image
+def scLoadImage(src, size):
+	image = pygame.image.load(src)
+	image = pygame.transform.scale(image, size)
+	return image
+
 # Rendering load image
 def drawImage(screen, image, xy):
 	screen.blit(image, xy)
@@ -25,11 +31,18 @@ def scImage(screen, src, xy, size):
 	image = pygame.transform.scale(image, size)
 	screen.blit(image, xy)
 
+# Removes the first and last characters
+def removeChar(line):
+	line = line[1 : -1]
+	return line
+
+# To grid size
 def gridSize(xy):
 	x = int(xy[0] / GRIDLINEX) * GRIDLINEX
 	y = int(xy[1] / GRIDLINEX) * GRIDLINEX
 	return (x, y)
 
+# Draw grid
 def drawGrid(screen):
 	collsX = WIDTH / GRIDLINEX
 	collsY = HEIGHT / GRIDLINEY

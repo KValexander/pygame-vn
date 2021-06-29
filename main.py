@@ -8,6 +8,7 @@ from other import *
 
 # Connecting classes
 from interface import Interface
+from play import Play
 
 # Loop class
 class Loop:
@@ -24,9 +25,14 @@ class Main:
 	def __init__(self):
 		pygame.init()
 
+		# Game screen
 		self.screen = pygame.display.set_mode(SIZE)
 		pygame.display.set_caption("VN")
 
+		# Project folder
+		self.folder = "C:/gamemake/VN/vn/"
+
+		# Clock
 		self.clock = pygame.time.Clock()
 
 		self.loading()
@@ -34,9 +40,11 @@ class Main:
 	# Loading data
 	def loading(self):
 		# Instances of classes
-		self.loop = Loop()
-		self.interface = Interface(self.screen)
+		self.loop 		= Loop()
+		self.interface 	= Interface(self.screen, self.folder)
+		self.play 		= Play(self.screen, self.folder)
 
+		# Start game
 		self.start()
 
 	# Game start
@@ -51,18 +59,39 @@ class Main:
 			# Disabling the game
 			if event.type == pygame.QUIT:
 				self.end()
+
+			# Playing events
+			if self.loop.playloop:
+				self.play.events(event)
 			
 			# Interface events
 			self.interface.events(event, self.buttonAction)
 
 	# Actions for buttons
 	def buttonAction(self, name):
+		screen = ""
+
 		# Exit button
-		if name == "exit": self.end()
+		if name == "exit":
+			self.end()
 		# Start play button
-		if name == "start":
+		if name == "play":
 			self.loop.mainloop = False
 			self.loop.playloop = True
+			self.play.loading()
+			screen = "play"
+		# Load button
+		if name == "load":
+			self.loop.mainloop = False
+			self.loop.loadloop = True
+			screen = "load"
+		# Settings button
+		if name == "settings":
+			self.loop.mainloop = False
+			self.loop.settingsloop = True
+			screen = "settings"
+
+		return screen
 
 	# Intermediant calculations
 	def update(self):
@@ -79,13 +108,18 @@ class Main:
 
 		# Rendering grid
 		# drawGrid(self.screen)
-
-		# Background image
-		scImage(self.screen, "gui/background.jpg", (0,0), SIZE)
-
+		
+		# Rendering main screen
 		if self.loop.mainloop:
-			# Rendering interface
-			self.interface.draw()
+			# Background image
+			scImage(self.screen, self.folder + "assets/gui/background.jpg", (0,0), SIZE)
+
+		# Rendering play screen
+		if self.loop.playloop:
+			self.play.draw()
+
+		# Rendering interface
+		self.interface.draw()
 
 		pygame.display.update()
 
