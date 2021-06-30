@@ -106,18 +106,18 @@ class Main:
 	def render(self):
 		# Background color
 		self.screen.fill(WHITE)
-
-		# Rendering grid
-		# drawGrid(self.screen)
 		
 		# Rendering main screen
 		if self.loop.mainloop:
 			# Background image
-			scImage(self.screen, self.folder + "assets/gui/background.jpg", (0,0), SIZE)
+			scImage(self.screen, self.folder + "assets/gui/backgroundmenu.jpg", (0,0), SIZE)
 
 		# Rendering play screen
 		if self.loop.playloop:
 			self.play.draw()
+			
+		# Rendering grid
+		# drawGrid(self.screen)
 
 		# Rendering interface
 		self.interface.draw()

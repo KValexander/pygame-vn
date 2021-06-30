@@ -35,24 +35,31 @@ class Play:
 
 		# Variables of text
 		self.textprint  = pygame.font.SysFont(self.textfont, self.textsize)
-		self.textloc 	= (self.textmargin, HEIGHT - (HEIGHT / 4) + self.textmargin)
 		self.textwidth 	= (self.dialogbox.xy[0] + self.dialogbox.wh[0]) - (self.textmargin * 2)
 		self.textheight = (self.dialogbox.xy[1] + self.dialogbox.wh[1]) - (self.textmargin * 2)
 		self.textsize 	= (self.textwidth, self.textheight)
 
+		# Variables text name
+		self.name 		= ""
+		self.namekey 	= ""
+		self.nameshow 	= False
+		self.namecolor  = (0,0,0)
+		self.namepos 	= (self.textmargin, HEIGHT - (HEIGHT / 4))
+		self.nameprint  = self.textprint.render(str(self.name), True, self.namecolor)
+
 		# Line counting variables
 		self.currentStart = 0
-		self.currentEnd = 0
+		self.currentEnd   = 0
 
 		# Variable lines
-		self.allLines = []
-		self.currentLine = ""
+		self.allLines 	  = []
+		self.currentLine  = ""
 		self.currentLines = []
 
 		# Variable commands
-		self.variables = []
-		self.names = {}
-		self.nameColor = {}
+		self.variables  = []
+		self.names 		= {}
+		self.colorName = {}
 
 		# Boolean variables
 		self.hide = False
@@ -142,6 +149,10 @@ class Play:
 			if var.find("name") != -1:
 				var = var.replace("name", "")
 				var = var.replace(" ", "")
+				var = var.split('=')
+				name, value = var[0], removeChar(var[1]).split(",")
+				self.names[name] = removeChar(value[0])
+				self.colorName[name] = value[1]
 
 	# Processing script all lines
 	def linesProcessing(self):
@@ -157,13 +168,33 @@ class Play:
 		self.currentLine = self.allLines[self.currentStart]
 		# print(self.currentLine)
 
-		# If this is a replica
+		# If this is a replica without name
 		if self.currentLine[0] == "\"" or self.currentLine[0] == "\'":
 			self.currentLine = removeChar(self.currentLine)
+			self.nameshow = False
 			self.setLine()
-		# If command
+		# else this is a commands
 		else:
-			pass
+			# Getting a command
+			define = self.currentLine.split(" ")
+			command = define[0]
+
+			# If the command to display the name
+			if command in self.names:				
+				self.currentLine = self.currentLine.split("\"")
+				self.currentLine = self.currentLine[1]
+				self.setLine()
+
+				self.nameshow = True
+				self.namekey = command
+				self.setName()
+			# else other commands
+			else:
+				self.nextLine()
+
+	# Command processing
+	def commandProcessing(self):
+		pass
 
 	# Moving the script line forward
 	def nextLine(self):
@@ -209,6 +240,12 @@ class Play:
 			# Rendering text
 			self.outLine(self.screen)
 
+	# Set name
+	def setName(self):
+		self.name = self.names[self.namekey]
+		self.namecolor = self.defineColor(self.colorName[self.namekey])
+		self.nameprint = self.textprint.render(str(self.name), True, self.namecolor)
+
 	# Set line text
 	def setLine(self):
 		self.currentLines.clear()
@@ -238,7 +275,12 @@ class Play:
 
 	# Output a line of text
 	def outLine(self, screen):
-		x, y = self.textmargin, HEIGHT - (HEIGHT / 4) + self.textmargin
+		# Rendering a line of text
+		x, y = self.textmargin, HEIGHT - (HEIGHT / 4) + (self.textmargin * 2)
 		for line in self.currentLines:
 			screen.blit(line, (x, y))
 			y += self.lineheight
+
+		# Rendering name
+		if self.nameshow:
+			screen.blit(self.nameprint, self.namepos)
