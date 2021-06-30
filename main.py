@@ -1,5 +1,6 @@
 # Connecting libraries
 import pygame
+import os
 
 # Connecting files
 from settings import *
@@ -29,8 +30,10 @@ class Main:
 		self.screen = pygame.display.set_mode(SIZE)
 		pygame.display.set_caption("VN")
 
+		# Getting the current directory
+		currentFolder = os.getcwd()
 		# Project folder
-		self.folder = "C:/gamemake/VN/vn/"
+		self.folder = currentFolder + "/vn/"
 
 		# Clock
 		self.clock = pygame.time.Clock()
