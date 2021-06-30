@@ -42,7 +42,7 @@ class Main:
 		# Instances of classes
 		self.loop 		= Loop()
 		self.interface 	= Interface(self.screen, self.folder)
-		self.play 		= Play(self.screen, self.folder)
+		self.play 		= Play(self.screen, self.folder, self.loop)
 
 		# Start game
 		self.start()
@@ -78,6 +78,7 @@ class Main:
 		if name == "play":
 			self.loop.mainloop = False
 			self.loop.playloop = True
+			self.interface.createPlay()
 			self.play.loading()
 			screen = "play"
 		# Load button

@@ -117,7 +117,7 @@ class Interface:
 
 	# Create play screen objects
 	def createPlay(self):
-		self.createSurface("dialogbox", BLACK, 128, gridSize((0, HEIGHT - 200)), gridSize((WIDTH, 216)))
+		self.createSurface("dialogbox", BLACK, 128, gridSize((0, HEIGHT - (HEIGHT / 4))), gridSize((WIDTH, 216)))
 
 	# Create settings screen objects
 	def createSettings(self):
@@ -145,6 +145,7 @@ class Interface:
 	def draw(self):
 		# Rendering surfaces
 		for surface in surfaces:
+			if surface.name == "dialogbox": continue
 			surface.draw(self.screen)
 
 		# Rendering buttons
