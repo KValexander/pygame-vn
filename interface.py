@@ -1,157 +1,105 @@
-# Connecting libraries
+# Including pygame library
 import pygame
 
 # Connecting files
-from settings import *
-from storage import *
-from other import *
+from configs import *
+from arrays import *
+from collisions import *
 
 # Button class
 class Button:
-	def __init__(self, name, value, tcolor, xy, wh, bcolor):
-		# Custom variables
-		self.name 	= name
-		self.value 	= value
-		self.tcolor = tcolor
-		self.xy 	= xy
-		self.wh 	= wh
-		self.bcolor = bcolor
+	def __init__(self, name, text, colorT, x, y, w, h, colorB):
+		self.name 		 = name
+		self.font 		 = pygame.font.SysFont("arial", 20)
+		self.text 		 = text
+		self.x 			 = x
+		self.y 			 = y
+		self.width 		 = w
+		self.height 	 = h
+		self.colorT 	 = colorT
+		self.colorB 	 = colorB
+		self.colorH 	 = WHITE
+		self.tW, self.tH = self.font.size(self.text)
+		self.location 	 = (self.x + self.width / 2 - self.tW / 2, self.y + self.height / 2 - self.tH / 2)
+		self.rect 		 = pygame.Rect(self.x, self.y, self.width, self.height)
+		self.iname 		 = self.font.render(str(self.text), True, self.colorT)
 
-		# Somewhere in between the world
-		self.xywh 	= (self.xy, self.wh)
+	def draw(self, screen, mouse):
+		pygame.draw.rect(screen, self.colorB, self.rect, 0)
+		screen.blit(self.iname, self.location)
 
-		# Boolean variables
-		self.click 	= False
-		self.hover 	= False
+		if(mouseCollision(self, mouse.coordMove)):
+			self.hoverDraw(screen)
 
-		# Defaults variables
-		self.font 	= pygame.font.SysFont("calibri", 20)
-		self.twh 	= self.font.size(self.value)
-		self.loc 	= (self.xy[0] + self.wh[0] / 2 - self.twh[0] / 2, self.xy[1] + self.wh[1] / 2 - self.twh[1] / 2)
-		self.rect	= pygame.Rect(self.xywh)
-		self.iname	= self.font.render(str(self.value), True, self.tcolor)
-
-	# Button rendering
-	def draw(self, screen):
-		pygame.draw.rect(screen, self.bcolor, self.rect, 0)
-		screen.blit(self.iname, self.loc)
-
-		if self.hover == True:
-			pygame.draw.rect(screen, BLACK, self.rect, 3)
+	def hoverDraw(self, screen):
+		pygame.draw.rect(screen, self.colorH, self.rect, 1)
 
 # Surface class
 class Surface:
-	def __init__(self, name, color, alpha, xy, wh):
-		# Custom variables
-		self.name = name
-		self.color = color
-		self.alpha = alpha
-		self.xy = xy
-		self.wh = wh
-
-		# Default variables
-		self.hide = False
-		self.surface = pygame.Surface(self.wh)
+	def __init__(self, name, color, alpha, x, y, width, height):
+		self.name 				= name
+		self.color 				= color
+		self.alpha 				= alpha
+		self.x 					= x
+		self.y 					= y
+		self.width 				= width
+		self.height 			= height
+		self.location 			= (self.x, self.y)
+		self.size				= (self.width, self.height)
+		self.surface 			= pygame.Surface(self.size)
 		self.surface.fill(self.color)
 		self.surface.set_alpha(self.alpha)
 
-	# Surface rendering
 	def draw(self, screen):
-		if self.hide == False:
-			screen.blit(self.surface, self.xy)
+		screen.blit(self.surface, self.location)
+		self.drawBorder(screen)
 
-# Link class
-class Link:
-	def __init__(self):
-		pass
+	def drawBorder(self, screen):
+		pygame.draw.rect(screen, WHITE, [self.x, self.y, self.width, self.height], 1)
 
-# Texture class
-class Texture:
+# Menu class
+class Menu:
 	def __init__(self):
 		pass
 
 # Interface class
 class Interface:
-	def __init__(self, screen, folder):
+	def __init__(self, screen):
 		self.screen = screen
-		self.folder = folder
-		self.create("main")
+		self.menuScreen = False
+		self.create()
 
 	# Create button
-	def createButton(self, name, value, tcolor, xy, wh, bcolor):
-		button = Button(name, value, tcolor, xy, wh, bcolor)
+	def createButton(self, name, text, colorT, x, y, w, h, colorB):
+		button = Button(name, text, colorT, x, y, w, h, colorB)
 		buttons.append(button)
-
+	
 	# Create surface
-	def createSurface(self, name, color, alpha, xy, wh):
-		surface = Surface(name, color, alpha, xy, wh)
+	def createSurface(self, name, color, alpha, x, y, width, height):
+		surface = Surface(name, color, alpha, x, y, width, height)
 		surfaces.append(surface)
 
-	# Create link
-	def createLink(self):
-		pass
-
-	# Create texture
 	def createTexture(self):
 		pass
 
-	# Create objects
-	def create(self, case):
-		buttons.clear()
-		surfaces.clear()
-		dialogues.clear()
+	# Creating interface elements 
+	def create(self):
+		clearButtons()
+		clearSurfaces()
 
-		if 	 case == "main": 	 self.createMain()
-		elif case == "play": 	 self.createPlay()
-		elif case == "settings": self.createSettings()
-		elif case == "save": 	 self.createSave()
-		elif case == "load": 	 self.createLoad()
+		self.createSurface("srfc", BLACK, 110, 8, 8, 344, 48)
+		self.createButton("button", "button", WHITE, 184, 16, 160, 32, BLACK)
+		self.createButton("menu", "Меню", WHITE, 16, 16, 160, 32, BLACK)
 
-	# Create main screen objects
-	def createMain(self):
-		self.createSurface("startscreen", BLACK, 90, (0,0), gridSize((300, HEIGHT)))
-		self.createButton("play", "Начать игру", WHITE, gridSize((60, 200)), (180, 40), QUARTZ)
-		self.createButton("load", "Загрузить", WHITE, gridSize((60, 250)), (180, 40), QUARTZ)
-		self.createButton("settings", "Настройки", WHITE, gridSize((60, 300)), (180, 40), QUARTZ)
-		self.createButton("exit", "Выйти", WHITE, gridSize((60, HEIGHT - 300)), (180, 40), QUARTZ)
-
-	# Create play screen objects
-	def createPlay(self):
-		self.createSurface("dialogbox", BLACK, 128, gridSize((0, HEIGHT - (HEIGHT / 4))), gridSize((WIDTH, 216)))
-
-	# Create settings screen objects
-	def createSettings(self):
-		pass
-	# Create load screen objects
-	def createLoad(self):
-		pass
-
-	# Handling events
-	def events(self, e, buttonAction):
-		# Handling button events
-		for button in buttons:
-			# Handling button click
-			if e.type == pygame.MOUSEBUTTONDOWN:
-				if button.rect.collidepoint(e.pos):
-					self.create(buttonAction(button.name))
-
-			# Hovering over the button
-			if e.type == pygame.MOUSEMOTION:
-				if(button.rect.collidepoint(e.pos)):
-					button.hover = True
-				else: button.hover = False
-
-	# Rendering objects
-	def draw(self):
-		# Rendering surfaces
+	# Draw interface
+	def draw(self, mouse):
+		# Draw surfaces
 		for surface in surfaces:
-			if surface.name == "dialogbox": continue
 			surface.draw(self.screen)
 
-		# Rendering buttons
+		# Draw buttons
 		for button in buttons:
-			button.draw(self.screen)
+			button.draw(self.screen, mouse)
 
-	# Calculating object data
 	def update(self):
 		pass
