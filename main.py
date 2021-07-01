@@ -35,6 +35,10 @@ class Main:
 		# Project folder
 		self.folder = currentFolder + "/vn/"
 
+		# Game icon
+		gameIcon = loadImage(self.folder + "icon.png")
+		pygame.display.set_icon(gameIcon)
+
 		# Clock
 		self.clock = pygame.time.Clock()
 

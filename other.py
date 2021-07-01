@@ -36,6 +36,13 @@ def removeChar(line):
 	line = line[1 : -1]
 	return line
 
+# Cleaning variables from unnecessary text
+def clearVariable(var, clear):
+	var = var.replace(clear, "")
+	var = var.replace(" ", "")
+	var = var.split("=")
+	return var
+
 # To grid size
 def gridSize(xy):
 	x = int(xy[0] / GRIDLINEX) * GRIDLINEX

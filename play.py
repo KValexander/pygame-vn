@@ -2,6 +2,7 @@
 import pygame
 import codecs
 import sys
+import os
 import re
 
 # Connecting files
@@ -58,14 +59,23 @@ class Play:
 
 		# Variable commands
 		self.variables  = []
-		self.names 		= {}
-		self.colorName = {}
+		self.counters 	= {}
+		self.names 			= {}
+		self.names["name"] 	= {}
+		self.names["color"] = {}
+		self.characters 		 = {}
+		self.characters["src"] 	 = {}
+		self.characters["coord"] = {}
+
+		# Rendering variables
+		self.renderCharacters = {}
 
 		# Boolean variables
 		self.hide = False
+		self.condition = False
 
 		# Standard background image
-		self.background = scLoadImage(self.folder + "assets/gui/backgroundplay.jpg", (WIDTH, HEIGHT))
+		self.background = scLoadImage(self.folder + "assets/gui/backgroundplay.jpg", SIZE)
 
 		# Parsing the script file
 		self.parseScript()
@@ -104,6 +114,17 @@ class Play:
 			arr = color.split(",")
 			result = (int(arr[0]), int(arr[1]), int(arr[2]))
 		return result
+
+	# Define coordinates
+	def defineCoord(self, coord):
+		coord = coord.replace(" ", "")
+		coord = removeChar(coord).split(";")
+		if float(coord[0]) == 0.0: x = 0
+		else: x = WIDTH * float(coord[0])
+		if float(coord[1]) == 0.0: y = 0
+		else: y = HEIGHT * float(coord[1])
+		coord = (x, y)
+		return coord
 
 	# Parsing the script file
 	def parseScript(self):
@@ -147,12 +168,21 @@ class Play:
 		for var in self.variables:
 			# Name variables
 			if var.find("name") != -1:
-				var = var.replace("name", "")
-				var = var.replace(" ", "")
-				var = var.split('=')
+				var = clearVariable(var, "name")
 				name, value = var[0], removeChar(var[1]).split(",")
-				self.names[name] = removeChar(value[0])
-				self.colorName[name] = value[1]
+				self.names["name"][name] = removeChar(value[0])
+				self.names["color"][name] = value[1]
+			# Characters variables
+			elif var.find("character") != -1:
+				var = clearVariable(var, "character")
+				name, value = var[0], removeChar(var[1]).split(",")
+				self.characters["src"][name] = removeChar(value[0])
+				self.characters["coord"][name] = self.defineCoord(value[1])
+			# Counter variables
+			elif var.find("count") != -1:
+				var = clearVariable(var, "count")
+				name, value = var[0], var[1]
+				self.counters[name] = value
 
 	# Processing script all lines
 	def linesProcessing(self):
@@ -166,35 +196,65 @@ class Play:
 
 		# Current line
 		self.currentLine = self.allLines[self.currentStart]
-		# print(self.currentLine)
+		print(self.currentLine)
 
 		# If this is a replica without name
 		if self.currentLine[0] == "\"" or self.currentLine[0] == "\'":
 			self.currentLine = removeChar(self.currentLine)
 			self.nameshow = False
 			self.setLine()
-		# else this is a commands
+		# Else this is a commands
 		else:
-			# Getting a command
-			define = self.currentLine.split(" ")
-			command = define[0]
-
-			# If the command to display the name
-			if command in self.names:				
-				self.currentLine = self.currentLine.split("\"")
-				self.currentLine = self.currentLine[1]
-				self.setLine()
-
-				self.nameshow = True
-				self.namekey = command
-				self.setName()
-			# else other commands
-			else:
-				self.nextLine()
+			# Command processing
+			self.commandProcessing()
 
 	# Command processing
 	def commandProcessing(self):
-		pass
+		# Getting a command
+		define = self.currentLine.split(" ")
+		command = define[0]
+
+		# Check names
+		if command in self.names["name"]:				
+			self.currentLine = self.currentLine.split("\"")
+			self.currentLine = self.currentLine[1]
+			self.setLine()
+
+			self.nameshow = True
+			self.namekey = command
+			return self.setName()
+
+		# Check comments
+		elif command == "#":
+			return self.nextLine()
+
+		# Set background
+		elif command == "background":
+			src = self.folder + "/assets/images/medley/" + removeChar(define[1])
+			if os.path.exists(src) == False:
+				src = self.folder + "/assets/gui/backgroundplay.jpg"
+			self.background = scLoadImage(src, SIZE)
+
+		# Show characters
+		elif command == "show":
+			if define[1] in self.characters["src"]:
+				src = self.folder + "/assets/images/characters/" + self.characters["src"][define[1]]
+				if os.path.exists(src) == False:
+					src = self.folder + "/assets/gui/characterstock.png"
+			else:
+				src = self.folder + "/assets/gui/characterstock.png"
+			self.renderCharacters[define[1]] = loadImage(src)
+
+		# Hide characters
+		elif command == "hide":
+			if define[1] in self.renderCharacters:
+				self.renderCharacters.pop(define[1])
+
+		# Dialogue condition
+		elif command == "condition":
+			pass
+
+		self.nextLine()
 
 	# Moving the script line forward
 	def nextLine(self):
@@ -211,7 +271,7 @@ class Play:
 		# Handling mouse click
 		if e.type == pygame.MOUSEBUTTONDOWN:
 
-			if self.hide == False:
+			if self.hide == False and self.condition == False:
 				# Left mouse button
 				if e.button == 1:
 					self.nextLine()
@@ -232,7 +292,14 @@ class Play:
 	# Rendering objects
 	def draw(self):
 		# Rendering background
-		self.screen.blit(self.background, (0, 0))
+		drawImage(self.screen, self.background, (0, 0))
+
+		# Rendering characters
+		for character in self.renderCharacters:
+			xy = (WIDTH / 2 - 300, HEIGHT / 2 - 300)
+			if character in self.characters["coord"]:
+				xy = self.characters["coord"][character]
+			self.screen.blit(self.renderCharacters[character], xy)
 
 		if self.hide == False:
 			# Rendering dialogbox
@@ -242,9 +309,13 @@ class Play:
 
 	# Set name
 	def setName(self):
-		self.name = self.names[self.namekey]
-		self.namecolor = self.defineColor(self.colorName[self.namekey])
+		self.name = self.names["name"][self.namekey]
+		self.namecolor = self.defineColor(self.names["color"][self.namekey])
 		self.nameprint = self.textprint.render(str(self.name), True, self.namecolor)
+
+	# Set condition
+	def setCondition(self):
+		pass
 
 	# Set line text
 	def setLine(self):
