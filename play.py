@@ -84,6 +84,9 @@ class Play:
 		self.clausesxy = {}
 		self.clausesprint = {}
 
+		# Other variables
+		self.mouse = ()
+
 		# Standard background image
 		self.background = scLoadImage(self.folder + "assets/gui/backgroundplay.jpg", SIZE)
 
@@ -270,11 +273,9 @@ class Play:
 		elif command == "if":
 			check = self.currentLine.replace("if", "")
 			check = check.split(":")
-			for counter in self.counters:
-				if define[1] == counter:
-					check[0] = check[0].replace(" ", "")
-					if self.ifCheck(check[0]):
-						print("Прошла")
+			check[0] = check[0].replace(" ", "")
+			if self.ifCheck(check[0]):
+				self.ifProcessing(check[1])
 
 		# Dialogue condition
 		elif command == "condition":
@@ -312,29 +313,50 @@ class Play:
 
 		self.nextLine()
 
-	# Variable Validation Handling
+	# Variable Validation check
 	def ifCheck(self, check):
-		if check.find("==") != -1:
-			cond = check.split("==")
-			print(cond)
-			if int(cond[0]) == int(cond[1]): return True
-			else: return False
-		elif check.find(">=") != -1:
-			cond = check.split(">=")
-			if int(cond[0]) >= int(cond[1]): return True
-			else: return False
-		elif check.find("<=") != -1:
-			cond = check.split("<=")
-			if int(cond[0]) <= int(cond[1]): return True
-			else: return False
-		elif check.find(">") != -1:
-			cond = check.split(">")
-			if int(cond[0]) > int(cond[1]): return True
-			else: return False
-		elif check.find("<") != -1:
-			cond = check.split("<")
-			if int(cond[0]) < int(cond[1]): return True
-			else: return False
+		arrcond = ["==", "<=", ">=", "<", ">", "!="]
+		for i in range(len(arrcond)):
+			if check.find(arrcond[i]) != -1:
+				cond = check.split(arrcond[i])
+				if cond[0] in self.counters: cond[0] = self.counters[cond[0]]
+				else: cond[0] = int(cond[0])
+				if cond[1] in self.counters: cond[1] = self.counters[cond[1]]
+				else: cond[1] = int(cond[1])
+
+				# If possible, this should be optimized.
+				if arrcond[i] == "==":
+					if cond[0] == cond[1]: return True
+				elif arrcond[i] == "<=":
+					if cond[0] <= cond[1]: return True
+				elif arrcond[i] == ">=":
+					if cond[0] >= cond[1]: return True
+				elif arrcond[i] == "<":
+					if cond[0] < cond[1]: return True
+				elif arrcond[i] == ">":
+					if cond[0] > cond[1]: return True
+				elif arrcond[i] == "!=":
+					if cond[0] != cond[1]: return True
+				else: return False
+
+	# Variable Validation Handling
+	def ifProcessing(self, commands):
+		commands = commands.split(" ")
+		commands = [x for x in commands if x != '']
+		i = 0
+
+		# Handling commands
+		for command in commands:
+			# Yes, this code is repeated almost three times. There is something to optimize
+			if command == "go!":
+				for line in self.allLines:
+					if line.find("label") != -1:
+						label = line.replace("label", "")
+						label = label.replace(" ", "")
+						if label == commands[1] + ":":
+							self.currentStart = i - 1
+							break
+					i += 1
 
 	# Condition decision processing
 	def conditionProcessing(self, claus):
@@ -363,16 +385,16 @@ class Play:
 				# Continuation of the current label dialog
 				if c == "continue":
 					self.choice = False
-					return self.nextLine()
 
 				# Increase counter
 				for counter in self.counters:
 					if counter + "++" == c:
 						self.choice = False
 						self.counters[counter] += 1
-
 				j += 1
 			i += 1
+
+		self.nextLine()
 
 
 	# Moving the script line forward
@@ -409,13 +431,17 @@ class Play:
 					xy = [self.conditionxy[0], self.conditionxy[1]]
 					for claus in self.clausesprint:
 						xy[1] += self.textmargin * 2
-						if mouseCollision(self.conditionwh, (xy[0], xy[1]), e.pos):
+						if mouseCollision((xy[0], xy[1]), self.conditionwh, e.pos):
 							self.conditionProcessing(claus)
 
 			# Right mouse button
 			if e.button == 3:
 				if self.hide == True: self.hide = False
 				elif self.hide == False: self.hide = True
+
+		# Handling mouse move
+		if e.type == pygame.MOUSEMOTION:
+			self.mouse = e.pos
 
 	# Rendering objects
 	def draw(self):
@@ -448,6 +474,9 @@ class Play:
 				yy[1] += self.textmargin * 2
 				pygame.draw.rect(self.screen, BLACK, ((rectxy[0], yy[1]), (rectwh)))
 				self.screen.blit(self.clausesprint[claus], (self.clausesxy[claus][0], yy[0]))
+
+				if mouseCollision((rectxy[0], yy[1]), (rectwh), self.mouse):
+					pygame.draw.rect(self.screen, SURFACECOLOR, ((rectxy[0], yy[1]), (rectwh)), 3)
 
 	# Set name
 	def setName(self):

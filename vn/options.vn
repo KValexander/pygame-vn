@@ -11,6 +11,7 @@ textsize=20;
 textcolor=(255,255,255);
 
 # Только системные шрифты
+
 textfont=verdana;
 
 lineheight=25
