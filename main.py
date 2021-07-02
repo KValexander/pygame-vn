@@ -1,157 +1,145 @@
-# Including pygame library
+# Connecting libraries
 import pygame
+import os
 
-# Connect files
-from configs import *
-from arrays import *
-from collisions import *
+# Connecting files
+from settings import *
+from storage import *
+from other import *
 
-# Connect classes
-from methods import Mouse
-from methods import Key
-from methods import Cash
-from methods import Grid
-from methods import Fog
-from methods import SelectionRect
-
+# Connecting classes
 from interface import Interface
+from play import Play
 
+# Loop class
+class Loop:
+	def __init__(self):
+		self.running 		= False
+		self.mainloop 		= False
+		self.playloop 		= False
+		self.loadloop 		= False
+		self.saveloop 		= False
+		self.settingsloop 	= False
 
 # Main class
 class Main:
-	# Init class
 	def __init__(self):
-		pygame.init();
+		pygame.init()
 
-		# Screen
+		# Game screen
 		self.screen = pygame.display.set_mode(SIZE)
-		pygame.display.set_caption("Storm of Wars")
+		pygame.display.set_caption("VN")
 
-		# For ID
-		self.counter = 1
+		# Getting the current directory
+		currentFolder = os.getcwd()
+		# Project folder
+		self.folder = currentFolder + "/vn/"
 
-		# Gameloop speed
+		# Game icon
+		gameIcon = loadImage(self.folder + "icon.png")
+		pygame.display.set_icon(gameIcon)
+
+		# Clock
 		self.clock = pygame.time.Clock()
-		# State gameloop
-		self.running = False
 
-		# Loading elements
 		self.loading()
 
-	# Creating elements before start
+	# Loading data
 	def loading(self):
-		self.mouse 	= Mouse()	# Mouse
-		self.key 	= Key()		# Keys
-		self.cash 	= Cash()	# Cash
-		self.grid 	= Grid()	# Grid
-		self.fog 	= Fog() 	# Fog
+		# Instances of classes
+		self.loop 		= Loop()
+		self.interface 	= Interface(self.screen, self.folder)
+		self.play 		= Play(self.screen, self.folder, self.loop)
 
-		self.interface = Interface(self.screen) # Interface
-		self.selectionRect = SelectionRect() # Selection Rect
-
-		# Load background image
-		# self.bg = pygame.image.load("images/map.jpg")
-		# self.bg = pygame.transform.scale(self.bg, SIZE)
-
+		# Start game
 		self.start()
 
-	# Start playing
+	# Game start
 	def start(self):
-		self.running = True
-		self.loop()
+		self.loop.running	= True
+		self.loop.mainloop 	= True
+		self.gameloop()
 
 	# Handling events
 	def events(self):
-		# Event handling
 		for event in pygame.event.get():
-			# Quitting the game
-			if event.type == pygame.QUIT: self.running = False
+			# Disabling the game
+			if event.type == pygame.QUIT:
+				self.end()
 
-			# Key down
-			if event.type == pygame.KEYDOWN:
-				self.key.keyDown(event)
+			# Playing events
+			if self.loop.playloop:
+				self.play.events(event)
+			
+			# Interface events
+			self.interface.events(event, self.buttonAction)
 
-			# Key up
-			if event.type == pygame.KEYUP:
-				self.key.keyUp(event)
+	# Actions for buttons
+	def buttonAction(self, name):
+		screen = ""
 
+		# Exit button
+		if name == "exit":
+			self.end()
+		# Start play button
+		if name == "play":
+			self.loop.mainloop = False
+			self.loop.playloop = True
+			self.interface.createPlay()
+			self.play.loading()
+			screen = "play"
+		# Load button
+		if name == "load":
+			self.loop.mainloop = False
+			self.loop.loadloop = True
+			screen = "load"
+		# Settings button
+		if name == "settings":
+			self.loop.mainloop = False
+			self.loop.settingsloop = True
+			screen = "settings"
 
-			# Mouse down
-			if event.type == pygame.MOUSEBUTTONDOWN:
-				self.mouse.mouseDown(event)
-				# State selection rectangle
-				if(event.button == 1):
-					self.selectionRect.state = True
-				# Adding worker in array MMB + LSHIFT
-				if(event.button == 2 and self.key.code == pygame.K_LSHIFT):
-					addItem("worker", self.counter, self.mouse.clickX, self.mouse.clickY, "red")
-					self.counter += 1
-				# Adding worker in array MMB + LCTRL
-				if(event.button == 2 and self.key.code == pygame.K_LCTRL):
-					addItem("worker", self.counter, self.mouse.clickX, self.mouse.clickY, "blue")
-					self.counter += 1
+		return screen
 
-			# Mouse up
-			if event.type == pygame.MOUSEBUTTONUP:
-				self.mouse.mouseUp(event)
-				if(event.button == 1):
-					# Select items
-					self.selectionRect.selection()
-
-			# Mouse move
-			if event.type == pygame.MOUSEMOTION:
-				self.mouse.mouseMove(event)
-
-	# Intermediant calculation
+	# Intermediant calculations
 	def update(self):
-		# Gameloop speed
+		# Updates per second
 		self.clock.tick(FPS)
-
-		# Update items data
-		for item in items:
-			item.update()
-
-		# Updating item selection rectangle data 
-		if self.selectionRect.state == True:
-			self.selectionRect.update(self.mouse.coordClick, self.mouse.coordMove)
 
 		# Handling events
 		self.events()
 
-	# Rendering
+	# Rendering game objects
 	def render(self):
 		# Background color
-		self.screen.fill((153, 204, 255))
+		self.screen.fill(WHITE)
+		
+		# Rendering main screen
+		if self.loop.mainloop:
+			# Background image
+			scImage(self.screen, self.folder + "assets/gui/backgroundmenu.jpg", (0,0), SIZE)
 
-		# Rendering grid
-		self.grid.drawGrid(self.screen)
-
-		# Rendering items
-		for item in items:
-			item.draw(self.screen)
-
-		# Rendering fog
-		self.fog.drawFog(self.screen)
+		# Rendering play screen
+		if self.loop.playloop:
+			self.play.draw()
 			
-		# Rendering item selection rectangle 
-		if self.selectionRect.state == True:
-			self.selectionRect.draw(self.screen)
+		# Rendering grid
+		# drawGrid(self.screen)
 
-		# Rendering Interface
-		self.interface.draw(self.mouse)
+		# Rendering interface
+		self.interface.draw()
 
-		# Clear past render
-		pygame.display.flip()
+		pygame.display.update()
 
 	# Gameloop
-	def loop(self):
-		# Gameloop
-		while self.running:
-			# Intermediant calculation
+	def gameloop(self):
+		while self.loop.running:
 			self.update()
-
-			# Rendering
 			self.render()
+
+	# End of the game
+	def end(self):
+		self.loop.running = False
 
 Main()
 pygame.quit()
