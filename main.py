@@ -36,7 +36,7 @@ class Main:
 		self.folder = currentFolder + "/vn/"
 
 		# Game icon
-		gameIcon = loadImage(self.folder + "icon.png")
+		gameIcon = loadImage(self.folder + "assets/icon.png")
 		pygame.display.set_icon(gameIcon)
 
 		# Clock
@@ -98,6 +98,13 @@ class Main:
 			self.loop.mainloop = False
 			self.loop.settingsloop = True
 			screen = "settings"
+		if name == "back":
+			self.loop.playloop 		= False
+			self.loop.loadloop 		= False
+			self.loop.saveloop 		= False
+			self.loop.settingsloop 	= False
+			self.loop.mainloop  = True
+			screen = "main"
 
 		return screen
 
@@ -115,7 +122,7 @@ class Main:
 		self.screen.fill(WHITE)
 		
 		# Rendering main screen
-		if self.loop.mainloop:
+		if self.loop.mainloop or self.loop.loadloop or self.loop.settingsloop:
 			# Background image
 			scImage(self.screen, self.folder + "assets/gui/backgroundmenu.jpg", (0,0), SIZE)
 

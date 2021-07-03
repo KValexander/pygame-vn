@@ -110,10 +110,10 @@ class Interface:
 	# Create main screen objects
 	def createMain(self):
 		self.createSurface("startscreen", BLACK, 90, (0,0), gridSize((300, HEIGHT)))
-		self.createButton("play", "Начать игру", WHITE, gridSize((60, 200)), (180, 40), QUARTZ)
-		self.createButton("load", "Загрузить", WHITE, gridSize((60, 250)), (180, 40), QUARTZ)
-		self.createButton("settings", "Настройки", WHITE, gridSize((60, 300)), (180, 40), QUARTZ)
-		self.createButton("exit", "Выйти", WHITE, gridSize((60, HEIGHT - 300)), (180, 40), QUARTZ)
+		self.createButton("play", "Начать игру", WHITE, gridSize((60, 70)), (180, 40), QUARTZ)
+		self.createButton("load", "Загрузить", WHITE, gridSize((60, 120)), (180, 40), QUARTZ)
+		self.createButton("settings", "Настройки", WHITE, gridSize((60, HEIGHT - 120)), (180, 40), QUARTZ)
+		self.createButton("exit", "Выйти", WHITE, gridSize((60, HEIGHT - 70)), (180, 40), QUARTZ)
 
 	# Create play screen objects
 	def createPlay(self):
@@ -121,10 +121,14 @@ class Interface:
 
 	# Create settings screen objects
 	def createSettings(self):
-		pass
+		self.createSurface("startscreen", BLACK, 90, (0,0), gridSize((300, HEIGHT)))
+		self.createButton("back", "Вернуться", WHITE, gridSize((60, 16)), (180, 40), QUARTZ)
+
 	# Create load screen objects
 	def createLoad(self):
-		pass
+		self.createSurface("startscreen", BLACK, 90, (0,0), gridSize((300, HEIGHT)))
+		self.createSurface("loadscreen", BLACK, 90, gridSize((320,20)), gridSize((WIDTH - 330, HEIGHT - 20)))
+		self.createButton("back", "Вернуться", WHITE, gridSize((60, 16)), (180, 40), QUARTZ)
 
 	# Handling events
 	def events(self, e, buttonAction):

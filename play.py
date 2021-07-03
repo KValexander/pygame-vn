@@ -185,7 +185,7 @@ class Play:
 
 		# Current line
 		self.currentLine = self.allLines[self.currentStart]
-		# print(self.currentLine)
+		print(self.currentLine)
 
 		# If current line = return
 		if self.currentLine == "return":
@@ -195,6 +195,16 @@ class Play:
 		# If this is a replica without name
 		if self.currentLine[0] == "\"" or self.currentLine[0] == "\'":
 			self.currentLine = removeChar(self.currentLine)
+			# Output of counter variables to the text to finish
+			# if self.currentLine.find("{") != -1:
+			# 	txt = self.currentLine.split("{")
+			# 	txt = txt[1].replace("}", " ")
+			# 	txt = txt.split(" ")
+			# 	var = txt[0]
+			# 	if var in self.counters:
+			# 		print(str(self.counters[var]), var + "}")
+			# 		self.currentLine = self.currentLine.replace("{" , str(self.counters[var]))
+			# 		self.currentLine = self.currentLine.replace(var + "}", "")
 			self.nameshow = False
 			self.setLine()
 		# Else this is a commands
@@ -396,8 +406,7 @@ class Play:
 							if label == cmd[1] + ":":
 								self.currentStart = l
 								self.choice = False
-								self.linesProcessing()
-								return
+								break
 						l += 1
 
 				# Continuation of the current label dialog
@@ -415,7 +424,7 @@ class Play:
 				j += 1
 			i += 1
 
-		self.nextLine()
+		self.linesProcessing()
 
 
 	# Moving the script line forward
@@ -435,6 +444,15 @@ class Play:
 		# Handling mouse click
 		if e.type == pygame.MOUSEBUTTONDOWN:
 
+			if self.choice and self.hide == False:
+				if e.button == 1:
+					# Selecting a clauses condition
+					xy = [self.conditionxy[0], self.conditionxy[1]]
+					for claus in self.clausesprint:
+						xy[1] += self.textmargin * 2
+						if mouseCollision((xy[0], xy[1]), self.conditionwh, e.pos):
+							return self.conditionProcessing(claus)
+
 			if self.hide == False and self.choice == False:
 				# Left mouse button
 				if e.button == 1:
@@ -448,14 +466,7 @@ class Play:
 				if e.button == 5:
 					self.nextLine()
 
-			if self.choice:
-				if e.button == 1:
-					# Selecting a clauses condition
-					xy = [self.conditionxy[0], self.conditionxy[1]]
-					for claus in self.clausesprint:
-						xy[1] += self.textmargin * 2
-						if mouseCollision((xy[0], xy[1]), self.conditionwh, e.pos):
-							self.conditionProcessing(claus)
+			# if self.hide()
 
 			# Right mouse button
 			if e.button == 3:
@@ -484,7 +495,7 @@ class Play:
 			# Rendering text
 			self.outLine(self.screen)
 
-		if self.choice:
+		if self.choice and self.hide == False:
 			rectxy = (self.conditionxy[0] - self.conditionmargin, self.conditionxy[1] - self.conditionmargin / 2)
 			rectwh = (self.conditionwh[0] + self.conditionmargin * 2, self.conditionwh[1] + self.conditionmargin)
 			# Rendering condition
@@ -509,6 +520,9 @@ class Play:
 
 	# Set condition
 	def setCondition(self):
+		self.currentLine = self.condition
+		self.setLine()
+
 		self.choice = True
 		self.conditionSize = self.textprint.size(self.condition)
 		self.condition = self.textprint.render(str(self.condition), True, self.textcolor)
