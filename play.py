@@ -25,6 +25,7 @@ class Play:
 				self.dialogbox = surface
 
 		# Option variables
+		self.windowsize = ()
 		self.textmargin = 0
 		self.textsize  	= 0
 		self.textcolor	= ()
@@ -73,6 +74,7 @@ class Play:
 		# Boolean variables
 		self.hide = False
 		self.choice = False
+		self.back = False
 
 		# Condition variables
 		self.condition = ""
@@ -85,7 +87,7 @@ class Play:
 		self.clausesprint = {}
 
 		# Other variables
-		self.mouse = ()
+		self.mouse = (0,0)
 
 		# Standard background image
 		self.background = scLoadImage(self.folder + "assets/gui/backgroundplay.jpg", SIZE)
@@ -100,44 +102,29 @@ class Play:
 		content = option.read()
 
 		# Splitting a option
-		define = content.split(";")
+		define = content.split("\n")
+		define = clearLines(define)
 		
 		# Getting options
 		for val in define:
-			arr = val.split("=")
-			name, value = arr[0], arr[1]
-			if name.find("textmargin") != -1:
+			# Reliable construction like a Swiss watch
+			if val[0] == "#": continue
+			val = val.replace(" ", "")
+			val = val.split("=")
+			name, value = val[0], val[1]
+			if name.find("windowsize") != -1:
+				self.windowsize = defineResolution(value)
+			elif name.find("textmargin") != -1:
 				self.textmargin = int(value)
-			if name.find("textsize") != -1:
+			elif name.find("textsize") != -1:
 				self.textsize = int(value)
-			if name.find("textcolor") != -1:
-				self.textcolor = self.defineColor(value)
-			if name.find("textfont") != -1:
+			elif name.find("textcolor") != -1:
+				self.textcolor = defineColor(value)
+			elif name.find("textfont") != -1:
 				self.textfont = value
-			if name.find("lineheight") != -1:
+			elif name.find("lineheight") != -1:
 				self.lineheight = int(value)
 
-	# Define color
-	def defineColor(self, color):
-		result = ()
-		if color == "WHITE": result = WHITE
-		elif color == "BLACK": result = BLACK
-		else:
-			color = removeChar(color)
-			arr = color.split(",")
-			result = (int(arr[0]), int(arr[1]), int(arr[2]))
-		return result
-
-	# Define coordinates
-	def defineCoord(self, coord):
-		coord = coord.replace(" ", "")
-		coord = removeChar(coord).split(";")
-		if float(coord[0]) == 0.0: x = 0
-		else: x = WIDTH * float(coord[0])
-		if float(coord[1]) == 0.0: y = 0
-		else: y = HEIGHT * float(coord[1])
-		coord = (x, y)
-		return coord
 
 	# Parsing the script file
 	def parseScript(self):
@@ -148,27 +135,16 @@ class Play:
 		# Splitting a script
 		define = content.split("start:")
 
-		# Cleaning chars 
+		# Cleaning chars
 		badChars = ['\r', '\n', '\t']
 
 		# Script variables
 		self.variables = define[0].split("\n")
+		self.variables = clearLines(self.variables)
+
 		# Script all lines
 		self.allLines = define[1].split("\n")
-
-		# Clearing script variables
-		for i in range(len(self.variables)):
-			for char in badChars:
-				self.variables[i] = self.variables[i].replace(char, "")
-
-		# Clearing script all lines
-		for i in range(len(self.allLines)):
-			for char in badChars:
-				self.allLines[i] = self.allLines[i].replace(char, "")
-
-		# Clearing empty list items
-		self.variables = [x for x in self.variables if x != '']
-		self.allLines = [x for x in self.allLines if x != '']
+		self.allLines = clearLines(self.allLines)
 		
 		# End of lines
 		self.currentEnd = len(self.allLines) - 1
@@ -190,7 +166,7 @@ class Play:
 				var = clearVariable(var, "character")
 				name, value = var[0], removeChar(var[1]).split(",")
 				self.characters["src"][name] = removeChar(value[0])
-				self.characters["coord"][name] = self.defineCoord(value[1])
+				self.characters["coord"][name] = defineCoord(value[1])
 			# Counter variables
 			elif var.find("count") != -1:
 				var = clearVariable(var, "count")
@@ -209,7 +185,7 @@ class Play:
 
 		# Current line
 		self.currentLine = self.allLines[self.currentStart]
-		print(self.currentLine)
+		# print(self.currentLine)
 
 		# If current line = return
 		if self.currentLine == "return":
@@ -264,18 +240,49 @@ class Play:
 				src = self.folder + "/assets/gui/characterstock.png"
 			self.renderCharacters[define[1]] = loadImage(src)
 
+			if len(define) > 2:
+				rect = self.renderCharacters[define[1]].get_rect()
+				x, y = self.windowsize
+				if define[2] == "left":
+					coord = (x * 0.15 - rect.width / 2, y - rect.height)
+				if define[2] == "center":
+					coord = (x / 2 - rect.width / 2, y - rect.height)
+				if define[2] == "right":
+					coord = (x * 0.85 - rect.width / 2, y - rect.height)
+				self.characters["coord"][define[1]] = coord
+
 		# Hide characters
 		elif command == "hide":
-			if define[1] in self.renderCharacters:
+			if define[1] == "characters":
+				self.renderCharacters.clear()
+			elif define[1] in self.renderCharacters:
 				self.renderCharacters.pop(define[1])
 
 		# Checking variable counters
 		elif command == "if":
-			check = self.currentLine.replace("if", "")
-			check = check.split(":")
-			check[0] = check[0].replace(" ", "")
-			if self.ifCheck(check[0]):
-				self.ifProcessing(check[1])
+			# I thought about it for half an hour
+			for n in range(999):
+				ln = self.currentLine.replace(":", "")
+				ln = ln.split(" ")
+				if ln[0] == "else":
+					ch = self.currentLine.split(":")
+					self.ifProcessing(ch[1])
+					break
+				elif ln[0] == "if":
+					ch = self.currentLine.replace("if", "")
+					ch = ch.split(":")
+					if self.ifCheck(ch[0]):
+						self.ifProcessing(ch[1])
+						break
+				elif ln[0] == "elif":
+					ch = self.currentLine.replace("elif", "")
+					ch = ch.split(":")
+					if self.ifCheck(ch[0]):
+						self.ifProcessing(ch[1])
+						break
+				else: break
+				self.currentStart += 1
+				self.currentLine = self.allLines[self.currentStart]
 
 		# Dialogue condition
 		elif command == "condition":
@@ -301,6 +308,7 @@ class Play:
 
 		# Go to label
 		elif command == "go!":
+			i = 0
 			# Find label in all lines and go to it
 			for line in self.allLines:
 				if line.find("label") != -1:
@@ -311,10 +319,16 @@ class Play:
 						break
 				i += 1
 
-		self.nextLine()
+		elif command == "label":
+			return self.nextLine()
+
+		# Scroll back to finalize
+		if self.back: self.prevLine()
+		else: self.nextLine()
 
 	# Variable Validation check
 	def ifCheck(self, check):
+		check = check.replace(" ", "")
 		arrcond = ["==", "<=", ">=", "<", ">", "!="]
 		for i in range(len(arrcond)):
 			if check.find(arrcond[i]) != -1:
@@ -338,6 +352,7 @@ class Play:
 				elif arrcond[i] == "!=":
 					if cond[0] != cond[1]: return True
 				else: return False
+				return False
 
 	# Variable Validation Handling
 	def ifProcessing(self, commands):
@@ -357,6 +372,9 @@ class Play:
 							self.currentStart = i - 1
 							break
 					i += 1
+
+			if command == "continue":
+				break
 
 	# Condition decision processing
 	def conditionProcessing(self, claus):
@@ -391,6 +409,9 @@ class Play:
 					if counter + "++" == c:
 						self.choice = False
 						self.counters[counter] += 1
+					elif counter + "--" == c:
+						self.choice = False
+						self.counters[counter] -= 1
 				j += 1
 			i += 1
 
@@ -400,11 +421,13 @@ class Play:
 	# Moving the script line forward
 	def nextLine(self):
 		self.currentStart += 1
+		self.back = False
 		self.linesProcessing()
 
 	# Moving the script line back
 	def prevLine(self):
 		self.currentStart -= 1
+		self.back = True
 		self.linesProcessing()
 
 	# Handling events
@@ -481,7 +504,7 @@ class Play:
 	# Set name
 	def setName(self):
 		self.name = self.names["name"][self.namekey]
-		self.namecolor = self.defineColor(self.names["color"][self.namekey])
+		self.namecolor = defineColor(self.names["color"][self.namekey])
 		self.nameprint = self.textprint.render(str(self.name), True, self.namecolor)
 
 	# Set condition
@@ -489,7 +512,7 @@ class Play:
 		self.choice = True
 		self.conditionSize = self.textprint.size(self.condition)
 		self.condition = self.textprint.render(str(self.condition), True, self.textcolor)
-		self.conditionxy = (WIDTH / 2 - self.conditionSize[0] / 2, HEIGHT / 2 - self.conditionSize[1] * 3)
+		self.conditionxy = (WIDTH / 2 - self.conditionSize[0] / 2, HEIGHT / 2 - self.conditionSize[1] * len(self.clauses))
 		self.conditionwh = self.condition.get_size()
 		
 		for claus in self.clauses:

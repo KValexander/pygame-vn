@@ -51,6 +51,46 @@ def clearVariable(var, clear):
 	var = var.split("=")
 	return var
 
+# Cleaning the lines
+def clearLines(lines):
+	badChars = ['\r', '\n', '\t']
+	for i in range(len(lines)):
+		for char in badChars:
+			lines[i] = lines[i].replace(char, "")
+	lines = [x for x in lines if x != '']
+	return lines
+
+
+# Define color
+def defineColor(color):
+	result = ()
+	if color == "WHITE": result = WHITE
+	elif color == "BLACK": result = BLACK
+	else:
+		color = removeChar(color)
+		arr = color.split(",")
+		result = (int(arr[0]), int(arr[1]), int(arr[2]))
+	return result
+
+# Define coordinates
+def defineCoord(coord):
+	coord = coord.replace(" ", "")
+	coord = removeChar(coord).split(";")
+	if float(coord[0]) == 0.0: x = 0
+	else: x = WIDTH * float(coord[0])
+	if float(coord[1]) == 0.0: y = 0
+	else: y = HEIGHT * float(coord[1])
+	coord = (x, y)
+	return coord
+
+# Define resolution
+def defineResolution(size):
+	size = size.replace(" ", "")
+	size = removeChar(size).split(",")
+	size = (int(size[0]), int(size[1]))
+	return size
+	# size = 
+
 # To grid size
 def gridSize(xy):
 	x = int(xy[0] / GRIDLINEX) * GRIDLINEX
