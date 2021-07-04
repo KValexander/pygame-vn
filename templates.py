@@ -73,7 +73,6 @@ class Inscription:
 		# Defaults variables
 		self.font 	= pygame.font.SysFont("calibri", self.size)
 		self.twh 	= self.font.size(self.value)
-		self.loc 	= (self.xy[0] - self.twh[0] / 2, self.xy[1] - self.twh[1] / 2)
 		self.iname 	= self.font.render(str(self.value), True, self.color)
 		self.rect 	= self.iname.get_rect()
 
@@ -93,5 +92,56 @@ class Texture:
 
 # Cell load/save class
 class Cell:
-	def __init__(self):
+	def __init__(self, name, xy, wh):
+		# Custom variables
+		self.name 	= name
+		self.xy 	= xy
+		self.wh 	= wh
+
+		# Boolean variables
+		self.hover = False
+
+		# Defaults variables
+		self.color 	 = WHITE
+		self.alpha 	 = 140
+		self.surface = pygame.Surface(self.wh)
+		self.rect 	 = self.surface.get_rect()
+		self.surface.fill(WHITE)
+		self.surface.set_alpha(self.alpha)
+
+		# Text variables
+		self.tcolor = BLACK
+		self.val  	= "Сохранение отсутствует"
+		self.font 	= pygame.font.SysFont("calibri", 18)
+		self.twh  	= self.font.size(self.val)
+		self.loc 	= (self.xy[0] + self.wh[0] / 2 - self.twh[0] / 2, self.xy[1] + self.wh[1] / 2 - self.twh[1] / 2)
+		self.iname	= self.font.render(str(self.val), True, self.tcolor)
+		self.trect 	= self.iname.get_rect()
+
+		self.check()
+
+	def events(self, e):
+		if e.type == pygame.MOUSEMOTION:
+			if(mouseCollision(self.xy, self.wh, e.pos)):
+				self.hover = True
+			else: self.hover = False
+
+	def draw(self, screen):
+		screen.blit(self.surface, self.xy)
+		screen.blit(self.iname, self.loc)
+		pygame.draw.rect(screen, QUARTZ, (self.xy, self.wh), 2)
+
+		if self.hover:
+			self.surface.set_alpha(self.alpha + 60)
+		else: 
+			self.surface.set_alpha(self.alpha)
+
+	def check(self):
 		pass
+
+	def save(self):
+		pass
+
+	def load(self):
+		pass
+

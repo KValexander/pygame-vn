@@ -31,17 +31,41 @@ def createLink():
 def createTexture():
 	pass
 
+# Create cell 
+def createCell(name, xy, wh):
+	cell = Cell(name, xy, wh)
+	cells.append(cell)
+
 # Create objects
 def create(case):
+	cells.clear()
+	links.clear()
 	buttons.clear()
+	textures.clear()
 	surfaces.clear()
 	inscriptions.clear()
+	loop.loadloop 		= False
+	loop.playloop 		= False
+	loop.menuloop 		= False
+	loop.saveloop 		= False
+	loop.settingsloop 	= False
+	loop.mainloop  		= False
 
-	if 	 case == "main": 	 createMain()
-	elif case == "play": 	 createPlay()
-	elif case == "settings": createSettings()
-	elif case == "save": 	 createSave()
-	elif case == "load": 	 createLoad()
+	if 	 case == "main":
+		loop.mainloop = True
+		createMain()
+	elif case == "play":
+		loop.playloop = True
+		createPlay()
+	elif case == "save":
+		loop.saveloop = True
+		createSave()
+	elif case == "load":
+		loop.loadloop = True
+		createLoad()
+	elif case == "settings":
+		loop.settingsloop = True
+		createSettings()
 
 # Create main screen objects
 def createMain():
@@ -79,6 +103,17 @@ def createLoad():
 
 	createInscription("loadscreen", "Загрузить", WHITE, gridSize((380, 32)), 50)
 
+	xy = [350, 120]
+	for i in range(9):
+		if i == 0:
+			pass
+		elif i % 3 == 0:
+			xy[0] = 350
+			xy[1] += 200
+		else:
+			xy[0] += 220
+		createCell("s_"+str(i), (xy[0], xy[1]), (200, 150))
+
 # Create play menu objects
 def createMenu():
 	pass
@@ -93,6 +128,14 @@ def drawInterface(screen):
 	# Rendering buttons
 	for button in buttons:
 		button.draw(screen)
+
+	# Rendering cells
+	for cell in cells:
+		cell.draw(screen)
+
+	# Rendering links
+	for link in links:
+		link.draw(screen)
 
 	# Rendering inscriptions
 	for inscription in inscriptions:

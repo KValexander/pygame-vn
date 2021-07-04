@@ -8,5 +8,3 @@ buttons = []
 textures = []
 surfaces = []
 inscriptions = []
-
-# Text

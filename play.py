@@ -17,6 +17,7 @@ class Play:
 	def __init__(self, screen, folder):
 		self.screen = screen
 		self.folder = folder
+		create("main")
 
 	# Loading data
 	def loading(self):
@@ -108,7 +109,7 @@ class Play:
 		
 		# Getting options
 		for val in define:
-			# Reliable construction like a Swiss watch
+			# Reliable construction like a Swiss watch (no)
 			if val[0] == "#": continue
 			val = val.replace(" ", "")
 			val = val.split("=")
@@ -125,7 +126,6 @@ class Play:
 				self.textfont = value
 			elif name.find("lineheight") != -1:
 				self.lineheight = int(value)
-
 
 	# Parsing the script file
 	def parseScript(self):
@@ -178,13 +178,12 @@ class Play:
 	def linesProcessing(self):
 		# If all the lines are finished
 		if(self.currentStart > self.currentEnd):
-			loop.playloop = False
-			loop.mainloop = True
-			create("main")
-			return
+			return self.goToMainMenu()
 
 		# If there is no current line
-		if self.currentStart <= 0: self.currentStart = 0
+		if self.currentStart <= 0:
+			self.back = False
+			self.currentStart = 0
 
 		# Current line
 		self.currentLine = self.allLines[self.currentStart]
@@ -192,10 +191,7 @@ class Play:
 
 		# If current line = return
 		if self.currentLine == "return":
-			loop.playloop = False
-			loop.mainloop = True
-			create("main")
-			return
+			return self.goToMainMenu()
 
 		# If this is a replica without name
 		if self.currentLine[0] == "\"" or self.currentLine[0] == "\'":
@@ -275,6 +271,15 @@ class Play:
 				self.renderCharacters.clear()
 			elif define[1] in self.renderCharacters:
 				self.renderCharacters.pop(define[1])
+
+			if self.back and define[1] != "characters":
+				if define[1] in self.characters["src"]:
+					src = self.folder + "/assets/images/characters/" + self.characters["src"][define[1]]
+					if os.path.exists(src) == False:
+						src = self.folder + "/assets/gui/characterstock.png"
+				else:
+					src = self.folder + "/assets/gui/characterstock.png"
+				self.renderCharacters[define[1]] = loadImage(src)
 
 		# Checking variable counters
 		elif command == "if":
@@ -506,6 +511,7 @@ class Play:
 			# Rendering text
 			self.outLine(self.screen)
 
+		# Rendering the conditions window
 		if self.choice and self.hide == False:
 			rectxy = (self.conditionxy[0] - self.conditionmargin, self.conditionxy[1] - self.conditionmargin / 2)
 			rectwh = (self.conditionwh[0] + self.conditionmargin * 2, self.conditionwh[1] + self.conditionmargin)
@@ -584,3 +590,9 @@ class Play:
 		# Rendering name
 		if self.nameshow:
 			screen.blit(self.nameprint, self.namepos)
+
+	# Go to the main menu
+	def goToMainMenu(self):
+		loop.playloop = False
+		loop.mainloop = True
+		create("main")

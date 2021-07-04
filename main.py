@@ -39,7 +39,6 @@ class Main:
 	def loading(self):
 		# Instances of classes
 		self.play = Play(self.screen, self.folder)
-		create("main")
 
 		# Start game
 		self.start()
@@ -74,6 +73,10 @@ class Main:
 						button.hover = True
 					else: button.hover = False
 
+			# Handling cells events
+			for cell in cells:
+				cell.events(event)
+
 	# Actions for buttons
 	def buttonAction(self, name):
 		screen = ""
@@ -82,38 +85,23 @@ class Main:
 		if name == "exit": self.end()
 		# Start play button
 		if name == "play":
-			loop.mainloop = False
-			loop.playloop = True
 			createPlay()
 			self.play.loading()
 			screen = "play"
 		# Load button
 		if name == "load":
 			if loop.loadloop:
-				loop.mainloop = True
-				loop.loadloop = False
 				screen = "main"
 			else:
-				loop.mainloop = False
-				loop.loadloop = True
 				screen = "load"
 		# Settings button
 		if name == "settings":
 			if loop.settingsloop:
-				loop.mainloop = True
-				loop.settingsloop = False
 				screen = "main"
 			else:
-				loop.mainloop = False
-				loop.settingsloop = True
 				screen = "settings"
 		# Back to main menu
 		if name == "back":
-			loop.playloop 		= False
-			loop.loadloop 		= False
-			loop.saveloop 		= False
-			loop.settingsloop 	= False
-			loop.mainloop  		= True
 			screen = "main"
 
 		return screen
@@ -137,12 +125,8 @@ class Main:
 			scImage(self.screen, self.folder + "assets/gui/backgroundmenu.jpg", (0,0), SIZE)
 
 		# Rendering play screen
-		if loop.playloop or loop.menuloop:
+		if loop.playloop:
 			self.play.draw()
-
-		# Rendering play menu screen
-		if loop.menuloop:
-			pass
 
 		# Rendering interface
 		drawInterface(self.screen)
