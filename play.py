@@ -9,13 +9,14 @@ import re
 from settings import *
 from storage import *
 from other import *
+from loop import *
+from interface import *
 
 # Play class
 class Play:
-	def __init__(self, screen, folder, loop):
+	def __init__(self, screen, folder):
 		self.screen = screen
 		self.folder = folder
-		self.loop 	= loop
 
 	# Loading data
 	def loading(self):
@@ -177,7 +178,9 @@ class Play:
 	def linesProcessing(self):
 		# If all the lines are finished
 		if(self.currentStart > self.currentEnd):
-			self.loop.running = False
+			loop.playloop = False
+			loop.mainloop = True
+			create("main")
 			return
 
 		# If there is no current line
@@ -189,22 +192,23 @@ class Play:
 
 		# If current line = return
 		if self.currentLine == "return":
-			self.loop.running = False
+			loop.playloop = False
+			loop.mainloop = True
+			create("main")
 			return
 
 		# If this is a replica without name
 		if self.currentLine[0] == "\"" or self.currentLine[0] == "\'":
 			self.currentLine = removeChar(self.currentLine)
-			# Output of counter variables to the text to finish
-			# if self.currentLine.find("{") != -1:
-			# 	txt = self.currentLine.split("{")
-			# 	txt = txt[1].replace("}", " ")
-			# 	txt = txt.split(" ")
-			# 	var = txt[0]
-			# 	if var in self.counters:
-			# 		print(str(self.counters[var]), var + "}")
-			# 		self.currentLine = self.currentLine.replace("{" , str(self.counters[var]))
-			# 		self.currentLine = self.currentLine.replace(var + "}", "")
+
+			# It is beautiful, replacing part of a string with variables
+			if re.search(r"{.}", self.currentLine):
+				for count in re.finditer(r"{.}", self.currentLine):
+					counter = removeChar(count[0])
+					print(self.counters[counter])
+					if counter in self.counters:
+						self.currentLine = re.sub(r"{"+counter+"}", str(self.counters[counter]), self.currentLine)
+
 			self.nameshow = False
 			self.setLine()
 		# Else this is a commands
@@ -260,6 +264,10 @@ class Play:
 				if define[2] == "right":
 					coord = (x * 0.85 - rect.width / 2, y - rect.height)
 				self.characters["coord"][define[1]] = coord
+
+			if self.back:
+				del self.characters["coord"][define[1]]
+				del self.renderCharacters[define[1]]
 
 		# Hide characters
 		elif command == "hide":
@@ -389,6 +397,7 @@ class Play:
 	# Condition decision processing
 	def conditionProcessing(self, claus):
 		commands = self.clauses[claus].split(";")
+		self.back = False
 		i, j, l = 0, 0, 0
 
 		# Handling commands
@@ -447,10 +456,12 @@ class Play:
 			if self.choice and self.hide == False:
 				if e.button == 1:
 					# Selecting a clauses condition
-					xy = [self.conditionxy[0], self.conditionxy[1]]
+					rectxy = (self.conditionxy[0] - self.conditionmargin, self.conditionxy[1] - self.conditionmargin / 2)
+					rectwh = (self.conditionwh[0] + self.conditionmargin * 2, self.conditionwh[1] + self.conditionmargin)
+					y = rectxy[1]
 					for claus in self.clausesprint:
-						xy[1] += self.textmargin * 2
-						if mouseCollision((xy[0], xy[1]), self.conditionwh, e.pos):
+						y += self.textmargin * 2
+						if mouseCollision((rectxy[0], y), (rectwh), self.mouse):
 							return self.conditionProcessing(claus)
 
 			if self.hide == False and self.choice == False:

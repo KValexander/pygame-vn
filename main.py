@@ -6,20 +6,11 @@ import os
 from settings import *
 from storage import *
 from other import *
+from loop import *
+from interface import *
 
 # Connecting classes
-from interface import Interface
 from play import Play
-
-# Loop class
-class Loop:
-	def __init__(self):
-		self.running 		= False
-		self.mainloop 		= False
-		self.playloop 		= False
-		self.loadloop 		= False
-		self.saveloop 		= False
-		self.settingsloop 	= False
 
 # Main class
 class Main:
@@ -47,17 +38,16 @@ class Main:
 	# Loading data
 	def loading(self):
 		# Instances of classes
-		self.loop 		= Loop()
-		self.interface 	= Interface(self.screen, self.folder)
-		self.play 		= Play(self.screen, self.folder, self.loop)
+		self.play = Play(self.screen, self.folder)
+		create("main")
 
 		# Start game
 		self.start()
 
 	# Game start
 	def start(self):
-		self.loop.running	= True
-		self.loop.mainloop 	= True
+		loop.running	= True
+		loop.mainloop 	= True
 		self.gameloop()
 
 	# Handling events
@@ -68,42 +58,62 @@ class Main:
 				self.end()
 
 			# Playing events
-			if self.loop.playloop:
+			if loop.playloop:
 				self.play.events(event)
-			
-			# Interface events
-			self.interface.events(event, self.buttonAction)
+
+			# Handling button events
+			for button in buttons:
+				# Handling button click
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if button.rect.collidepoint(event.pos):
+						create(self.buttonAction(button.name))
+
+				# Hovering over the button
+				if event.type == pygame.MOUSEMOTION:
+					if(button.rect.collidepoint(event.pos)):
+						button.hover = True
+					else: button.hover = False
 
 	# Actions for buttons
 	def buttonAction(self, name):
 		screen = ""
 
 		# Exit button
-		if name == "exit":
-			self.end()
+		if name == "exit": self.end()
 		# Start play button
 		if name == "play":
-			self.loop.mainloop = False
-			self.loop.playloop = True
-			self.interface.createPlay()
+			loop.mainloop = False
+			loop.playloop = True
+			createPlay()
 			self.play.loading()
 			screen = "play"
 		# Load button
 		if name == "load":
-			self.loop.mainloop = False
-			self.loop.loadloop = True
-			screen = "load"
+			if loop.loadloop:
+				loop.mainloop = True
+				loop.loadloop = False
+				screen = "main"
+			else:
+				loop.mainloop = False
+				loop.loadloop = True
+				screen = "load"
 		# Settings button
 		if name == "settings":
-			self.loop.mainloop = False
-			self.loop.settingsloop = True
-			screen = "settings"
+			if loop.settingsloop:
+				loop.mainloop = True
+				loop.settingsloop = False
+				screen = "main"
+			else:
+				loop.mainloop = False
+				loop.settingsloop = True
+				screen = "settings"
+		# Back to main menu
 		if name == "back":
-			self.loop.playloop 		= False
-			self.loop.loadloop 		= False
-			self.loop.saveloop 		= False
-			self.loop.settingsloop 	= False
-			self.loop.mainloop  = True
+			loop.playloop 		= False
+			loop.loadloop 		= False
+			loop.saveloop 		= False
+			loop.settingsloop 	= False
+			loop.mainloop  		= True
 			screen = "main"
 
 		return screen
@@ -122,31 +132,32 @@ class Main:
 		self.screen.fill(WHITE)
 		
 		# Rendering main screen
-		if self.loop.mainloop or self.loop.loadloop or self.loop.settingsloop:
+		if loop.mainloop or loop.loadloop or loop.settingsloop:
 			# Background image
 			scImage(self.screen, self.folder + "assets/gui/backgroundmenu.jpg", (0,0), SIZE)
 
 		# Rendering play screen
-		if self.loop.playloop:
+		if loop.playloop or loop.menuloop:
 			self.play.draw()
-			
-		# Rendering grid
-		# drawGrid(self.screen)
+
+		# Rendering play menu screen
+		if loop.menuloop:
+			pass
 
 		# Rendering interface
-		self.interface.draw()
+		drawInterface(self.screen)
 
 		pygame.display.update()
 
 	# Gameloop
 	def gameloop(self):
-		while self.loop.running:
+		while loop.running:
 			self.update()
 			self.render()
 
 	# End of the game
 	def end(self):
-		self.loop.running = False
+		loop.running = False
 
 Main()
 pygame.quit()

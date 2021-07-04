@@ -2,10 +2,11 @@
 from settings import *
 
 # Lists
+cells = []
 links = []
 buttons = []
 textures = []
 surfaces = []
-dialogues = []
+inscriptions = []
 
 # Text
