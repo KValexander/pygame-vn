@@ -38,6 +38,7 @@ def createCell(name, xy, wh):
 
 # Create objects
 def create(case):
+	if case == None: return
 	cells.clear()
 	links.clear()
 	buttons.clear()
@@ -77,6 +78,13 @@ def createMain():
 
 # Create play screen objects
 def createPlay():
+	createSurface("hmenuscreen", BLACK, 90, (0,0), gridSize((300, HEIGHT)))
+	createSurface("hsavescreen", BLACK, 90, gridSize((320, 0)), gridSize((WIDTH - 320, HEIGHT)))
+	createButton("hmenu", "Главное меню", WHITE, gridSize((60, 180)), (180, 40), QUARTZ)
+	createButton("hsave", "Сохранить", WHITE, gridSize((60, 230)), (180, 40), QUARTZ)
+	createButton("hload", "Загрузить", WHITE, gridSize((60, 280)), (180, 40), QUARTZ)
+	createButton("hexit", "Выйти", WHITE, gridSize((60, 330)), (180, 40), QUARTZ)
+
 	createSurface("dialogbox", BLACK, 128, gridSize((0, HEIGHT - (HEIGHT / 4))), gridSize((WIDTH, 216)))
 
 # Create settings screen objects
@@ -89,7 +97,7 @@ def createSettings():
 	createButton("settings", "Настройки", WHITE, gridSize((60, 280)), (180, 40), QUARTZ)
 	createButton("exit", "Выйти", WHITE, gridSize((60, 330)), (180, 40), QUARTZ)
 	
-	createInscription("settingscreen", "Настройки", WHITE, gridSize((380, 32)), 50)
+	createInscription("settingscreen", "Настройки", WHITE, gridSize((356, 32)), 50)
 
 # Create load screen objects
 def createLoad():
@@ -101,7 +109,7 @@ def createLoad():
 	createButton("settings", "Настройки", WHITE, gridSize((60, 280)), (180, 40), QUARTZ)
 	createButton("exit", "Выйти", WHITE, gridSize((60, 330)), (180, 40), QUARTZ)
 
-	createInscription("loadscreen", "Загрузить", WHITE, gridSize((380, 32)), 50)
+	createInscription("loadscreen", "Загрузить", WHITE, gridSize((356, 32)), 50)
 
 	xy = [350, 120]
 	for i in range(9):
@@ -122,11 +130,12 @@ def createMenu():
 def drawInterface(screen):
 	# Rendering surfaces
 	for surface in surfaces:
-		if surface.name == "dialogbox": continue
+		if surface.name == "dialogbox" or surface.name == "hmenuscreen" or surface.name == "hsavescreen": continue
 		surface.draw(screen)
 
 	# Rendering buttons
 	for button in buttons:
+		if button.name == "hmenu" or button.name == "hsave" or button.name == "hexit" or button.name == "hload": continue
 		button.draw(screen)
 
 	# Rendering cells
@@ -139,4 +148,5 @@ def drawInterface(screen):
 
 	# Rendering inscriptions
 	for inscription in inscriptions:
+		if inscription.name == "hsavescreen": continue
 		inscription.draw(screen)

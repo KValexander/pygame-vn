@@ -1,5 +1,6 @@
 # Connecting files
 from settings import *
+import os
 
 # Lists
 cells = []
@@ -8,3 +9,6 @@ buttons = []
 textures = []
 surfaces = []
 inscriptions = []
+
+# Project folder
+folder = os.getcwd() + "/vn/"

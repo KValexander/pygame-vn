@@ -14,10 +14,21 @@ from interface import *
 
 # Play class
 class Play:
-	def __init__(self, screen, folder):
+	def __init__(self, screen):
 		self.screen = screen
-		self.folder = folder
 		create("main")
+
+	# Loading save
+	def loadSave(self, data):
+		if data == None: return
+		self.hide = False
+		self.menuscreen = ""
+		cells.clear()
+		inscriptions.clear()
+		data = data.replace(" ", "")
+		data = int(data.split("=")[1])
+		self.currentStart = data
+		self.linesProcessing()
 
 	# Loading data
 	def loading(self):
@@ -78,6 +89,9 @@ class Play:
 		self.choice = False
 		self.back = False
 
+		# Current menu screen
+		self.menuscreen = ""
+
 		# Condition variables
 		self.condition = ""
 		self.conditionxy = ()
@@ -92,7 +106,7 @@ class Play:
 		self.mouse = (0,0)
 
 		# Standard background image
-		self.background = scLoadImage(self.folder + "assets/gui/backgroundplay.jpg", SIZE)
+		self.background = scLoadImage(folder + "assets/gui/backgroundplay.jpg", SIZE)
 
 		# Parsing the script file
 		self.parseScript()
@@ -100,7 +114,7 @@ class Play:
 	# Parsing the option file
 	def parseOption(self):
 		# Getting option content
-		option = codecs.open(self.folder + "options.vn", "r", "utf-8")
+		option = codecs.open(folder + "options.vn", "r", "utf-8")
 		content = option.read()
 
 		# Splitting a option
@@ -130,7 +144,7 @@ class Play:
 	# Parsing the script file
 	def parseScript(self):
 		# Getting script content
-		script = codecs.open(self.folder + "script.vn", "r", "utf-8")
+		script = codecs.open(folder + "script.vn", "r", "utf-8")
 		content = script.read()
 
 		# Splitting a script
@@ -235,19 +249,19 @@ class Play:
 
 		# Set background
 		elif command == "background":
-			src = self.folder + "/assets/images/medley/" + removeChar(define[1])
+			src = folder + "/assets/images/medley/" + removeChar(define[1])
 			if os.path.exists(src) == False:
-				src = self.folder + "/assets/gui/backgroundplay.jpg"
+				src = folder + "/assets/gui/backgroundplay.jpg"
 			self.background = scLoadImage(src, SIZE)
 
 		# Show characters
 		elif command == "show":
 			if define[1] in self.characters["src"]:
-				src = self.folder + "/assets/images/characters/" + self.characters["src"][define[1]]
+				src = folder + "/assets/images/characters/" + self.characters["src"][define[1]]
 				if os.path.exists(src) == False:
-					src = self.folder + "/assets/gui/characterstock.png"
+					src = folder + "/assets/gui/characterstock.png"
 			else:
-				src = self.folder + "/assets/gui/characterstock.png"
+				src = folder + "/assets/gui/characterstock.png"
 			self.renderCharacters[define[1]] = loadImage(src)
 
 			if len(define) > 2:
@@ -274,11 +288,11 @@ class Play:
 
 			if self.back and define[1] != "characters":
 				if define[1] in self.characters["src"]:
-					src = self.folder + "/assets/images/characters/" + self.characters["src"][define[1]]
+					src = folder + "/assets/images/characters/" + self.characters["src"][define[1]]
 					if os.path.exists(src) == False:
-						src = self.folder + "/assets/gui/characterstock.png"
+						src = folder + "/assets/gui/characterstock.png"
 				else:
-					src = self.folder + "/assets/gui/characterstock.png"
+					src = folder + "/assets/gui/characterstock.png"
 				self.renderCharacters[define[1]] = loadImage(src)
 
 		# Checking variable counters
@@ -482,12 +496,46 @@ class Play:
 				if e.button == 5:
 					self.nextLine()
 
-			# if self.hide()
-
 			# Right mouse button
+			# Below is shit code, but I don't give a fuck, *laughter*
+			# Fix
 			if e.button == 3:
-				if self.hide == True: self.hide = False
-				elif self.hide == False: self.hide = True
+				if self.hide == True:
+					cells.clear()
+					inscriptions.clear()
+					self.hide = False
+					self.menuscreen = ""
+				elif self.hide == False:
+					self.menuscreen = "save"
+					createInscription("hsavescreen", "Сохранить", WHITE, gridSize((356, 32)), 50)
+					xy = [350, 120]
+					for i in range(9):
+						if i == 0:
+							pass
+						elif i % 3 == 0:
+							xy[0] = 350
+							xy[1] += 200
+						else:
+							xy[0] += 220
+						createCell("s_"+str(i), (xy[0], xy[1]), (200, 150))
+					self.hide = True
+
+			if self.hide and e.button == 1:
+				for button in buttons:
+					if button.rect.collidepoint(e.pos):
+						inscriptions.clear()
+						if button.name == "hload":
+							self.menuscreen = "load"
+							createInscription("hloadscreen", "Загрузить", WHITE, gridSize((356, 32)), 50)
+						if button.name == "hsave":
+							self.menuscreen = "save"
+							createInscription("hsavecreen", "Сохранить", WHITE, gridSize((356, 32)), 50)
+				for cell in cells:
+					if(mouseCollision(cell.xy, cell.wh, e.pos)):
+						if self.menuscreen == "save":
+							cell.save(self.currentStart)
+						elif self.menuscreen == "load":
+							self.loadSave(cell.load())
 
 		# Handling mouse move
 		if e.type == pygame.MOUSEMOTION:
@@ -496,7 +544,8 @@ class Play:
 	# Rendering objects
 	def draw(self):
 		# Rendering background
-		drawImage(self.screen, self.background, (0, 0))
+		if self.hide == False:
+			drawImage(self.screen, self.background, (0, 0))
 
 		# Rendering characters
 		for character in self.renderCharacters:
@@ -528,6 +577,21 @@ class Play:
 
 				if mouseCollision((rectxy[0], yy[1]), (rectwh), self.mouse):
 					pygame.draw.rect(self.screen, SURFACECOLOR, ((rectxy[0], yy[1]), (rectwh)), 3)
+
+		# Rendering menu
+		if self.hide:
+			scImage(self.screen, folder + "assets/gui/backgroundmenu.jpg", (0,0), SIZE)
+			# Rendering surfaces
+			for surface in surfaces:
+				if surface.name == "hmenuscreen" or surface.name == "hsavescreen":
+					surface.draw(self.screen)
+			# Rendering buttons
+			for button in buttons:
+				if button.name == "hmenu" or button.name == "hsave" or button.name == "hload" or button.name == "hexit":
+					button.draw(self.screen)
+			# Rendering inscriptions
+			for inscription in inscriptions:
+				inscription.draw(self.screen)
 
 	# Set name
 	def setName(self):

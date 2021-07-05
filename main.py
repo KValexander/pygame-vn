@@ -21,24 +21,25 @@ class Main:
 		self.screen = pygame.display.set_mode(SIZE)
 		pygame.display.set_caption("VN")
 
-		# Getting the current directory
-		currentFolder = os.getcwd()
-		# Project folder
-		self.folder = currentFolder + "/vn/"
-
 		# Game icon
-		gameIcon = loadImage(self.folder + "assets/icon.png")
+		gameIcon = loadImage(folder + "assets/icon.png")
 		pygame.display.set_icon(gameIcon)
 
 		# Clock
 		self.clock = pygame.time.Clock()
+
+		# For the future
+		self.screens = {}
+		self.currentScreen = ""
+		self.screens["main"] = False
+		# self.screens[self.currentScreen]
 
 		self.loading()
 
 	# Loading data
 	def loading(self):
 		# Instances of classes
-		self.play = Play(self.screen, self.folder)
+		self.play = Play(self.screen)
 
 		# Start game
 		self.start()
@@ -80,9 +81,10 @@ class Main:
 	# Actions for buttons
 	def buttonAction(self, name):
 		screen = ""
+		if name == "hsave" or name == "hload": return
 
 		# Exit button
-		if name == "exit": self.end()
+		if name == "exit" or name == "hexit": self.end()
 		# Start play button
 		if name == "play":
 			createPlay()
@@ -101,7 +103,7 @@ class Main:
 			else:
 				screen = "settings"
 		# Back to main menu
-		if name == "back":
+		if name == "back" or name == "hmenu":
 			screen = "main"
 
 		return screen
@@ -122,7 +124,7 @@ class Main:
 		# Rendering main screen
 		if loop.mainloop or loop.loadloop or loop.settingsloop:
 			# Background image
-			scImage(self.screen, self.folder + "assets/gui/backgroundmenu.jpg", (0,0), SIZE)
+			scImage(self.screen, folder + "assets/gui/backgroundmenu.jpg", (0,0), SIZE)
 
 		# Rendering play screen
 		if loop.playloop:

@@ -1,5 +1,7 @@
 # Connecting libraries
 import pygame
+import codecs
+import os
 
 # Connecting files
 from settings import *
@@ -99,7 +101,8 @@ class Cell:
 		self.wh 	= wh
 
 		# Boolean variables
-		self.hover = False
+		self.hover 		= False
+		self.checksave  = False
 
 		# Defaults variables
 		self.color 	 = WHITE
@@ -108,15 +111,13 @@ class Cell:
 		self.rect 	 = self.surface.get_rect()
 		self.surface.fill(WHITE)
 		self.surface.set_alpha(self.alpha)
+		self.path 	 = ""
 
 		# Text variables
 		self.tcolor = BLACK
 		self.val  	= "Сохранение отсутствует"
 		self.font 	= pygame.font.SysFont("calibri", 18)
-		self.twh  	= self.font.size(self.val)
-		self.loc 	= (self.xy[0] + self.wh[0] / 2 - self.twh[0] / 2, self.xy[1] + self.wh[1] / 2 - self.twh[1] / 2)
-		self.iname	= self.font.render(str(self.val), True, self.tcolor)
-		self.trect 	= self.iname.get_rect()
+		self.changeValue(self.val)
 
 		self.check()
 
@@ -137,11 +138,27 @@ class Cell:
 			self.surface.set_alpha(self.alpha)
 
 	def check(self):
-		pass
+		self.path = folder + "saves/" + self.name + ".save"
+		if os.path.exists(self.path):
+			self.checksave = True
+			self.saves = codecs.open(self.path, "r", "utf-8")
+			self.content = self.saves.read()
+			self.changeValue(self.content)
+		else: self.content = None
 
-	def save(self):
-		pass
+	def changeValue(self, val):
+		self.twh  	= self.font.size(val)
+		self.loc 	= (self.xy[0] + self.wh[0] / 2 - self.twh[0] / 2, self.xy[1] + self.wh[1] / 2 - self.twh[1] / 2)
+		self.iname	= self.font.render(str(val), True, self.tcolor)
+		self.trect 	= self.iname.get_rect()
+
+	def save(self, cl):
+		self.checksave = True
+		self.file = open(self.path, "w+")
+		with open(self.path, "w") as self.file:
+			self.file.write("currentStart = " + str(cl))
+		self.check()
 
 	def load(self):
-		pass
+		return self.content
 
