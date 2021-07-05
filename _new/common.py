@@ -1,9 +1,8 @@
 # Connecting libraries
 import pygame
 
-# Connecting files
+# Connecting file
 from settings import *
-from storage import *
 
 # Handling mouse collision
 def mouseCollision(xy, wh, pos):
@@ -89,21 +88,3 @@ def defineResolution(size):
 	size = removeChar(size).split(",")
 	size = (int(size[0]), int(size[1]))
 	return size
-
-# To grid size
-def gridSize(xy):
-	x = int(xy[0] / GRIDLINEX) * GRIDLINEX
-	y = int(xy[1] / GRIDLINEX) * GRIDLINEX
-	return (x, y)
-
-# Draw grid
-def drawGrid(screen):
-	collsX = WIDTH / GRIDLINEX
-	collsY = HEIGHT / GRIDLINEY
-	condition = (GRIDLINEX * collsX, GRIDLINEY * collsY)
-	for i in range(int(condition[0])):
-		if i % GRIDLINEX == 0:
-			pygame.draw.line(screen, GRIDCOLOR, (i, 0), (i, HEIGHT))
-	for i in range(int(condition[1])):
-		if i % GRIDLINEY == 0:
-			pygame.draw.line(screen, GRIDCOLOR, (0, i), (WIDTH, i))
