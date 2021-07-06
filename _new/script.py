@@ -10,7 +10,11 @@ from common import *
 
 # Class option
 class Script:
-	def __init__(self, window, config, data):
+	def __init__(self, window, data):
 		self.window = window
-		self.config = config
 		self.data 	= data
+		self.config = {}
+
+	# Passing data to the main class
+	def getConfig(self):
+		return self.config

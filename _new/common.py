@@ -93,4 +93,6 @@ def defineResolution(size):
 def commonCommands(line):
 	command = line.split(" ")[0]
 	if command == "#": return False
+	elif command == "//": return False
 	elif command[0] == "#": return False
+	elif command[0] == "//": return False

@@ -41,6 +41,8 @@ class Play:
 		self.processingOption()
 		# Launch window
 		self.launchScreen()
+		# Processing screen data
+		self.processingScreen()
 		# Start game
 		self.gameloop()
 
@@ -63,12 +65,12 @@ class Play:
 
 	# Processing screen data
 	def processingScreen(self):
-		self.screen = Option(self.win, self.screensdata)
+		self.screen = Screen(self.window, self.screensdata)
 		self.screens = self.screen.getConfig()
 
 	# Processing script data
 	def processingScript(self):
-		self.script = Option(self.win, self.scriptsdata)
+		self.script = Script(self.window, self.scriptsdata)
 		self.scripts = self.script.getConfig()
 
 	# # Refresh screen
@@ -80,7 +82,7 @@ class Play:
 	# Launch window
 	def launchScreen(self):
 		# Game window
-		self.win = pygame.display.set_mode(self.options["size"])
+		self.window = pygame.display.set_mode(self.options["size"])
 		pygame.display.set_caption(self.options["projectName"])
 
 		# Game icon
@@ -101,7 +103,7 @@ class Play:
 
 	# Rendering game objects
 	def render(self):
-		self.win.fill(WHITE)
+		self.window.fill(WHITE)
 
 		pygame.display.update()
 
