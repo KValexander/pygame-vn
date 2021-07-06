@@ -59,7 +59,6 @@ def clearLines(lines):
 	lines = [x for x in lines if x != '']
 	return lines
 
-
 # Define color
 def defineColor(color):
 	result = ()
@@ -88,3 +87,10 @@ def defineResolution(size):
 	size = removeChar(size).split(",")
 	size = (int(size[0]), int(size[1]))
 	return size
+
+
+# check for common commands
+def commonCommands(line):
+	command = line.split(" ")[0]
+	if command == "#": return False
+	elif command[0] == "#": return False

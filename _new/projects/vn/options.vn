@@ -1,17 +1,21 @@
-# Переменные экрана, на данные момент не используются
+# Переменные экрана
 
-windowsize = (1024, 768)
+window_size = (1024, 768)
+
+project_name = "VN"
+
+fps = 30
 
 # Переменные текста
 
-textmargin = 20
+text_margin = 20
 
-textsize = 20
+text_size = 20
 
-textcolor = (255,255,255)
+text_color = (255,255,255)
 
 # Только системные шрифты
 
-textfont = verdana
+text_font = verdana
 
-lineheight = 25
+line_height = 25

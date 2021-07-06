@@ -1,5 +1,6 @@
 # Connection libraries
 import pygame
+import codecs
 import os
 
 # Connecting files
@@ -15,8 +16,14 @@ class Main:
 	def __init__(self):
 		pygame.init()
 
-		# Launcher screen
-		self.screen = pygame.display.set_mode(SIZE)
+		# Setting variables
+		self.pathToProjects = ""
+
+		# Getting launcher settings
+		self.getLauncherSettings()
+
+		# Launcher window
+		self.window = pygame.display.set_mode(SIZE)
 		pygame.display.set_caption("Launcher")
 
 		# Launcher icon
@@ -25,7 +32,6 @@ class Main:
 
 		# Current folder
 		self.currentFolder = os.getcwd()
-		pathToProjects = os.getcwd() + "/projects/"
 
 		# Boolean variables
 		self.running = True
@@ -36,25 +42,59 @@ class Main:
 		# Launcher
 		self.launcher = Launcher()
 
-		# Game screens for play.py
-		self.screens = {}
-		self.currentScreen = ""
-		self.screens["main"] = False
-		# self.screens[self.currentScreen]
+		# Path
+		self.path = ""
 
+		# Gameloop
 		self.loop()
+
+	# Getting launcher settings
+	def getLauncherSettings(self):
+		settings = codecs.open("launcher/settings.vn", "r", "utf-8")
+		content = clearLines(settings.read().split("\n"))
+		for line in content:
+			line = line.replace(" ", "")
+			setting, value = line.split("=")
+			if setting == "PATHTOPROJECTS": self.pathToProjects = value
+
+		self.pathToProjects = os.getcwd() + "/projects/"
 
 	# Handling events
 	def events(self):
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
-				self.running = False
+				self.end()
+
+			for button in self.launcher.buttons:
+				if event.type == pygame.MOUSEMOTION:
+					if mouseCollision(button.xy, button.wh, event.pos):
+						button.hover = True
+					else: button.hover = False
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if mouseCollision(button.xy, button.wh, event.pos):
+						button.click = True
+						self.buttonActions(button)
+					else: button.click = False
 
 			for link in self.launcher.links:
 				if event.type == pygame.MOUSEMOTION:
 					if mouseCollision(link.xy, link.twh, event.pos):
 						link.hover = True
 					else: link.hover = False
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if mouseCollision(link.xy, link.twh, event.pos):
+						link.selected = True
+					else: link.selected = False
+
+	# Button actions
+	def buttonActions(self, button):
+		if button.name == "startproject":
+			# Getting the name of the selected project
+			projectname = ""
+			for link in self.launcher.links:
+				if link.selected == True: projectname = link.rtrn
+			if projectname == "": return
+			self.startProject(projectname)
 
 	# Intermediant calculations
 	def update(self):
@@ -63,11 +103,11 @@ class Main:
 
 	# Rendering game objects
 	def render(self):
-		self.screen.fill(QUARTZ)
+		self.window.fill(WHITE)
 
-		scImage(self.screen, "launcher/background.jpg", (0,0), SIZE)
+		# scImage(self.window, "launcher/background.jpg", (0,0), SIZE)
 
-		self.launcher.drawObjects(self.screen)
+		self.launcher.drawObjects(self.window)
 
 		pygame.display.update()
 
@@ -78,9 +118,20 @@ class Main:
 			self.render()
 
 	# Start project
-	def startProject(self):
-		project = Play(pathToProjects)
+	def startProject(self, projectName):
+		self.path = self.pathToProjects + projectName
+		self.end()
+
+	# Turn off the launcher
+	def end(self):
+		self.running = False
 
 # Start launcher
-Main()
+main = Main()
+path = main.path
 pygame.quit()
+
+if path != "":
+	# Start project
+	Play(path)
+	pygame.quit()
