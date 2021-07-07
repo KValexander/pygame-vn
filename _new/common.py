@@ -71,13 +71,13 @@ def defineColor(color):
 	return result
 
 # Define coordinates
-def defineCoord(coord):
+def defineCoord(coord, wh):
 	coord = coord.replace(" ", "")
-	coord = removeChar(coord).split(";")
+	coord = removeChar(coord).split(",")
 	if float(coord[0]) == 0.0: x = 0
-	else: x = WIDTH * float(coord[0])
+	else: x = wh[0] * float(coord[0])
 	if float(coord[1]) == 0.0: y = 0
-	else: y = HEIGHT * float(coord[1])
+	else: y = wh[1] * float(coord[1])
 	coord = (x, y)
 	return coord
 

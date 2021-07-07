@@ -1,14 +1,15 @@
-# Connection libraries
+# Connecting libraries
 import pygame
-import codecs
 import os
 
 # Connecting files
 from settings import *
-from common import *
+from storage import *
+from other import *
+from loop import *
+from interface import *
 
 # Connecting classes
-from launcher import Launcher
 from play import Play
 
 # Main class
@@ -16,122 +17,133 @@ class Main:
 	def __init__(self):
 		pygame.init()
 
-		# Setting variables
-		self.pathToProjects = ""
+		# Game screen
+		self.screen = pygame.display.set_mode(SIZE)
+		pygame.display.set_caption("VN")
 
-		# Getting launcher settings
-		self.getLauncherSettings()
-
-		# Launcher window
-		self.window = pygame.display.set_mode(SIZE)
-		pygame.display.set_caption("Launcher")
-
-		# Launcher icon
-		launcherIcon = loadImage("launcher/icon.png")
-		pygame.display.set_icon(launcherIcon)
-
-		# Current folder
-		self.currentFolder = os.getcwd()
-
-		# Boolean variables
-		self.running = True
+		# Game icon
+		gameIcon = loadImage(folder + "assets/icon.png")
+		pygame.display.set_icon(gameIcon)
 
 		# Clock
 		self.clock = pygame.time.Clock()
 
-		# Launcher
-		self.launcher = Launcher()
+		# For the future
+		self.screens = {}
+		self.currentScreen = ""
+		self.screens["main"] = False
+		# self.screens[self.currentScreen]
 
-		# Path
-		self.path = ""
+		self.loading()
 
-		# Gameloop
-		self.loop()
+	# Loading data
+	def loading(self):
+		# Instances of classes
+		self.play = Play(self.screen)
 
-	# Getting launcher settings
-	def getLauncherSettings(self):
-		settings = codecs.open("launcher/settings.vn", "r", "utf-8")
-		content = clearLines(settings.read().split("\n"))
-		for line in content:
-			line = line.replace(" ", "")
-			setting, value = line.split("=")
-			if setting == "PATHTOPROJECTS": self.pathToProjects = value
+		# Start game
+		self.start()
 
-		self.pathToProjects = os.getcwd() + "/projects/"
+	# Game start
+	def start(self):
+		loop.running	= True
+		loop.mainloop 	= True
+		self.gameloop()
 
 	# Handling events
 	def events(self):
 		for event in pygame.event.get():
+			# Disabling the game
 			if event.type == pygame.QUIT:
 				self.end()
 
-			for button in self.launcher.buttons:
+			# Playing events
+			if loop.playloop:
+				self.play.events(event)
+
+			# Handling button events
+			for button in buttons:
+				# Handling button click
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if button.rect.collidepoint(event.pos):
+						create(self.buttonAction(button.name))
+
+				# Hovering over the button
 				if event.type == pygame.MOUSEMOTION:
-					if mouseCollision(button.xy, button.wh, event.pos):
+					if(button.rect.collidepoint(event.pos)):
 						button.hover = True
 					else: button.hover = False
-				if event.type == pygame.MOUSEBUTTONDOWN:
-					if mouseCollision(button.xy, button.wh, event.pos):
-						button.click = True
-						self.buttonActions(button)
-					else: button.click = False
 
-			for link in self.launcher.links:
-				if event.type == pygame.MOUSEMOTION:
-					if mouseCollision(link.xy, link.twh, event.pos):
-						link.hover = True
-					else: link.hover = False
-				if event.type == pygame.MOUSEBUTTONDOWN:
-					if mouseCollision(link.xy, link.twh, event.pos):
-						link.selected = True
-					else: link.selected = False
+			# Handling cells events
+			for cell in cells:
+				cell.events(event)
 
-	# Button actions
-	def buttonActions(self, button):
-		if button.name == "startproject":
-			# Getting the name of the selected project
-			projectname = ""
-			for link in self.launcher.links:
-				if link.selected == True: projectname = link.rtrn
-			if projectname == "": return
-			self.startProject(projectname)
+	# Actions for buttons
+	def buttonAction(self, name):
+		screen = ""
+		if name == "hsave" or name == "hload": return
+
+		# Exit button
+		if name == "exit" or name == "hexit": self.end()
+		# Start play button
+		if name == "play":
+			createPlay()
+			self.play.loading()
+			screen = "play"
+		# Load button
+		if name == "load":
+			if loop.loadloop:
+				screen = "main"
+			else:
+				screen = "load"
+		# Settings button
+		if name == "settings":
+			if loop.settingsloop:
+				screen = "main"
+			else:
+				screen = "settings"
+		# Back to main menu
+		if name == "back" or name == "hmenu":
+			screen = "main"
+
+		return screen
 
 	# Intermediant calculations
 	def update(self):
+		# Updates per second
 		self.clock.tick(FPS)
+
+		# Handling events
 		self.events()
 
 	# Rendering game objects
 	def render(self):
-		self.window.fill(WHITE)
+		# Background color
+		self.screen.fill(WHITE)
+		
+		# Rendering main screen
+		if loop.mainloop or loop.loadloop or loop.settingsloop:
+			# Background image
+			scImage(self.screen, folder + "assets/gui/backgroundmenu.jpg", (0,0), SIZE)
 
-		# scImage(self.window, "launcher/background.jpg", (0,0), SIZE)
+		# Rendering play screen
+		if loop.playloop:
+			self.play.draw()
 
-		self.launcher.drawObjects(self.window)
+		# Rendering interface
+		drawInterface(self.screen)
 
 		pygame.display.update()
 
 	# Gameloop
-	def loop(self):
-		while self.running:
+	def gameloop(self):
+		while loop.running:
 			self.update()
 			self.render()
 
-	# Start project
-	def startProject(self, projectName):
-		self.path = self.pathToProjects + projectName
-		self.end()
-
-	# Turn off the launcher
+	# End of the game
 	def end(self):
-		self.running = False
+		loop.running = False
 
-# Start launcher
-main = Main()
-path = main.path
+Main()
 pygame.quit()
-
-if path != "":
-	# Start project
-	Play(path)
-	pygame.quit()

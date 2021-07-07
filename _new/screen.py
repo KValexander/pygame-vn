@@ -11,10 +11,11 @@ from templates import *
 
 # Class option
 class Screen:
-	def __init__(self, window, data):
-		# Window and lines variables
-		self.window = window
-		self.lines = data
+	def __init__(self, window, data, options):
+		# Window, lines and options variables
+		self.window  = window
+		self.lines 	 = data
+		self.options = options
 
 		# Config variables
 		self.config = {}
@@ -149,14 +150,41 @@ class Screen:
 			# Initial parsing of the line
 			command, value = self.parsingLine(line)
 
+			# Adding link
+			if command == "link":
+				# Getting data to add
+				name = re.findall(r"\w+", value)[0]
+				val = removeChar(re.findall(r"\".*?\"", value)[0])
+				xy = defineCoord(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
+
+				# Creating and adding link
+				link = Link(name, val, xy, self.options["linkColor"], self.options["linkAim"], self.options["linkSelected"], self.options["linkSize"], self.options["systemFont"])
+				self.config[screen]["elements"]["links"].append(link)
+
 			# Adding surface
-			if command == "surface":
+			elif command == "surface":
+				# Getting data to add
 				result = re.findall(r"\w+", value)
-				name, alpha = result[0], result[1]
+				name, alpha = result[0], int(result[1])
 				result = re.findall(r"(\(.*?\))", value)
-				сolor = result[0]
-				xy = result[1]
-				wh = result[2]
+				color = defineColor(result[0])
+				xy, wh = defineCoord(result[1], self.options["size"]), defineCoord(result[2], self.options["size"])
+
+				# Creating and adding surface
+				surface = Surface(name, alpha, color, xy, wh)
+				self.config[screen]["elements"]["surfaces"].append(surface)
+
+			# Adding inscription
+			elif command == "inscription":
+				# Getting data to add
+				name = re.findall(r"\w+", value)[0]
+				val = removeChar(re.findall(r"\".*?\"", value)[0])
+				xy = defineCoord(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
+
+				# Creating and adding inscription
+				inscription = Inscription(name, val, xy, self.options["inscriptionColor"], self.options["inscriptionSize"], self.options["systemFont"])
+				self.config[screen]["elements"]["inscriptions"].append(inscription)
+
 
 	# Processing actions
 	def processingActions(self, screen, actions):

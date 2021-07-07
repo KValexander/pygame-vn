@@ -16,13 +16,16 @@ screen main:
 	# Добавление элементов на экран
 	elements:
 		# type name alpha color xy wh
-		surface menuscreen 140 (0, 0, 0) (0.0, 0.8) (1.0, 0.2)
+		surface menuscreen 140 (0, 0, 0) (0.0, 0.0) (0.3, 1.0)
 
 		# type name value xy
-		link play Начать игру (0.0, 0.0)
-		link load Загрузить (0.0, 0.0)
-		link settings Настройки (0.0, 0.0)
-		link exit Выход (0.0, 0.0)
+		inscription menuscreen "Меню" (0.05, 0.05)
+
+		# type name value xy
+		link play "Начать игру" (0.05, 0.2)
+		link load "Загрузить" (0.05, 0.25)
+		link settings "Настройки" (0.05, 0.3)
+		link exit "Выход" (0.05, 0.35)
 
 	# Действия для добавленных элементов
 	actions:

@@ -1,0 +1,43 @@
+# Colors
+BLACK 	= (0, 0, 0)
+WHITE 	= (255, 255, 255)
+GRAY  	= (100, 100, 100)
+RED 	= (225, 49, 91)
+BLUE 	= (0, 141, 203)
+YELLOW  = (255, 236, 92)
+QUARTZ  = (128, 128, 128)
+ORANGE 	= (195, 77, 10)
+PBLUE 	= (76, 181, 245)
+
+# Main settings
+WIDTH 	= 800
+HEIGHT 	= 600
+FPS 	= 30
+SIZE 	= (WIDTH, HEIGHT)
+
+# Text settings
+TEXTSYSFONT = "arial"
+TEXTOWNFONT = "launcher/rubik.ttf"
+
+# Launcher buttons settings
+BUTTON 			= QUARTZ
+TEXTBUTTON 		= WHITE
+TEXTBUTTONAIM 	= GRAY
+BUTTONOVERLINE  = BLACK
+TEXTBUTTONSIZE	= 20
+
+# Launcher links settings
+TEXTLINK 		 = BLACK
+TEXTLINKAIM 	 = WHITE
+TEXTLINKSIZE	 = 20
+TEXTLINKSELECTED = WHITE
+LINKMARGIN 		 = 10
+LINKHOVERSURFACE = PBLUE
+LINKSELECTEDSURFACE = RED
+
+# Launcher surfaces settings
+SURFACE = PBLUE
+
+# Launcher inscription settings
+TEXTINSCRIPTION 	= WHITE
+TEXTINSCRIPTIONSIZE = 30
