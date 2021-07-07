@@ -1,0 +1,72 @@
+# Игровые экраны
+screens [main, play]
+
+# Стартовый экран
+init main
+
+# Настройка конфигураций игровых экранов
+# Конфигурация главных экранов
+
+# Главный экран
+screen main:
+	id main
+	type main
+	background backgroundmenu.jpg
+
+	# Добавление элементов на экран
+	elements:
+		# type name alpha color xy wh
+		surface menuscreen 140 (0, 0, 0) (0.0, 0.8) (1.0, 0.2)
+
+		# type name value xy
+		link play Начать игру (0.0, 0.0)
+		link load Загрузить (0.0, 0.0)
+		link settings Настройки (0.0, 0.0)
+		link exit Выход (0.0, 0.0)
+
+	# Действия для добавленных элементов
+	actions:
+		# type id command screen
+		link play call play
+		link load call load
+		link settings call settings
+		# end ends the game
+		link exit call end
+	# Обязательная команда для закрытия конфигурирования экрана
+	end main
+
+# Экран игры
+screen play:
+	id play
+	type main
+	background backgroundplay.jpg
+	subcreens [menu_save, menu_load]
+
+	# Добавление элементов на экран
+	elements:
+		# type name alpha color xy wh
+		surface dialogbox 140 (0, 0, 0) (0.0, 0.8) (1.0, 0.2)
+
+	# Обязательная команда для закрытия конфигурирования экрана
+	end play
+
+# Конфигурация подчинённых экранов
+subscreen load:
+	id load
+	type sub
+	end load
+
+subscreen settings:
+	id settings
+	type sub
+	end settings
+
+subscreen menu_save:
+	id menu_save
+	type sub
+	end menu_save
+
+subscreen menu_load:
+	id menu_load
+	type sub
+	end menu_load
