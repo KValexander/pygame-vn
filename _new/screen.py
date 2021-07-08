@@ -62,9 +62,10 @@ class Screen:
 			for screen in screens:
 				self.config[screen] = {}
 				self.config[screen]["display"] = True
+				self.config[screen]["subdisplay"] = False
 
 		# Start screen
-		if command == "init":
+		elif command == "init":
 			self.startScreen = value.replace(" ", "")
 
 		# Processing screens
@@ -83,6 +84,7 @@ class Screen:
 			start = self.lines.index("subscreen " + value + ":")
 			end = self.lines.index("end " + value)
 			lines = self.lines[start:end]
+			self.processingSubscreen(value, lines)
 			self.currentStart = end
 
 		self.nextLine()
@@ -125,6 +127,7 @@ class Screen:
 				subscreens = re.findall(r"\w+", value)
 				for sub in subscreens:
 					self.config[screen]["subscreens"][sub] = {}
+					self.config[screen]["subscreens"][sub]["parent"] = screen
 					self.config[screen]["subscreens"][sub]["display"] = True
 
 			# Adding interface elements
@@ -139,6 +142,7 @@ class Screen:
 			# Handling element actions
 			elif command == "actions":
 				self.config[screen]["actions"] = {}
+				self.config[screen]["actions"]["links"] = []
 				self.processingActions(screen, self.actions)
 
 	# Processing elements
@@ -152,45 +156,198 @@ class Screen:
 
 			# Adding link
 			if command == "link":
-				# Getting data to add
-				name = re.findall(r"\w+", value)[0]
-				val = removeChar(re.findall(r"\".*?\"", value)[0])
-				xy = defineCoord(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
-
 				# Creating and adding link
-				link = Link(name, val, xy, self.options["linkColor"], self.options["linkAim"], self.options["linkSelected"], self.options["linkSize"], self.options["systemFont"])
+				link = self.createLink(value)
 				self.config[screen]["elements"]["links"].append(link)
 
 			# Adding surface
 			elif command == "surface":
-				# Getting data to add
-				result = re.findall(r"\w+", value)
-				name, alpha = result[0], int(result[1])
-				result = re.findall(r"(\(.*?\))", value)
-				color = defineColor(result[0])
-				xy, wh = defineCoord(result[1], self.options["size"]), defineCoord(result[2], self.options["size"])
-
 				# Creating and adding surface
-				surface = Surface(name, alpha, color, xy, wh)
+				surface = self.createSurface(value)
 				self.config[screen]["elements"]["surfaces"].append(surface)
 
 			# Adding inscription
 			elif command == "inscription":
-				# Getting data to add
-				name = re.findall(r"\w+", value)[0]
-				val = removeChar(re.findall(r"\".*?\"", value)[0])
-				xy = defineCoord(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
-
 				# Creating and adding inscription
-				inscription = Inscription(name, val, xy, self.options["inscriptionColor"], self.options["inscriptionSize"], self.options["systemFont"])
+				inscription = self.createInscription(value)
 				self.config[screen]["elements"]["inscriptions"].append(inscription)
 
 
 	# Processing actions
-	def processingActions(self, screen, actions):
-		pass
+	def processingActions(self, screen, lines):
+		# Handling lines
+		for line in lines:
+			if commonCommands(line) == False: continue
+
+			# Initial parsing of the line
+			command, value = self.parsingLine(line)
+
+			# Assigning events to link
+			if command == "link":
+				# Event assignment
+				obj = self.actionLink(value)
+				# Adding event parameters
+				self.config[screen]["actions"]["links"].append(obj)
+
+	# Prcessing subscreen
+	def processingSubscreen(self, subscreen, lines):
+		# Optimizable commands
+		statics = ["id", "type", "background"]
+		# Main screen variable
+		screen = ""
+		
+		# Stock position
+		elemStart = len(lines)
+		actStart = len(lines)
+
+		# Initial positions
+		if "elements:" in lines:
+			elemStart = lines.index("elements:")
+		if "actions:" in lines:
+			actStart = lines.index("actions:")
+
+		# Lists elements and actions
+		self.elements = lines[elemStart:actStart]
+		self.actions  = lines[actStart:len(lines)]
+
+		# Handling lines
+		for line in lines:
+			if commonCommands(line) == False: continue
+
+			# Initial parsing of the line
+			command, value = self.parsingLine(line)
+
+			# Getting and check main screen
+			screen = getMainScreen(subscreen, self.config)
+			if screen == None: return
+
+			# As an example of some optimization
+			if command in statics:
+				if command == statics[statics.index(command)]:
+					value = value.replace(" ", "")
+					self.config[screen]["subscreens"][subscreen][statics[statics.index(command)]] = value
+
+			# Adding interface elements
+			elif command == "elements":
+				self.config[screen]["subscreens"][subscreen]["elements"] = {}
+				self.config[screen]["subscreens"][subscreen]["elements"]["links"] = []
+				self.config[screen]["subscreens"][subscreen]["elements"]["buttons"] = []
+				self.config[screen]["subscreens"][subscreen]["elements"]["surfaces"] = []
+				self.config[screen]["subscreens"][subscreen]["elements"]["inscriptions"] = []
+				self.processingSubElements(screen, subscreen, self.elements)
+
+			# Handling element actions
+			elif command == "actions":
+				self.config[screen]["subscreens"][subscreen]["actions"] = {}
+				self.config[screen]["subscreens"][subscreen]["actions"]["links"] = []
+				self.processingSubActions(screen, subscreen, self.actions)
+
+		print(self.config[screen]["subscreens"][subscreen])
+
+	# Processing elements for subscreen
+	def processingSubElements(self, screen, subscreen, lines):
+		# Handling lines
+		for line in lines:
+			if commonCommands(line) == False: continue
+
+			# Initial parsing of the line
+			command, value = self.parsingLine(line)
+
+			# Adding link
+			if command == "link":
+				# Creating and adding link
+				link = self.createLink(value)
+				self.config[screen]["subscreens"][subscreen]["elements"]["links"].append(link)
+
+			# Adding surface
+			elif command == "surface":
+				# Creating and adding surface
+				surface = self.createSurface(value)
+				self.config[screen]["subscreens"][subscreen]["elements"]["surfaces"].append(surface)
+
+			# Adding inscription
+			elif command == "inscription":
+				# Creating and adding inscription
+				inscription = self.createInscription(value)
+				self.config[screen]["subscreens"][subscreen]["elements"]["inscriptions"].append(inscription)
+
+	# Processing actions for subscreen
+	def processingSubActions(self, screen, subscreen, lines):
+		# Handling lines
+		for line in lines:
+			if commonCommands(line) == False: continue
+
+			# Initial parsing of the line
+			command, value = self.parsingLine(line)
+
+			# Assigning events to link
+			if command == "link":
+				# Event assignment
+				obj = self.actionLink(value)
+				# Adding event parameters
+				self.config[screen]["subscreens"][subscreen]["actions"]["links"].append(obj)
 
 	# Passing data to the main class
 	def getConfig(self):
-		print(self.config)
 		return self.config
+
+	# Create link
+	def createLink(self, value):
+		# Getting data to add
+		name = re.findall(r"\w+", value)[0]
+		val = removeChar(re.findall(r"\".*?\"", value)[0])
+		xy = defineCoord(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
+
+		# Creating link
+		link = Link(name, val, xy, self.options["linkColor"], self.options["linkAim"], self.options["linkSelected"], self.options["linkSize"], self.options["systemFont"])
+		return link
+
+	# Create surface
+	def createSurface(self, value):
+		# Getting data to add
+		result = re.findall(r"\w+", value)
+		name, alpha = result[0], int(result[1])
+		result = re.findall(r"(\(.*?\))", value)
+		color = defineColor(result[0])
+		xy, wh = defineCoord(result[1], self.options["size"]), defineCoord(result[2], self.options["size"])
+
+		# Creating surface
+		surface = Surface(name, alpha, color, xy, wh)
+		return surface
+
+	# Create inscription
+	def createInscription(self, value):
+		# Getting data to add
+		name = re.findall(r"\w+", value)[0]
+		val = removeChar(re.findall(r"\".*?\"", value)[0])
+		xy = defineCoord(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
+
+		# Creating inscription
+		inscription = Inscription(name, val, xy, self.options["inscriptionColor"], self.options["inscriptionSize"], self.options["systemFont"])
+		return inscription
+
+	# Action link
+	def actionLink(self, value):
+		# Getting data to add
+		parse = re.findall(r"\w+", value)
+		name = parse[0]
+		tpe, button = "", ""
+		event, rtrn = "", ""
+
+		# Calling up the screen
+		if parse[1] == "call" or parse[1] == "hide":
+			tpe = 1025 # MOUSEBUTTONDOWN
+			button = 1 # Left mouse button
+			event = parse[1] # Event
+			rtrn = parse[2] # Return value
+
+		# Composing an event object
+		obj = {
+			"name": name,
+			"type": tpe,
+			"button": button,
+			"event": event,
+			"return": rtrn
+		}
+
+		return obj

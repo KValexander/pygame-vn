@@ -12,6 +12,7 @@ screen main:
 	id main
 	type main
 	background backgroundmenu.jpg
+	subscreens [load, settings]
 
 	# Добавление элементов на экран
 	elements:
@@ -27,7 +28,7 @@ screen main:
 		link settings "Настройки" (0.05, 0.3)
 		link exit "Выход" (0.05, 0.35)
 
-	# Действия для добавленных элементов
+	# Присваивание событий для элементов на экране
 	actions:
 		# type id command screen
 		link play call play
@@ -43,12 +44,20 @@ screen play:
 	id play
 	type main
 	background backgroundplay.jpg
-	subcreens [menu_save, menu_load]
+	subscreens [menu_save, menu_load]
 
 	# Добавление элементов на экран
 	elements:
 		# type name alpha color xy wh
-		surface dialogbox 140 (0, 0, 0) (0.0, 0.8) (1.0, 0.2)
+		surface dialogbox 140 (0, 0, 0) (0.0, 0.8) (1.0, 0.201)
+
+		# type name value xy
+		link return "Вернуться" (0.025, 0.025)
+
+	# Присваивание событий для элементов на экране
+	actions:
+		# type id command screen
+		link return call main
 
 	# Обязательная команда для закрытия конфигурирования экрана
 	end play
@@ -57,6 +66,16 @@ screen play:
 subscreen load:
 	id load
 	type sub
+	// background backgroundplay.jpg
+
+	elements:
+		surface loadscreen 140 (0,0,0) (0.35, 0.0) (0.65, 1.0)
+
+		link close "Закрыть" (0.36, 0.01)
+
+	actions:
+		link close hide load
+
 	end load
 
 subscreen settings:

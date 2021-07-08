@@ -65,6 +65,7 @@ class Main:
 			if event.type == pygame.QUIT:
 				self.end()
 
+			# Handling buttons
 			for button in self.launcher.buttons:
 				if event.type == pygame.MOUSEMOTION:
 					if mouseCollision(button.xy, button.wh, event.pos):
@@ -76,6 +77,7 @@ class Main:
 						self.buttonActions(button)
 					else: button.click = False
 
+			# Handling links
 			for link in self.launcher.links:
 				if event.type == pygame.MOUSEMOTION:
 					if mouseCollision(link.xy, link.twh, event.pos):

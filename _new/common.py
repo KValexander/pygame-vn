@@ -96,3 +96,20 @@ def commonCommands(line):
 	elif command == "//": return False
 	elif command[0] == "#": return False
 	elif command[0] == "//": return False
+
+# Check screens
+def getMainScreen(subscreen, config):
+	screen = None
+	for scr in config:
+		if "subscreens" in config[scr]:
+			if subscreen in config[scr]["subscreens"]:
+				screen = scr
+	return screen
+
+
+# Retrieving an item by name
+def getElementByName(name, arr):
+	for element in arr:
+		if name == element.name:
+			return element
+	return None

@@ -18,7 +18,8 @@ inscription_color = (255,255,255)
 inscription_size  = 50
 
 # Переменные текста
-text_margin = 20
+text_coord  = (0.0, 0.0)
+text_width 	= 0.3
 text_size 	= 20
 text_color 	= (255,255,255)
 line_height = 25
