@@ -69,7 +69,7 @@ class Surface:
 
 	# Surface rendering
 	def draw(self, window):
-		if self.hide == False:
+		if not self.hide:
 			window.blit(self.surface, self.xy)
 
 # class Link

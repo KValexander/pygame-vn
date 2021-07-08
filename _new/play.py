@@ -116,6 +116,7 @@ class Play:
 			if self.currentSubscreen == self.screen.config[screen]["subscreens"][subscreen]:
 				# Clear screen
 				self.currentScreen["subdisplay"] = False
+				self.subbackground = None
 
 	# Launch window
 	def launchScreen(self):
@@ -135,28 +136,29 @@ class Play:
 
 			# Screen events
 			if self.currentScreen["display"]:
-				# Standard events
-				if "elements" in self.currentScreen:
-					if event.type == pygame.MOUSEMOTION:
-						# Link hover handling 
-						for link in self.currentScreen["elements"]["links"]:
-							if mouseCollision(link.xy, link.twh, event.pos):
-								link.hover = True
-							else: link.hover = False
+				if self.subbackground == None:
+					# Standard events
+					if "elements" in self.currentScreen:
+						if event.type == pygame.MOUSEMOTION:
+							# Link hover handling
+							for link in self.currentScreen["elements"]["links"]:
+								if mouseCollision(link.xy, link.twh, event.pos):
+									link.hover = True
+								else: link.hover = False
 
-				# Hanging events
-				if "actions" in self.currentScreen:
-					# Handling Link Events
-					for jlink in self.currentScreen["actions"]["links"]:
-						# Getting a link
-						rlink = getElementByName(jlink["name"], self.currentScreen["elements"]["links"])
-						if rlink == None: return
-						# Event handling
-						if event.type == jlink["type"]:
-							if event.button == jlink["button"]:
-								if mouseCollision(rlink.xy, rlink.twh, event.pos):
-									if jlink["event"] == "call":
-										self.refreshScreen(jlink["return"])
+					# Hanging events
+					if "actions" in self.currentScreen:
+						# Handling Link Events
+						for jlink in self.currentScreen["actions"]["links"]:
+							# Getting a link
+							rlink = getElementByName(jlink["name"], self.currentScreen["elements"]["links"])
+							if rlink == None: return
+							# Event handling
+							if event.type == jlink["type"]:
+								if event.button == jlink["button"]:
+									if mouseCollision(rlink.xy, rlink.twh, event.pos):
+										if jlink["event"] == "call":
+											self.refreshScreen(jlink["return"])
 
 			# Subscreen events
 			if self.currentScreen["subdisplay"]:
@@ -198,21 +200,22 @@ class Play:
 
 		# Rendering screen
 		if self.currentScreen["display"]:
-			# Rendering background
-			if "background" in self.currentScreen:
-				drawImage(self.window, self.background, (0, 0))
+			if self.subbackground == None:
+				# Rendering background
+				if "background" in self.currentScreen:
+					drawImage(self.window, self.background, (0, 0))
 
-			# Rendering elements
-			if "elements" in self.currentScreen:
-				# Rendering surfaces
-				for surface in self.currentScreen["elements"]["surfaces"]:
-					surface.draw(self.window)
-				# Rendering inscriptions
-				for inscription in self.currentScreen["elements"]["inscriptions"]:
-					inscription.draw(self.window)
-				# Rendering links
-				for link in self.currentScreen["elements"]["links"]:
-					link.draw(self.window)
+				# Rendering elements
+				if "elements" in self.currentScreen:
+					# Rendering surfaces
+					for surface in self.currentScreen["elements"]["surfaces"]:
+						surface.draw(self.window)
+					# Rendering inscriptions
+					for inscription in self.currentScreen["elements"]["inscriptions"]:
+						inscription.draw(self.window)
+					# Rendering links
+					for link in self.currentScreen["elements"]["links"]:
+						link.draw(self.window)
 
 			# Rendering subscreen
 			if self.currentScreen["subdisplay"]:

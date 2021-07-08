@@ -9,6 +9,7 @@ from common import *
 
 # Connecting classes
 from launcher import Launcher
+from create import Create
 from play import Play
 
 # Main class
@@ -41,6 +42,9 @@ class Main:
 
 		# Launcher
 		self.launcher = Launcher()
+
+		# Create
+		self.create = Create(self.pathToProjects)
 
 		# Path
 		self.path = ""
@@ -90,6 +94,7 @@ class Main:
 
 	# Button actions
 	def buttonActions(self, button):
+		# Start selected project
 		if button.name == "startproject":
 			# Getting the name of the selected project
 			projectname = ""
@@ -97,6 +102,24 @@ class Main:
 				if link.selected == True: projectname = link.rtrn
 			if projectname == "": return
 			self.startProject(projectname)
+			
+		# Create new project
+		elif button.name == "createproject":
+			self.create.createProject("new")
+			self.launcher.createProjectList()
+
+		# Updating the list of projects
+		elif button.name == "updatelistcprojects":
+			self.launcher.createProjectList()
+
+		# Deleting the selected project
+		elif button.name == "deleteproject":
+			projectname = ""
+			for link in self.launcher.links:
+				if link.selected == True: projectname = link.rtrn
+			if projectname == "": return
+			self.create.deleteProject(projectname)
+			self.launcher.createProjectList()
 
 	# Intermediant calculations
 	def update(self):

@@ -154,13 +154,22 @@ class Launcher:
 		self.createInscription("Projects", "Проекты:", (30, 30))
 		self.createSurface("line", 255, (20, 30), (180, 40))
 		self.createButton("startproject", "Запустить проект", (WIDTH - 300, HEIGHT - 100), (250, 50))
+		self.createButton("createproject", "Создать проект", (WIDTH - 250, HEIGHT - 160), (200, 40))
+		self.createButton("updatelistcprojects", "Обновить список", (WIDTH - 250, HEIGHT - 210), (200, 40))
+		self.createButton("deleteproject", "Удалить проект", (WIDTH - 250, HEIGHT - 260), (200, 40))
 
-		# Working with the file system
+		# Create project list
+		self.createProjectList()
+
+	# Create project list
+	def createProjectList(self):
+		self.links.clear()
 		self.files = os.listdir(os.getcwd() + "/projects/")
 		x, y = [30, 50]
 		for i in range(len(self.files)):
 			y += 35
 			self.createLink("link_" + str(i), self.files[i], (x, y), "/" + self.files[i] + "/")
+
 
 	# Create link
 	def createLink(self, name, value, xy, rtrn):

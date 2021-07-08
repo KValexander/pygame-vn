@@ -242,8 +242,6 @@ class Screen:
 				self.config[screen]["subscreens"][subscreen]["actions"]["links"] = []
 				self.processingSubActions(screen, subscreen, self.actions)
 
-		print(self.config[screen]["subscreens"][subscreen])
-
 	# Processing elements for subscreen
 	def processingSubElements(self, screen, subscreen, lines):
 		# Handling lines
