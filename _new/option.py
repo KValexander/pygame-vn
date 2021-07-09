@@ -10,8 +10,9 @@ from common import *
 
 # Class option
 class Option:
-	def __init__(self, data):
+	def __init__(self, data, folder):
 		self.data 	= data
+		self.folder = folder
 		self.config = {}
 
 		# Data processing
@@ -24,6 +25,9 @@ class Option:
 			line = line.replace(" ", "")
 			name, value = line.split("=")
 
+			# Path to current project
+			self.config["pathToProject"] = self.folder
+
 			# Screen resolution
 			if line.find("window_size") != -1:
 				self.config["size"] = defineResolution(value)
@@ -35,6 +39,14 @@ class Option:
 			# FPS
 			elif line.find("fps") != -1:
 				self.config["FPS"] = int(value)
+
+			# Screen directory
+			elif line.find("screen_folder") != -1:
+				self.config["screenFolder"] = value
+
+			# Screen directory
+			elif line.find("src_icon") != -1:
+				self.config["srcIcon"] = value
 
 			# System font
 			elif line.find("system_font") != -1:
@@ -51,6 +63,18 @@ class Option:
 			# Link selected
 			elif line.find("link_selected") != -1:
 				self.config["linkSelected"] = defineColor(value)
+
+			# Text size
+			elif line.find("text_size") != -1:
+				self.config["textSize"] = int(value)
+
+			# Text color
+			elif line.find("text_color") != -1:
+				self.config["textColor"] = defineColor(value)
+
+			# Text line height
+			elif line.find("text_line_height") != -1:
+				self.config["textLineHeight"] = int(value)
 
 			# Link size
 			elif line.find("link_size") != -1:

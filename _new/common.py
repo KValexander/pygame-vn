@@ -70,16 +70,30 @@ def defineColor(color):
 		result = (int(arr[0]), int(arr[1]), int(arr[2]))
 	return result
 
-# Define coordinates
-def defineCoord(coord, wh):
-	coord = coord.replace(" ", "")
-	coord = removeChar(coord).split(",")
-	if float(coord[0]) == 0.0: x = 0
-	else: x = wh[0] * float(coord[0])
-	if float(coord[1]) == 0.0: y = 0
-	else: y = wh[1] * float(coord[1])
-	coord = (x, y)
-	return coord
+# Define size
+def defineSize(size, wh):
+	size = size.replace(" ", "")
+	size = removeChar(size).split(",")
+	if float(size[0]) == 0.0: x = 0
+	else: x = wh[0] * float(size[0])
+	if float(size[1]) == 0.0: y = 0
+	else: y = wh[1] * float(size[1])
+	size = (x, y)
+	return size
+
+# Fetch size
+def fetchSize(size):
+	size = size.replace(" ", "")
+	size = removeChar(size).split(",")
+	size = (int(size[0]), int(size[1]))
+	return size
+
+# Define one size
+def defineOneSize(one, size):
+	one = one.replace(" ", "")
+	one = removeChar(one)
+	one = size * float(one)
+	return one
 
 # Define resolution
 def defineResolution(size):
@@ -87,7 +101,6 @@ def defineResolution(size):
 	size = removeChar(size).split(",")
 	size = (int(size[0]), int(size[1]))
 	return size
-
 
 # check for common commands
 def commonCommands(line):
@@ -106,10 +119,25 @@ def getMainScreen(subscreen, config):
 				screen = scr
 	return screen
 
-
 # Retrieving an item by name
 def getElementByName(name, arr):
 	for element in arr:
 		if name == element.name:
 			return element
 	return None
+
+# Processing text on line
+def processingLine(text, width, font):
+	lines, words = [], text.split(" ")
+	count, line = len(words), ""
+
+	for i in range(count):
+		textline = line + words[i] + " "
+		textwh = font.size(textline)
+		if textwh[0] > width:
+			lines.append(line)
+			line = words[i] + " "
+		else: line = textline
+		if i == count - 1: lines.append(line)
+
+	return lines

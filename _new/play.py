@@ -36,6 +36,9 @@ class Play:
 		self.background = None
 		self.subbackground = None
 
+		# Check subscreens call type
+		self.subcallcheck = False
+
 		# Retrieving script files data
 		self.gettingFilesData()
 		# Processing option data
@@ -61,7 +64,7 @@ class Play:
 
 	# Processing option data
 	def processingOption(self):
-		self.option = Option(self.optionsdata)
+		self.option = Option(self.optionsdata, self.folder)
 
 	# Processing screen data
 	def processingScreen(self):
@@ -74,49 +77,86 @@ class Play:
 
 	# Refresh screen
 	def refreshScreen(self, screen):
-		if screen == "end": self.running = False
+		# Reserved Commands
+		if screen == "end" or screen == "close": self.reservedCommands(screen)
+		# Handling refresh screen
 		else:
-			# Screen
+			# Check screen
 			if screen in self.screen.config:
 				self.currentScreen = self.screen.config[screen]
+				self.currentScreen["display"] = True
+				self.currentScreen["subdisplay"] = False
+				# Сall subscreen on screen startup
+				if "startsubscreen" in self.currentScreen:
+					self.refreshScreen(self.currentScreen["startsubscreen"])
 				# Screen background
 				if "background" in self.currentScreen:
-					src = self.folder + "gui/" + self.currentScreen["background"]
+					src = self.folder + self.option.config["screenFolder"] + self.currentScreen["background"]
 					self.background = scLoadImage(src, self.option.config["size"])
 			# Sub screen
+			else:
+				# Getting, check main screen and check subscreen by calltype
+				subscreen, screen = screen, getMainScreen(screen, self.screen.config)
+				if screen == None: return
+				if not "calltype" in self.screen.config[screen]["subscreens"][subscreen]: return
+
+				# Subscreen call type
+				calltype = self.screen.config[screen]["subscreens"][subscreen]["calltype"]
+
+				# Subscreen call type check
+				# Local call
+				if calltype == "local":
+					# Checking for a subscreen
+					if self.currentScreen == self.screen.config[screen]:
+						self.subcallcheck = True
+				# Global type
+				elif calltype == "global":
+					self.subcallcheck = True
+				# Global with the challenge of the main
+				elif calltype == "cls":
+					self.refreshScreen(screen)
+					self.subcallcheck = True
+
+				# Checking for a subscreen
+				if self.subcallcheck:
+					self.subcallcheck = False
+					self.currentScreen["subdisplay"] = True
+					self.currentSubscreen = self.screen.config[screen]["subscreens"][subscreen]
+					# Subscreen background
+					if "background" in self.currentSubscreen:
+						src = self.folder + self.option.config["screenFolder"] + self.currentSubscreen["background"]
+						self.subbackground = scLoadImage(src, self.option.config["size"])
+
+	# Hiding the screen
+	def hideScreen(self, screen):
+		# Reserved Commands
+		if screen == "end" or screen == "close": self.reservedCommands(screen)
+		# Handling hide screen
+		else:
+			# Check main screen
+			if screen in self.screen.config:
+				if self.currentScreen == self.screen.config[screen]:
+					# Clear screen
+					self.currentScreen["display"] = False
+					self.currentScreen["subdisplay"] = False
 			else:
 				# Getting and check main screen
 				subscreen, screen = screen, getMainScreen(screen, self.screen.config)
 				if screen == None: return
 
-				# Checking for a subscreen
-				if self.currentScreen == self.screen.config[screen]:
-					self.currentScreen["subdisplay"] = True
-					self.currentSubscreen = self.screen.config[screen]["subscreens"][subscreen]
-					# Subscreen background
-					if "background" in self.currentSubscreen:
-						src = self.folder + "gui/" + self.currentSubscreen["background"]
-						self.subbackground = scLoadImage(src, self.option.config["size"])
+				# Check sub screen
+				if self.currentSubscreen == self.screen.config[screen]["subscreens"][subscreen]:
+					# Clear screen
+					self.currentScreen["subdisplay"] = False
+					self.subbackground = None
 
-	# Hiding the screen
-	def hideScreen(self, screen):
-		# Check main screen
-		if screen in self.screen.config:
-			if self.currentScreen == self.screen.config[screen]:
-				# Clear screen
-				self.currentScreen["subdisplay"] = False
-				self.currentSubscreen.clear()
-				self.currentScreen.clear()
-		else:
-			# Getting and check main screen
-			subscreen, screen = screen, getMainScreen(screen, self.screen.config)
-			if screen == None: return
+	# Reserved Commands
+	def reservedCommands(self, command):
+		if command == "end": self.running = False
+		elif command == "close":
+			self.currentScreen["subdisplay"] = False
+			self.subbackground = None
 
-			# Check sub screen
-			if self.currentSubscreen == self.screen.config[screen]["subscreens"][subscreen]:
-				# Clear screen
-				self.currentScreen["subdisplay"] = False
-				self.subbackground = None
 
 	# Launch window
 	def launchScreen(self):
@@ -125,7 +165,7 @@ class Play:
 		pygame.display.set_caption(self.option.config["projectName"])
 
 		# Game icon
-		gameIcon = loadImage(self.folder + "gui/icon.png")
+		gameIcon = loadImage(self.folder + self.option.config["srcIcon"])
 		pygame.display.set_icon(gameIcon)
 
 	# Handling events
@@ -159,34 +199,40 @@ class Play:
 									if mouseCollision(rlink.xy, rlink.twh, event.pos):
 										if jlink["event"] == "call":
 											self.refreshScreen(jlink["return"])
-
-			# Subscreen events
-			if self.currentScreen["subdisplay"]:
-				if self.currentSubscreen["display"]:
-					# Standard events
-					if "elements" in self.currentSubscreen:
-						if event.type == pygame.MOUSEMOTION:
-							# Link hover handling 
-							for link in self.currentSubscreen["elements"]["links"]:
-								if mouseCollision(link.xy, link.twh, event.pos):
-									link.hover = True
-								else: link.hover = False
-
-					# Hanging events
-					if "actions" in self.currentSubscreen:
-						# Handling Link Events
-						for jlink in self.currentSubscreen["actions"]["links"]:
-							# Getting a link
-							rlink = getElementByName(jlink["name"], self.currentSubscreen["elements"]["links"])
-							if rlink == None: return
-							# Event handling
-							if event.type == jlink["type"]:
-								if event.button == jlink["button"]:
-									if mouseCollision(rlink.xy, rlink.twh, event.pos):
-										if jlink["event"] == "call":
-											self.refreshScreen(jlink["return"])
-										if jlink["event"] == "hide":
+										elif jlink["event"] == "hide":
 											self.hideScreen(jlink["return"])
+										elif jlink["event"] == "close" or jlink["event"] == "end":
+											self.reservedCommands(jlink["return"])
+
+				# Subscreen events
+				if self.currentScreen["subdisplay"]:
+					if self.currentSubscreen["display"]:
+						# Standard events
+						if "elements" in self.currentSubscreen:
+							if event.type == pygame.MOUSEMOTION:
+								# Link hover handling 
+								for link in self.currentSubscreen["elements"]["links"]:
+									if mouseCollision(link.xy, link.twh, event.pos):
+										link.hover = True
+									else: link.hover = False
+
+						# Hanging events
+						if "actions" in self.currentSubscreen:
+							# Handling Link Events
+							for jlink in self.currentSubscreen["actions"]["links"]:
+								# Getting a link
+								rlink = getElementByName(jlink["name"], self.currentSubscreen["elements"]["links"])
+								if rlink == None: return
+								# Event handling
+								if event.type == jlink["type"]:
+									if event.button == jlink["button"]:
+										if mouseCollision(rlink.xy, rlink.twh, event.pos):
+											if jlink["event"] == "call":
+												self.refreshScreen(jlink["return"])
+											if jlink["event"] == "hide":
+												self.hideScreen(jlink["return"])
+											if jlink["event"] == "close" or jlink["event"] == "end":
+												self.reservedCommands(jlink["return"])
 
 	# Intermediant calculation
 	def update(self):
@@ -213,9 +259,15 @@ class Play:
 					# Rendering inscriptions
 					for inscription in self.currentScreen["elements"]["inscriptions"]:
 						inscription.draw(self.window)
+					# Rendering texts
+					for text in self.currentScreen["elements"]["texts"]:
+						text.draw(self.window)
 					# Rendering links
 					for link in self.currentScreen["elements"]["links"]:
 						link.draw(self.window)
+					# Rendering icons
+					for icon in self.currentScreen["elements"]["icons"]:
+						icon.draw(self.window)
 
 			# Rendering subscreen
 			if self.currentScreen["subdisplay"]:
@@ -233,9 +285,15 @@ class Play:
 						# Rendering inscriptions
 						for inscription in self.currentSubscreen["elements"]["inscriptions"]:
 							inscription.draw(self.window)
+						# Rendering texts
+						for text in self.currentSubscreen["elements"]["texts"]:
+							text.draw(self.window)
 						# Rendering links
 						for link in self.currentSubscreen["elements"]["links"]:
 							link.draw(self.window)
+						# Rendering icons
+						for icon in self.currentSubscreen["elements"]["icons"]:
+							icon.draw(self.window)
 
 		pygame.display.update()
 

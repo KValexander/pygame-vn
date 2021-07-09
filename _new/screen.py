@@ -92,7 +92,7 @@ class Screen:
 	# Processing screen
 	def processingScreen(self, screen, lines):
 		# Optimizable commands
-		statics = ["id", "type", "background"]
+		statics = ["id", "type", "background", "startsubscreen"]
 		
 		# Stock position
 		elemStart = len(lines)
@@ -133,7 +133,9 @@ class Screen:
 			# Adding interface elements
 			elif command == "elements":
 				self.config[screen]["elements"] = {}
+				self.config[screen]["elements"]["icons"] = []
 				self.config[screen]["elements"]["links"] = []
+				self.config[screen]["elements"]["texts"] = []
 				self.config[screen]["elements"]["buttons"] = []
 				self.config[screen]["elements"]["surfaces"] = []
 				self.config[screen]["elements"]["inscriptions"] = []
@@ -142,6 +144,7 @@ class Screen:
 			# Handling element actions
 			elif command == "actions":
 				self.config[screen]["actions"] = {}
+				self.config[screen]["actions"]["icons"] = []
 				self.config[screen]["actions"]["links"] = []
 				self.processingActions(screen, self.actions)
 
@@ -155,10 +158,22 @@ class Screen:
 			command, value = self.parsingLine(line)
 
 			# Adding link
+			if command == "icon":
+				# Creating and adding link
+				link = self.createIcon(value)
+				self.config[screen]["elements"]["icons"].append(link)
+
+			# Adding link
 			if command == "link":
 				# Creating and adding link
 				link = self.createLink(value)
 				self.config[screen]["elements"]["links"].append(link)
+
+			# Adding text
+			if command == "text":
+				# Creating and adding text
+				text = self.createText(value)
+				self.config[screen]["elements"]["texts"].append(text)
 
 			# Adding surface
 			elif command == "surface":
@@ -183,6 +198,13 @@ class Screen:
 			command, value = self.parsingLine(line)
 
 			# Assigning events to link
+			if command == "icon":
+				# Event assignment
+				obj = self.actionIcon(value)
+				# Adding event parameters
+				self.config[screen]["actions"]["icons"].append(obj)
+
+			# Assigning events to link
 			if command == "link":
 				# Event assignment
 				obj = self.actionLink(value)
@@ -192,7 +214,7 @@ class Screen:
 	# Prcessing subscreen
 	def processingSubscreen(self, subscreen, lines):
 		# Optimizable commands
-		statics = ["id", "type", "background"]
+		statics = ["id", "type", "background", "calltype"]
 		# Main screen variable
 		screen = ""
 		
@@ -230,7 +252,9 @@ class Screen:
 			# Adding interface elements
 			elif command == "elements":
 				self.config[screen]["subscreens"][subscreen]["elements"] = {}
+				self.config[screen]["subscreens"][subscreen]["elements"]["icons"] = []
 				self.config[screen]["subscreens"][subscreen]["elements"]["links"] = []
+				self.config[screen]["subscreens"][subscreen]["elements"]["texts"] = []
 				self.config[screen]["subscreens"][subscreen]["elements"]["buttons"] = []
 				self.config[screen]["subscreens"][subscreen]["elements"]["surfaces"] = []
 				self.config[screen]["subscreens"][subscreen]["elements"]["inscriptions"] = []
@@ -239,6 +263,7 @@ class Screen:
 			# Handling element actions
 			elif command == "actions":
 				self.config[screen]["subscreens"][subscreen]["actions"] = {}
+				self.config[screen]["subscreens"][subscreen]["actions"]["icons"] = []
 				self.config[screen]["subscreens"][subscreen]["actions"]["links"] = []
 				self.processingSubActions(screen, subscreen, self.actions)
 
@@ -252,10 +277,22 @@ class Screen:
 			command, value = self.parsingLine(line)
 
 			# Adding link
+			if command == "icon":
+				# Creating and adding link
+				link = self.createIcon(value)
+				self.config[screen]["subscreens"][subscreen]["elements"]["icons"].append(link)
+
+			# Adding link
 			if command == "link":
 				# Creating and adding link
 				link = self.createLink(value)
 				self.config[screen]["subscreens"][subscreen]["elements"]["links"].append(link)
+
+			# Adding text
+			if command == "text":
+				# Creating and adding text
+				text = self.createText(value)
+				self.config[screen]["subscreens"][subscreen]["elements"]["texts"].append(text)
 
 			# Adding surface
 			elif command == "surface":
@@ -279,6 +316,13 @@ class Screen:
 			command, value = self.parsingLine(line)
 
 			# Assigning events to link
+			if command == "icon":
+				# Event assignment
+				obj = self.actionIcon(value)
+				# Adding event parameters
+				self.config[screen]["subscreens"][subscreen]["actions"]["icons"].append(obj)
+
+			# Assigning events to link
 			if command == "link":
 				# Event assignment
 				obj = self.actionLink(value)
@@ -289,25 +333,51 @@ class Screen:
 	def getConfig(self):
 		return self.config
 
+	# Create icon
+	def createIcon(self, value):
+		# Getting data to add
+		name = re.findall(r"\w+", value)[0]
+		src = removeChar(re.findall(r"\".*?\"", value)[0])
+		parse = re.findall(r"(\(.*?\))", value)
+		xy, wh = defineSize(parse[0], self.options["size"]), None
+		if len(parse) >= 2:
+			wh = fetchSize(parse[1])
+
+		# Create icon
+		icon = Icon(name, src, xy, wh, self.options["pathToProject"] + self.options["screenFolder"])
+		return icon
+
 	# Create link
 	def createLink(self, value):
 		# Getting data to add
 		name = re.findall(r"\w+", value)[0]
 		val = removeChar(re.findall(r"\".*?\"", value)[0])
-		xy = defineCoord(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
+		xy = defineSize(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
 
 		# Creating link
 		link = Link(name, val, xy, self.options["linkColor"], self.options["linkAim"], self.options["linkSelected"], self.options["linkSize"], self.options["systemFont"])
 		return link
 
+	# Create text
+	def createText(self, value):
+		# Getting data to add
+		name = re.findall(r"\w+", value)[0]
+		val = removeChar(re.findall(r"\".*?\"", value)[0])
+		xy = defineSize(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
+		width = defineOneSize(re.findall(r"(\(.*?\))", value)[1], self.options["size"][0])
+
+		# Creating text
+		text = Text(name, val, xy, width, self.options["textColor"], self.options["textSize"], self.options["textLineHeight"], self.options["systemFont"])
+		return text
+
 	# Create surface
 	def createSurface(self, value):
 		# Getting data to add
-		result = re.findall(r"\w+", value)
-		name, alpha = result[0], int(result[1])
-		result = re.findall(r"(\(.*?\))", value)
-		color = defineColor(result[0])
-		xy, wh = defineCoord(result[1], self.options["size"]), defineCoord(result[2], self.options["size"])
+		parse = re.findall(r"\w+", value)
+		name, alpha = parse[0], int(parse[1])
+		parse = re.findall(r"(\(.*?\))", value)
+		color = defineColor(parse[0])
+		xy, wh = defineSize(parse[1], self.options["size"]), defineSize(parse[2], self.options["size"])
 
 		# Creating surface
 		surface = Surface(name, alpha, color, xy, wh)
@@ -318,11 +388,15 @@ class Screen:
 		# Getting data to add
 		name = re.findall(r"\w+", value)[0]
 		val = removeChar(re.findall(r"\".*?\"", value)[0])
-		xy = defineCoord(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
+		xy = defineSize(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
 
 		# Creating inscription
 		inscription = Inscription(name, val, xy, self.options["inscriptionColor"], self.options["inscriptionSize"], self.options["systemFont"])
 		return inscription
+
+	# Action icon
+	def actionIcon(self, value):
+		pass
 
 	# Action link
 	def actionLink(self, value):
@@ -332,12 +406,19 @@ class Screen:
 		tpe, button = "", ""
 		event, rtrn = "", ""
 
-		# Calling up the screen
+		# Calling and hide up the screen
 		if parse[1] == "call" or parse[1] == "hide":
 			tpe = 1025 # MOUSEBUTTONDOWN
 			button = 1 # Left mouse button
 			event = parse[1] # Event
 			rtrn = parse[2] # Return value
+
+		# Closing the current screen or Closing the window
+		elif parse[1] == "close" or parse[1] == "end":
+			tpe = 1025
+			button = 1
+			event = parse[1]
+			rtrn = parse[1]
 
 		# Composing an event object
 		obj = {
@@ -348,4 +429,5 @@ class Screen:
 			"return": rtrn
 		}
 
+		# print(obj)
 		return obj

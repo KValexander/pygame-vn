@@ -41,17 +41,17 @@ class Link:
 		self.surfacerect 	= [self.xy[0] - self.margin, self.xy[1] - 5, self.twh[0] + self.margin * 2, self.twh[1] + 10]
 
 	# Rendering link
-	def draw(self, screen):
+	def draw(self, window):
 		if self.hover:
-			pygame.draw.rect(screen, LINKHOVERSURFACE, self.surfacerect)
+			pygame.draw.rect(window, LINKHOVERSURFACE, self.surfacerect)
 			self.iname = self.ownfont.render(self.value, True, self.coloraim)
 		else: self.iname = self.ownfont.render(self.value, True, self.color)
 		
 		if self.selected:
-			pygame.draw.rect(screen, LINKSELECTEDSURFACE, self.surfacerect)
+			pygame.draw.rect(window, LINKSELECTEDSURFACE, self.surfacerect)
 			self.iname = self.ownfont.render(self.value, True, self.colorselected)
 
-		screen.blit(self.iname, self.xy)
+		window.blit(self.iname, self.xy)
 
 	# Select link
 	def select(self):
@@ -84,15 +84,15 @@ class Button:
 		self.iname 			= self.ownfont.render(self.value, True, self.colortext)
 
 	# Rendering button
-	def draw(self, screen):
-		pygame.draw.rect(screen, self.colorbutton, self.rect)
+	def draw(self, window):
+		pygame.draw.rect(window, self.colorbutton, self.rect)
 
 		if self.hover == True:
-			pygame.draw.rect(screen, self.coloroverline, self.rect, 3)
+			pygame.draw.rect(window, self.coloroverline, self.rect, 3)
 			self.iname = self.ownfont.render(self.value, True, self.coloraim)
 		else: self.iname = self.ownfont.render(self.value, True, self.colortext)
 
-		screen.blit(self.iname, self.loc)
+		window.blit(self.iname, self.loc)
 
 # Surface class
 class Surface:
@@ -114,8 +114,8 @@ class Surface:
 		self.rect 	 = self.surface.get_rect()
 
 	# Rendering surface
-	def draw(self, screen):
-		screen.blit(self.surface, self.xy)
+	def draw(self, window):
+		window.blit(self.surface, self.xy)
 
 # Inscription class
 class Inscription:
@@ -138,8 +138,8 @@ class Inscription:
 		self.rect 	= self.iname.get_rect()
 
 	# Rendering inscription
-	def draw(self, screen):
-		screen.blit(self.iname, self.xy)
+	def draw(self, window):
+		window.blit(self.iname, self.xy)
 
 # Launcher class
 class Launcher:
@@ -192,21 +192,21 @@ class Launcher:
 		self.inscriptions.append(inscription)
 	
 	# Draw line
-	def drawLine(self, screen, color, spos, epos, lw):
-		pygame.draw.line(screen, color, spos, epos, lw)
+	def drawLine(self, window, color, spos, epos, lw):
+		pygame.draw.line(window, color, spos, epos, lw)
 
 	# Rendering launcher interface objects
-	def drawObjects(self, screen):
+	def drawObjects(self, window):
 
 		# Rendering links
 		for link in self.links:
-			link.draw(screen)
+			link.draw(window)
 		# Rendering buttons
 		for button in self.buttons:
-			button.draw(screen)
+			button.draw(window)
 		# Rendering surfaces
 		for surface in self.surfaces:
-			surface.draw(screen)
+			surface.draw(window)
 		# Rendering inscriptions
 		for inscription in self.inscriptions:
-			inscription.draw(screen)
+			inscription.draw(window)

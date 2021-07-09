@@ -1,8 +1,17 @@
 # Игровые экраны
 screens [main, play]
 
+# Все изобажения находятся в папке по пути настройки screen_dir в файле options.vn
+# Если вы хотите хранить все изображения в другой папке, поменяйте значение gui/ на своё, в пределах папки проекта
+
+# close и end зарезервированные имена для команд
+# поэтому не пригодны в качестве использования названий экранов и подчинённых экранов
+
 # Стартовый экран
 init main
+
+# Экран игры
+playinit play
 
 # Настройка конфигураций игровых экранов
 # Конфигурация главных экранов
@@ -18,10 +27,16 @@ screen main:
 	# Подчинённые экраны
 	subscreens [load, settings, about, help]
 
+	# Отображение подэкрана при запуске экрана, необязательно
+	startsubscreen about
+
 	# Добавление элементов на экран
 	elements:
 		# type name alpha color xy wh
 		surface menuscreen 140 (0, 0, 0) (0.0, 0.0) (0.3, 1.0)
+
+		# type name src xy wh(необязательно)
+		icon icon icon.png
 
 		# type name value xy
 		inscription menuscreen "Меню" (0.05, 0.05)
@@ -35,13 +50,17 @@ screen main:
 
 	# Присваивание событий для элементов на экране
 	actions:
+		# команда call вызывает экран
 		# type id command screen
 		link play call play
 		link load call load
 		link settings call settings
 		link about call about
-		# end ends the game
-		link exit call end
+		# команда end отключает игру
+		link exit end
+		# Так же есть иные вариации
+		# link exit call end 
+		# link exit hide end
 
 	# Обязательная команда для закрытия конфигурирования экрана
 	end main
@@ -72,16 +91,24 @@ screen play:
 
 # Конфигурация подчинённых экранов
 
-# Если у подчинённого экрана есть задний фон, то родительский экран скрывается за ним
+# Если у подчинённого экрана есть background, то родительский экран скрывается за ним
 # и действуют только события подчиённого экрана
 # Без заднего фона элементы подчинённого экрана будут наклыдваться поверх родительского
 # события будут работать у обоих экранов
+
+# calltype - тип вызова подэкрана, обязателен для всех подэкранов:
+# local  - вызов только из главного экрана, стандартный
+# global - вызов из любого экрана
+# cls 	 - вызов из любого экрана вместе с главным экраном
 
 # Конфигурация экрана загрузок игры
 subscreen load:
 	id load
 	type sub
+	# Необязателен
 	# background backgroundload.jpg
+	# Обязателен
+	calltype local
 
 	elements:
 		# type name alpha color xy wh
@@ -94,8 +121,14 @@ subscreen load:
 		link close "Закрыть" (0.4, 0.12)
 
 	actions:
+		# команда hide скрывает экран
 		# type id command screen
-		link close hide load
+		# link close hide load
+		# команда close закрывает текущий подчинённый экран, только для подчинённых экранов 
+		link close close
+		# так же есть иные вариации закрытие текущего подчинённого экрана
+		# link close call close
+		# link close hide close
 
 	end load
 
@@ -103,6 +136,8 @@ subscreen load:
 subscreen settings:
 	id settings
 	type sub
+	# Обязателен
+	calltype local
 
 	elements:
 		# type name alpha color xy wh
@@ -116,7 +151,7 @@ subscreen settings:
 
 	actions:
 		# type id command screen
-		link close hide settings
+		link close call close
 
 	end settings
 
@@ -124,6 +159,8 @@ subscreen settings:
 subscreen about:
 	id about
 	type sub
+	# Обязателен
+	calltype local
 
 	elements:
 		# type name alpha color xy wh
@@ -132,48 +169,30 @@ subscreen about:
 		# type name value xy
 		inscription aboutscreen "О нас" (0.4, 0.05)
 
+		# type name value xy width
+		text testtext "Добро пожаловать" (0.4, 0.2) (0.5)
+
 		# type name value xy
 		link close "Закрыть" (0.4, 0.12)
-		link help "Помощь" (0.53, 0.05)
 
 	actions:
 		# type id command screen
-		link close hide about
-		link help call help
+		link close hide close
 
 	end about
-
-# Конфигурация подэкрана "Помощь"
-subscreen help:
-	id help
-	type sub
-
-	elements:
-		# type name alpha color xy wh
-		surface helpscreen 140 (0,0,0) (0.35, 0.0) (0.651, 1.0)
-
-		# type name value xy
-		inscription helpscreen "Помощь" (0.4, 0.05)
-
-		# type name value xy 
-		link close "Закрыть" (0.4, 0.12)
-		link about "О нас" (0.58, 0.05)
-
-	actions:
-		# type id command screen
-		link close hide help
-		link about call about
-
-	end help
 
 # Конфигурация экрана сохранений во время игры
 subscreen menu_save:
 	id menu_save
 	type sub
+	# Обязателен
+	calltype local
 	end menu_save
 
 # Конфигурация экрана загрузки во время игры
 subscreen menu_load:
 	id menu_load
 	type sub
+	# Обязателен
+	calltype local
 	end menu_load
