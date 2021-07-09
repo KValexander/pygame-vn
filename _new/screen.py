@@ -137,6 +137,7 @@ class Screen:
 				self.config[screen]["elements"]["links"] = []
 				self.config[screen]["elements"]["texts"] = []
 				self.config[screen]["elements"]["buttons"] = []
+				self.config[screen]["elements"]["textures"] = []
 				self.config[screen]["elements"]["surfaces"] = []
 				self.config[screen]["elements"]["inscriptions"] = []
 				self.processingElements(screen, self.elements)
@@ -157,9 +158,9 @@ class Screen:
 			# Initial parsing of the line
 			command, value = self.parsingLine(line)
 
-			# Adding link
+			# Adding icon
 			if command == "icon":
-				# Creating and adding link
+				# Creating and adding icon
 				link = self.createIcon(value)
 				self.config[screen]["elements"]["icons"].append(link)
 
@@ -174,6 +175,13 @@ class Screen:
 				# Creating and adding text
 				text = self.createText(value)
 				self.config[screen]["elements"]["texts"].append(text)
+
+			# Adding texture
+			if command == "texture":
+				# Creating and adding texture
+				texture = self.createTexture(value)
+				self.config[screen]["elements"]["textures"].append(texture)
+
 
 			# Adding surface
 			elif command == "surface":
@@ -197,7 +205,7 @@ class Screen:
 			# Initial parsing of the line
 			command, value = self.parsingLine(line)
 
-			# Assigning events to link
+			# Assigning events to icon
 			if command == "icon":
 				# Event assignment
 				obj = self.actionIcon(value)
@@ -256,6 +264,7 @@ class Screen:
 				self.config[screen]["subscreens"][subscreen]["elements"]["links"] = []
 				self.config[screen]["subscreens"][subscreen]["elements"]["texts"] = []
 				self.config[screen]["subscreens"][subscreen]["elements"]["buttons"] = []
+				self.config[screen]["subscreens"][subscreen]["elements"]["textures"] = []
 				self.config[screen]["subscreens"][subscreen]["elements"]["surfaces"] = []
 				self.config[screen]["subscreens"][subscreen]["elements"]["inscriptions"] = []
 				self.processingSubElements(screen, subscreen, self.elements)
@@ -276,9 +285,9 @@ class Screen:
 			# Initial parsing of the line
 			command, value = self.parsingLine(line)
 
-			# Adding link
+			# Adding icon
 			if command == "icon":
-				# Creating and adding link
+				# Creating and adding icon
 				link = self.createIcon(value)
 				self.config[screen]["subscreens"][subscreen]["elements"]["icons"].append(link)
 
@@ -293,6 +302,12 @@ class Screen:
 				# Creating and adding text
 				text = self.createText(value)
 				self.config[screen]["subscreens"][subscreen]["elements"]["texts"].append(text)
+
+			# Adding texture
+			if command == "texture":
+				# Creating and adding texture
+				texture = self.createTexture(value)
+				self.config[screen]["subscreens"][subscreen]["elements"]["textures"].append(texture)
 
 			# Adding surface
 			elif command == "surface":
@@ -315,7 +330,7 @@ class Screen:
 			# Initial parsing of the line
 			command, value = self.parsingLine(line)
 
-			# Assigning events to link
+			# Assigning events to icon
 			if command == "icon":
 				# Event assignment
 				obj = self.actionIcon(value)
@@ -344,7 +359,7 @@ class Screen:
 			wh = fetchSize(parse[1])
 
 		# Create icon
-		icon = Icon(name, src, xy, wh, self.options["pathToProject"] + self.options["screenFolder"])
+		icon = Icon(name, src, xy, wh, self.options["pathToScreen"])
 		return icon
 
 	# Create link
@@ -369,6 +384,18 @@ class Screen:
 		# Creating text
 		text = Text(name, val, xy, width, self.options["textColor"], self.options["textSize"], self.options["textLineHeight"], self.options["systemFont"])
 		return text
+
+	# Create texture
+	def createTexture(self, value):
+		# Getting data to add
+		name = re.findall(r"\w+", value)[0]
+		src = removeChar(re.findall(r"\".*?\"", value)[0])
+		parse = re.findall(r"(\(.*?\))", value)
+		xy, wh = defineSize(parse[0], self.options["size"]), defineSize(parse[1], self.options["size"])
+
+		# Create texture
+		texture = Texture(name, src, xy, wh, self.options["pathToScreen"])
+		return texture
 
 	# Create surface
 	def createSurface(self, value):
@@ -396,15 +423,51 @@ class Screen:
 
 	# Action icon
 	def actionIcon(self, value):
-		pass
+		# Getting data to add
+		parse = re.findall(r"\w+", value)
+		name, src = parse[0], None
+		tpe, button = None, None
+		event, rtrn = None, None
+
+		# Hovering over an icon
+		if parse[1] == "hover":
+			src = removeChar(re.findall(r"\".*?\"", value)[0]) # Path to image hover
+			tpe = 1024 #MOUSEMOTION
+			event = parse[1] # Event
+
+		# Calling and hide up the screen
+		elif parse[1] == "call" or parse[1] == "hide":
+			tpe = 1025 # MOUSEBUTTONDOWN
+			button = 1 # Left mouse button
+			event = parse[1] # Event
+			rtrn = parse[2] # Return value
+
+		# Closing the current screen or Closing the window
+		elif parse[1] == "close" or parse[1] == "end":
+			tpe = 1025
+			button = 1
+			event = parse[1]
+			rtrn = parse[1]
+
+		# Composing an event object
+		obj = {
+			"name": name,
+			"src": src,
+			"type": tpe,
+			"button": button,
+			"event": event,
+			"return": rtrn
+		}
+
+		return obj
 
 	# Action link
 	def actionLink(self, value):
 		# Getting data to add
 		parse = re.findall(r"\w+", value)
 		name = parse[0]
-		tpe, button = "", ""
-		event, rtrn = "", ""
+		tpe, button = None, None
+		event, rtrn = None, None
 
 		# Calling and hide up the screen
 		if parse[1] == "call" or parse[1] == "hide":
@@ -429,5 +492,4 @@ class Screen:
 			"return": rtrn
 		}
 
-		# print(obj)
 		return obj

@@ -1,17 +1,37 @@
 # Игровые экраны
 screens [main, play]
 
-# Все изобажения находятся в папке по пути настройки screen_dir в файле options.vn
-# Если вы хотите хранить все изображения в другой папке, поменяйте значение gui/ на своё, в пределах папки проекта
-
-# close и end зарезервированные имена для команд
-# поэтому не пригодны в качестве использования названий экранов и подчинённых экранов
-
 # Стартовый экран
 init main
 
 # Экран игры
 playinit play
+
+# Все изобажения находятся в папке по пути настройки screen_folder в файле options.vn
+# Если вы хотите хранить все изображения в другой папке, поменяйте значение gui/ на своё, в пределах папки проекта
+
+# close и end зарезервированные имена для команд
+# поэтому не пригодны в качестве использования названий экранов и подчинённых экранов
+
+# Значения (n.n, n.n) - от 0.0 до 1.0
+# Пример (0.2, 0.2)
+
+# Все возможные элементы(elements:) для добавления:
+# surface 		- type name alpha color xy(x.x, y.y) wh(w.w, h.h)
+# texture 		- type name src xy(x.x, y.y) wh(w.w, h.h)
+# inscription 	- type name value xy(x.x, y.y)
+# text 			- type name value xy(x.x, y.y) width(w.w)
+# link			- type name value xy(x.x, y.y)
+# icon 			- type name src xy wh(w, h)(необязательно)
+
+# На link и icon возможно навешывать события:
+# call - вызов экрана
+# hide - сокрытие экрана
+# close - закрытие текущего подчинённого экрана
+# end - закрытие окна
+
+# Только для icon можно повесить события:
+# hover - вызов изображения при наведение на иконку
 
 # Настройка конфигураций игровых экранов
 # Конфигурация главных экранов
@@ -28,7 +48,7 @@ screen main:
 	subscreens [load, settings, about, help]
 
 	# Отображение подэкрана при запуске экрана, необязательно
-	startsubscreen about
+	# startsubscreen about
 
 	# Добавление элементов на экран
 	elements:
@@ -36,7 +56,10 @@ screen main:
 		surface menuscreen 140 (0, 0, 0) (0.0, 0.0) (0.3, 1.0)
 
 		# type name src xy wh(w, h)(необязательно)
-		icon icon "icon.png" (0.8, 0.1) (100, 100)
+		icon icon "menu.png" (0.2, 0.06) (50, 35)
+
+		# type name src xy(x.x, y.y) wh(w.w, h.h)
+		# texture menuscreen "backgroundplay.jpg" (0.5, 0.5) (0.5, 0.5)
 
 		# type name value xy(x.x, y.y)
 		inscription menuscreen "Меню" (0.05, 0.05)
@@ -59,8 +82,13 @@ screen main:
 		# команда end отключает игру
 		link exit end
 		# Так же есть иные вариации
-		# link exit call end 
+		# link exit call end
 		# link exit hide end
+
+		# При наведении на иконку будет изменяться изображение
+		icon icon hover "menuhover.png"
+		# На icon так же работают все команды для link
+		icon icon call about
 
 	# Обязательная команда для закрытия конфигурирования экрана
 	end main
@@ -170,7 +198,7 @@ subscreen about:
 		inscription aboutscreen "О нас" (0.4, 0.05)
 
 		# type name value xy(x.x, y.y) width(w.w)
-		text testtext "Добро пожаловать" (0.4, 0.2) (0.5)
+		text testtext "Добро пожаловать. Проект был создан с помощью программы VN. Для изменения интерфейса перейдите в корневую директорию проекта и ознакомьтесь с файлом screens.vn" (0.4, 0.2) (0.5)
 
 		# type name value xy(x.x, y.y)
 		link close "Закрыть" (0.4, 0.12)

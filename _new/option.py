@@ -20,13 +20,13 @@ class Option:
 
 	# Data processing
 	def dataProcessing(self):
+		# Path to current project
+		self.config["pathToProject"] = self.folder
+		
 		for line in self.data:
 			if commonCommands(line) == False: continue
 			line = line.replace(" ", "")
 			name, value = line.split("=")
-
-			# Path to current project
-			self.config["pathToProject"] = self.folder
 
 			# Screen resolution
 			if line.find("window_size") != -1:
@@ -87,6 +87,9 @@ class Option:
 			# Inscription size
 			elif line.find("inscription_size") != -1:
 				self.config["inscriptionSize"] = int(value)
+
+		# Path to screen
+		self.config["pathToScreen"] = self.config["pathToProject"] + self.config["screenFolder"]
 
 	# Passing data to the main class
 	def getConfig(self):

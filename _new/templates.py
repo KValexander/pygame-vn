@@ -10,9 +10,9 @@ from common import *
 #	Icon
 # 	Link
 # 	Text
+# 	Texture
 # 	Surface
 # 	Inscription
-
 
 # class Icon
 class Icon:
@@ -28,16 +28,33 @@ class Icon:
 		self.hide 		= False
 		self.hover 		= False
 		self.selected 	= False
+		self.setHover 	= False
 
 		# Default variables
+		self.hoverImage = ""
+		self.pathToImageHover = ""
 		self.pathToImage = self.folder + self.src
-		if self.wh != None: self.image = scLoadImage(self.pathToImage, self.wh)
+		if os.path.exists(self.pathToImage) == False:
+			self.pathToImage = self.folder + "noimage.png"
+		if self.wh != None:self.image = scLoadImage(self.pathToImage, self.wh)
 		else: self.image = loadImage(self.pathToImage)
 		self.rect = self.image.get_rect()
+		self.wh = (self.rect.width, self.rect.height)
 
 	# Rendering icon
 	def draw(self, window):
-		window.blit(self.image, self.xy)
+		if self.hover == False:
+			window.blit(self.image, self.xy)
+		else: window.blit(self.hoverImage, self.xy)
+
+	# Set hover image
+	def setHoverImage(self, src):
+		if self.setHover == False:
+			self.setHover = True
+			self.pathToImageHover = self.folder + src
+			if os.path.exists(self.pathToImageHover) == False:
+				self.pathToImageHover = self.folder + "noimage.png"
+			self.hoverImage = scLoadImage(self.pathToImageHover, self.wh)
 
 # class Link
 class Link:
@@ -115,6 +132,30 @@ class Text:
 		for line in self.outLines:
 			window.blit(line, (self.xy[0], self.y))
 			self.y += self.lh
+
+# class Texture
+class Texture:
+	def __init__(self, name, src, xy, wh, folder):
+		# Custom variables
+		self.name 	= name
+		self.src  	= src
+		self.xy   	= xy
+		self.wh   	= wh
+		self.folder = folder
+
+		# Boolean variables
+		self.hide 		= False
+
+		# Default variables
+		self.pathToImage = self.folder + self.src
+		if os.path.exists(self.pathToImage) == False:
+			self.pathToImage = self.folder + "noimage.png"
+		self.image = scLoadImage(self.pathToImage, self.wh)
+		self.rect = self.image.get_rect()
+
+	# Rendering icon
+	def draw(self, window):
+		window.blit(self.image, self.xy)
 
 # class Link
 class Surface:

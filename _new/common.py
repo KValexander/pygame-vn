@@ -78,7 +78,7 @@ def defineSize(size, wh):
 	else: x = wh[0] * float(size[0])
 	if float(size[1]) == 0.0: y = 0
 	else: y = wh[1] * float(size[1])
-	size = (x, y)
+	size = (int(x), int(y))
 	return size
 
 # Fetch size

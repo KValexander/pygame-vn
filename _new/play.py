@@ -92,6 +92,8 @@ class Play:
 				# Screen background
 				if "background" in self.currentScreen:
 					src = self.folder + self.option.config["screenFolder"] + self.currentScreen["background"]
+					if os.path.exists(src) == False:
+						src = self.option.config["pathToScreen"] + "stock.jpg"
 					self.background = scLoadImage(src, self.option.config["size"])
 			# Sub screen
 			else:
@@ -125,6 +127,8 @@ class Play:
 					# Subscreen background
 					if "background" in self.currentSubscreen:
 						src = self.folder + self.option.config["screenFolder"] + self.currentSubscreen["background"]
+						if os.path.exists(src) == False:
+							src = self.option.config["pathToScreen"] + "stock.jpg"
 						self.subbackground = scLoadImage(src, self.option.config["size"])
 
 	# Hiding the screen
@@ -157,7 +161,6 @@ class Play:
 			self.currentScreen["subdisplay"] = False
 			self.subbackground = None
 
-
 	# Launch window
 	def launchScreen(self):
 		# Game window
@@ -177,62 +180,66 @@ class Play:
 			# Screen events
 			if self.currentScreen["display"]:
 				if self.subbackground == None:
-					# Standard events
-					if "elements" in self.currentScreen:
-						if event.type == pygame.MOUSEMOTION:
-							# Link hover handling
-							for link in self.currentScreen["elements"]["links"]:
-								if mouseCollision(link.xy, link.twh, event.pos):
-									link.hover = True
-								else: link.hover = False
-
-					# Hanging events
-					if "actions" in self.currentScreen:
-						# Handling Link Events
-						for jlink in self.currentScreen["actions"]["links"]:
-							# Getting a link
-							rlink = getElementByName(jlink["name"], self.currentScreen["elements"]["links"])
-							if rlink == None: return
-							# Event handling
-							if event.type == jlink["type"]:
-								if event.button == jlink["button"]:
-									if mouseCollision(rlink.xy, rlink.twh, event.pos):
-										if jlink["event"] == "call":
-											self.refreshScreen(jlink["return"])
-										elif jlink["event"] == "hide":
-											self.hideScreen(jlink["return"])
-										elif jlink["event"] == "close" or jlink["event"] == "end":
-											self.reservedCommands(jlink["return"])
+					# Handling actions for interface elements
+					self.actions(event, self.currentScreen)
 
 				# Subscreen events
 				if self.currentScreen["subdisplay"]:
 					if self.currentSubscreen["display"]:
-						# Standard events
-						if "elements" in self.currentSubscreen:
-							if event.type == pygame.MOUSEMOTION:
-								# Link hover handling 
-								for link in self.currentSubscreen["elements"]["links"]:
-									if mouseCollision(link.xy, link.twh, event.pos):
-										link.hover = True
-									else: link.hover = False
+						# Handling actions for interface elements
+						self.actions(event, self.currentSubscreen)
 
-						# Hanging events
-						if "actions" in self.currentSubscreen:
-							# Handling Link Events
-							for jlink in self.currentSubscreen["actions"]["links"]:
-								# Getting a link
-								rlink = getElementByName(jlink["name"], self.currentSubscreen["elements"]["links"])
-								if rlink == None: return
-								# Event handling
-								if event.type == jlink["type"]:
-									if event.button == jlink["button"]:
-										if mouseCollision(rlink.xy, rlink.twh, event.pos):
-											if jlink["event"] == "call":
-												self.refreshScreen(jlink["return"])
-											if jlink["event"] == "hide":
-												self.hideScreen(jlink["return"])
-											if jlink["event"] == "close" or jlink["event"] == "end":
-												self.reservedCommands(jlink["return"])
+	# Handling actions for interface elements
+	def actions(self, e, screen):
+		# Standard events
+		if "elements" in screen:
+			if e.type == pygame.MOUSEMOTION:
+				# Link hover handling
+				for link in screen["elements"]["links"]:
+					if mouseCollision(link.xy, link.twh, e.pos):
+						link.hover = True
+					else: link.hover = False
+
+		# Hanging events
+		if "actions" in screen:
+			# Handling Link Events
+			for jlink in screen["actions"]["links"]:
+				# Getting a link
+				rlink = getElementByName(jlink["name"], screen["elements"]["links"])
+				if rlink == None: return
+				# Event handling
+				if e.type == jlink["type"]:
+					if e.button == jlink["button"]:
+						if mouseCollision(rlink.xy, rlink.twh, e.pos):
+							if jlink["event"] == "call":
+								self.refreshScreen(jlink["return"])
+							elif jlink["event"] == "hide":
+								self.hideScreen(jlink["return"])
+							elif jlink["event"] == "close" or jlink["event"] == "end":
+								self.reservedCommands(jlink["return"])
+
+			# Handling icons events
+			for jicon in screen["actions"]["icons"]:
+				# Getting icon
+				ricon = getElementByName(jicon["name"], screen["elements"]["icons"])
+				if ricon == None: return
+				# Event handling
+				if e.type == jicon["type"]:
+					if mouseCollision(ricon.xy, ricon.wh, e.pos):
+						# Mousemotion
+						if jicon["button"] == None:
+							if jicon["event"] == "hover":
+								ricon.setHoverImage(jicon["src"])
+								ricon.hover = True
+						# Mousebuttondown
+						elif e.button == jicon["button"]:
+							if jicon["event"] == "call":
+								self.refreshScreen(jicon["return"])
+							if jicon["event"] == "hide":
+								self.hideScreen(jicon["return"])
+							if jicon["event"] == "close" or jicon["event"] == "end":
+									self.reservedCommands(jicon["return"])
+					else: ricon.hover = False
 
 	# Intermediant calculation
 	def update(self):
@@ -256,6 +263,9 @@ class Play:
 					# Rendering surfaces
 					for surface in self.currentScreen["elements"]["surfaces"]:
 						surface.draw(self.window)
+					# Rendering surfaces
+					for texture in self.currentScreen["elements"]["textures"]:
+						texture.draw(self.window)
 					# Rendering inscriptions
 					for inscription in self.currentScreen["elements"]["inscriptions"]:
 						inscription.draw(self.window)
@@ -282,6 +292,9 @@ class Play:
 						# Rendering surfaces
 						for surface in self.currentSubscreen["elements"]["surfaces"]:
 							surface.draw(self.window)
+						# Rendering surfaces
+						for texture in self.currentSubscreen["elements"]["textures"]:
+							texture.draw(self.window)
 						# Rendering inscriptions
 						for inscription in self.currentSubscreen["elements"]["inscriptions"]:
 							inscription.draw(self.window)

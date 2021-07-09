@@ -1,0 +1,35 @@
+# Переменные экрана
+window_size 	= (1280, 720)
+project_name 	= "VN"
+fps 			= 30
+
+# Настройки путей
+screen_folder = gui/
+src_icon = gui/icon.png
+
+# Шрифты
+# На данный момент используеться только системный шрифт
+system_font = calibri
+own_font 	= rubik.ttf
+
+# Настройки ссылок
+link_color 		= (0, 0, 0)
+link_aim		= (255, 255, 255)
+link_selected 	= (100, 100, 100)
+link_size 		= 25
+
+# Настройки текста
+text_color 		 = (0, 0, 0)
+text_size 		 = 20
+text_line_height = 25
+
+# Настройки надписей
+inscription_color = (0,0,0)
+inscription_size  = 50
+
+# Настройки текста экрана игры
+# text_coord  = (0.0, 0.0)
+# text_width  = 0.3
+# text_size   = 20
+# text_color  = (255,255,255)
+# line_height = 25
