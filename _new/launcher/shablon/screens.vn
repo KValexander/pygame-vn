@@ -32,16 +32,16 @@ screen main:
 
 	# Добавление элементов на экран
 	elements:
-		# type name alpha color xy wh
+		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
 		surface menuscreen 140 (0, 0, 0) (0.0, 0.0) (0.3, 1.0)
 
-		# type name src xy wh(необязательно)
-		icon icon icon.png
+		# type name src xy wh(w, h)(необязательно)
+		icon icon "icon.png" (0.8, 0.1) (100, 100)
 
-		# type name value xy
+		# type name value xy(x.x, y.y)
 		inscription menuscreen "Меню" (0.05, 0.05)
 
-		# type name value xy
+		# type name value xy(x.x, y.y)
 		link play "Начать игру" (0.05, 0.2)
 		link load "Загрузить" (0.05, 0.25)
 		link settings "Настройки" (0.05, 0.3)
@@ -74,10 +74,10 @@ screen play:
 
 	# Добавление элементов на экран
 	elements:
-		# type name alpha color xy wh
+		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
 		surface dialogbox 140 (0, 0, 0) (0.0, 0.8) (1.0, 0.201)
 
-		# type name value xy
+		# type name value xy(x.x, y.y)
 		link return "Вернуться" (0.025, 0.025)
 
 	# Присваивание событий для элементов на экране
@@ -111,13 +111,13 @@ subscreen load:
 	calltype local
 
 	elements:
-		# type name alpha color xy wh
+		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
 		surface loadscreen 140 (0,0,0) (0.35, 0.0) (0.651, 1.0)
 
-		# type name value xy
+		# type name value xy(x.x, y.y)
 		inscription loadscreen "Загрузить" (0.4, 0.05)
 
-		# type name value xy
+		# type name value xy(x.x, y.y)
 		link close "Закрыть" (0.4, 0.12)
 
 	actions:
@@ -140,13 +140,13 @@ subscreen settings:
 	calltype local
 
 	elements:
-		# type name alpha color xy wh
+		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
 		surface settingscreen 140 (0,0,0) (0.35, 0.0) (0.651, 1.0)
 
-		# type name value xy
+		# type name value xy(x.x, y.y)
 		inscription settingscreen "Настройки" (0.4, 0.05)
 
-		# type name value xy
+		# type name value xy(x.x, y.y)
 		link close "Закрыть" (0.4, 0.12)
 
 	actions:
@@ -163,16 +163,16 @@ subscreen about:
 	calltype local
 
 	elements:
-		# type name alpha color xy wh
+		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
 		surface aboutscreen 140 (0,0,0) (0.35, 0.0) (0.651, 1.0)
 
-		# type name value xy
+		# type name value xy(x.x, y.y)
 		inscription aboutscreen "О нас" (0.4, 0.05)
 
-		# type name value xy width
+		# type name value xy(x.x, y.y) width(w.w)
 		text testtext "Добро пожаловать" (0.4, 0.2) (0.5)
 
-		# type name value xy
+		# type name value xy(x.x, y.y)
 		link close "Закрыть" (0.4, 0.12)
 
 	actions:

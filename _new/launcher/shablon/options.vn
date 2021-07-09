@@ -4,7 +4,7 @@ project_name 	= "VN"
 fps 			= 30
 
 # Настройки путей
-screen_dir = gui/
+screen_folder = gui/
 src_icon = gui/icon.png
 
 # Шрифты
