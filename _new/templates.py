@@ -58,7 +58,7 @@ class Icon:
 
 # class Link
 class Link:
-	def __init__(self, name, value, xy, color, aim, selected, size, font):
+	def __init__(self, name, value, xy, color, aim, selected, size, font, typefont):
 		# Custom variables
 		self.name 			= name
 		self.value 			= str(value)
@@ -67,12 +67,21 @@ class Link:
 		self.coloraim 		= aim
 		self.colorselected  = selected
 		self.size 			= size
-		self.font 			= pygame.font.SysFont(font, self.size)
+		self.typefont 		= typefont
 
 		# Boolean variables
 		self.hide 		= False
 		self.hover 		= False
 		self.selected 	= False
+
+		# Font variable
+		if self.typefont == "system":
+			self.font = pygame.font.SysFont(font, self.size)
+		elif self.typefont == "own":
+			if os.path.exists(font):
+				self.font = pygame.font.Font(font, self.size)
+			else: self.font = pygame.font.SysFont("calibri", self.size)
+		else: self.font = pygame.font.SysFont("calibri", self.size)
 
 		# Default variables
 		self.twh 			= self.font.size(self.value)
@@ -96,20 +105,29 @@ class Link:
 
 # class Text
 class Text:
-	def __init__(self, name, value, xy, width, color, size, lh, font):
+	def __init__(self, name, value, xy, width, color, size, lh, font, typefont):
 		# Custom variables
-		self.name 	= name
-		self.value 	= str(value)
-		self.xy 	= xy
-		self.width 	= width
-		self.color 	= color
-		self.size 	= size
-		self.lh 	= lh
-		self.font 	= pygame.font.SysFont(font, self.size)
-		self.y 		= xy[1]
+		self.name 		= name
+		self.value 		= str(value)
+		self.xy 		= xy
+		self.width 		= width
+		self.color 		= color
+		self.size 		= size
+		self.lh 		= lh
+		self.typefont	= typefont
+		self.y 			= xy[1]
 
 		# Boolean variables
 		self.hide = False
+
+		# Font variable
+		if self.typefont == "system":
+			self.font = pygame.font.SysFont(font, self.size)
+		elif self.typefont == "own":
+			if os.path.exists(font):
+				self.font = pygame.font.Font(font, self.size)
+			else: self.font = pygame.font.SysFont("calibri", self.size)
+		else: self.font = pygame.font.SysFont("calibri", self.size)
 
 		# Default variables
 		self.outLines = []
@@ -182,16 +200,24 @@ class Surface:
 
 # class Link
 class Inscription:
-	def __init__(self, name, value, xy, color, size, font):
+	def __init__(self, name, value, xy, color, size, font, typefont):
 		# Custom variables
 		self.name 	= name
 		self.value 	= value
 		self.color 	= color
 		self.size 	= size
 		self.xy 	= xy
+		self.typefont = typefont
+		# Font variable
+		if self.typefont == "system":
+			self.font = pygame.font.SysFont(font, self.size)
+		elif self.typefont == "own":
+			if os.path.exists(font):
+				self.font = pygame.font.Font(font, self.size)
+			else: self.font = pygame.font.SysFont("calibri", self.size)
+		else: self.font = pygame.font.SysFont("calibri", self.size)
 
 		# Defaults variables
-		self.font 	= pygame.font.SysFont(font, self.size)
 		self.twh 	= self.font.size(self.value)
 		self.iname 	= self.font.render(str(self.value), True, self.color)
 		self.rect 	= self.iname.get_rect()

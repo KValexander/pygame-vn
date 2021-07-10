@@ -1,17 +1,17 @@
 # Игровые экраны
-screens [main, play]
+screens [main, play, sett]
 
 # Стартовый экран
 init main
 
 # Экран игры
-playinit play
+playinit aboba
 
 # Все изобажения находятся в папке по пути настройки screen_folder в файле options.vn
 # Если вы хотите хранить все изображения в другой папке, поменяйте значение gui/ на своё, в пределах папки проекта
 
-# close и end зарезервированные имена для команд
-# поэтому не пригодны в качестве использования названий экранов и подчинённых экранов
+# start, close и end зарезервированные имена для команд
+# поэтому не пригодны в качестве использования названий главных и подчинённых экранов и name для элементов интерфейса
 
 # Значения (n.n, n.n) - от 0.0 до 1.0
 # Пример (0.2, 0.2)
@@ -65,6 +65,9 @@ screen main:
 		inscription menuscreen "Меню" (0.05, 0.05)
 
 		# type name value xy(x.x, y.y)
+		inscription version "v1.0" (0.9, 0.9)
+
+		# type name value xy(x.x, y.y)
 		link play "Начать игру" (0.05, 0.2)
 		link load "Загрузить" (0.05, 0.25)
 		link settings "Настройки" (0.05, 0.3)
@@ -74,6 +77,7 @@ screen main:
 	# Присваивание событий для элементов на экране
 	actions:
 		# команда call вызывает экран
+		# команда start вызывает экран заданный в playinit
 		# type id command screen
 		link play call play
 		link load call load
@@ -113,6 +117,12 @@ screen play:
 		# type id command screen
 		link return call main
 
+		# Можно присваивать события мыши:
+		# leftclick   - нажатие левой клавиши мыши
+		# middleclick - нажатие средней клавиши мыши
+		# rightclick  - нажатие правой клавиши мыши
+		mouse rightclick call menu_save
+
 	# Обязательная команда для закрытия конфигурирования экрана
 	end play
 
@@ -129,6 +139,8 @@ screen play:
 # global - вызов из любого экрана
 # cls 	 - вызов из любого экрана вместе с главным экраном
 
+# eventmainlock - блокирует события главного экрана когда вызван подчинённый, необязетелен
+
 # Конфигурация экрана загрузок игры
 subscreen load:
 	id load
@@ -137,6 +149,8 @@ subscreen load:
 	# background backgroundload.jpg
 	# Обязателен
 	calltype local
+	# Необязателен
+	# eventmainlock
 
 	elements:
 		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
@@ -152,7 +166,7 @@ subscreen load:
 		# команда hide скрывает экран
 		# type id command screen
 		# link close hide load
-		# команда close закрывает текущий подчинённый экран, только для подчинённых экранов 
+		# команда close закрывает текущий подчинённый экран
 		link close close
 		# так же есть иные вариации закрытие текущего подчинённого экрана
 		# link close call close
@@ -207,14 +221,42 @@ subscreen about:
 		# type id command screen
 		link close hide close
 
+		mouse rightclick close
+
 	end about
 
 # Конфигурация экрана сохранений во время игры
 subscreen menu_save:
 	id menu_save
-	type sub
+	type sub	
 	# Обязателен
 	calltype local
+	# Необязателен
+	eventmainlock
+
+	elements:
+		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
+		surface menuscreen 140 (0, 0, 0) (0.0, 0.0) (0.3, 1.0)
+
+		# type name value xy(x.x, y.y)
+		link continue "Продолжить" (0.05, 0.2)
+		link save "Сохранить" (0.05, 0.25)
+		link load "Загрузить" (0.05, 0.3)
+		link settings "Настройки" (0.05, 0.35)
+		link main "Главное меню" (0.05, 0.4)
+
+		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
+		surface loadscreen 140 (0,0,0) (0.35, 0.0) (0.651, 1.0)
+
+		# type name value xy(x.x, y.y)
+		inscription loadscreen "Сохранить" (0.4, 0.05)
+
+	actions:
+		link continue hide menu_save
+		link save call menu_save
+		link load call menu_load
+		link main call main
+
 	end menu_save
 
 # Конфигурация экрана загрузки во время игры
@@ -223,4 +265,30 @@ subscreen menu_load:
 	type sub
 	# Обязателен
 	calltype local
+	# Необязателен
+	eventmainlock
+
+	elements:
+		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
+		surface menuscreen 140 (0, 0, 0) (0.0, 0.0) (0.3, 1.0)
+
+		# type name value xy(x.x, y.y)
+		link continue "Продолжить" (0.05, 0.2)
+		link save "Сохранить" (0.05, 0.25)
+		link load "Загрузить" (0.05, 0.3)
+		link settings "Настройки" (0.05, 0.35)
+		link main "Главное меню" (0.05, 0.4)
+
+		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
+		surface loadscreen 140 (0,0,0) (0.35, 0.0) (0.651, 1.0)
+
+		# type name value xy(x.x, y.y)
+		inscription loadscreen "Загрузить" (0.4, 0.05)
+
+	actions:
+		link continue close
+		link save call menu_save
+		link load call menu_load
+		link main call main
+
 	end menu_load

@@ -38,6 +38,8 @@ class Play:
 
 		# Check subscreens call type
 		self.subcallcheck = False
+		# Event main lock
+		self.eventmainlock = False
 
 		# Retrieving script files data
 		self.gettingFilesData()
@@ -78,14 +80,18 @@ class Play:
 	# Refresh screen
 	def refreshScreen(self, screen):
 		# Reserved Commands
-		if screen == "end" or screen == "close": self.reservedCommands(screen)
+		if screen == "end" or screen == "close" or screen == "start": self.reservedCommands(screen)
 		# Handling refresh screen
 		else:
 			# Check screen
 			if screen in self.screen.config:
+				# Check configurations screen
+				if not "background" in self.screen.config[screen]: return
 				self.currentScreen = self.screen.config[screen]
 				self.currentScreen["display"] = True
 				self.currentScreen["subdisplay"] = False
+				self.subbackground = None
+				self.eventmainlock = False
 				# Сall subscreen on screen startup
 				if "startsubscreen" in self.currentScreen:
 					self.refreshScreen(self.currentScreen["startsubscreen"])
@@ -124,6 +130,9 @@ class Play:
 					self.subcallcheck = False
 					self.currentScreen["subdisplay"] = True
 					self.currentSubscreen = self.screen.config[screen]["subscreens"][subscreen]
+					# Event main lock
+					if "eventmainlock" in self.currentSubscreen: self.eventmainlock = True
+					else: self.eventmainlock = False
 					# Subscreen background
 					if "background" in self.currentSubscreen:
 						src = self.folder + self.option.config["screenFolder"] + self.currentSubscreen["background"]
@@ -134,7 +143,7 @@ class Play:
 	# Hiding the screen
 	def hideScreen(self, screen):
 		# Reserved Commands
-		if screen == "end" or screen == "close": self.reservedCommands(screen)
+		if screen == "end" or screen == "close" or screen == "start": self.reservedCommands(screen)
 		# Handling hide screen
 		else:
 			# Check main screen
@@ -153,6 +162,7 @@ class Play:
 					# Clear screen
 					self.currentScreen["subdisplay"] = False
 					self.subbackground = None
+					self.eventmainlock = False
 
 	# Reserved Commands
 	def reservedCommands(self, command):
@@ -160,6 +170,9 @@ class Play:
 		elif command == "close":
 			self.currentScreen["subdisplay"] = False
 			self.subbackground = None
+			self.eventmainlock = False
+		elif command == "start":
+			self.refreshScreen(self.screen.playScreen)
 
 	# Launch window
 	def launchScreen(self):
@@ -179,7 +192,7 @@ class Play:
 
 			# Screen events
 			if self.currentScreen["display"]:
-				if self.subbackground == None:
+				if self.subbackground == None and self.eventmainlock == False:
 					# Handling actions for interface elements
 					self.actions(event, self.currentScreen)
 
@@ -200,9 +213,21 @@ class Play:
 						link.hover = True
 					else: link.hover = False
 
-		# Hanging events
+		# Handling events
 		if "actions" in screen:
-			# Handling Link Events
+			# Handling mouse events
+			for jmouse in screen["actions"]["mouse"]:
+				# Event handling
+				if e.type == jmouse["type"]:
+					if e.button == jmouse["button"]:
+						if jmouse["event"] == "call":
+							self.refreshScreen(jmouse["return"])
+						elif jmouse["event"] == "hide":
+							self.hideScreen(jmouse["return"])
+						elif jmouse["event"] == "close" or jmouse["event"] == "end" or jlink["event"] == "start":
+								self.reservedCommands(jmouse["return"])
+
+			# Handling link events
 			for jlink in screen["actions"]["links"]:
 				# Getting a link
 				rlink = getElementByName(jlink["name"], screen["elements"]["links"])
@@ -215,7 +240,7 @@ class Play:
 								self.refreshScreen(jlink["return"])
 							elif jlink["event"] == "hide":
 								self.hideScreen(jlink["return"])
-							elif jlink["event"] == "close" or jlink["event"] == "end":
+							elif jlink["event"] == "close" or jlink["event"] == "end" or jlink["event"] == "start":
 								self.reservedCommands(jlink["return"])
 
 			# Handling icons events
@@ -235,9 +260,9 @@ class Play:
 						elif e.button == jicon["button"]:
 							if jicon["event"] == "call":
 								self.refreshScreen(jicon["return"])
-							if jicon["event"] == "hide":
+							elif jicon["event"] == "hide":
 								self.hideScreen(jicon["return"])
-							if jicon["event"] == "close" or jicon["event"] == "end":
+							elif jicon["event"] == "close" or jicon["event"] == "end" or jlink["event"] == "start":
 									self.reservedCommands(jicon["return"])
 					else: ricon.hover = False
 

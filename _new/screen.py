@@ -20,13 +20,14 @@ class Screen:
 		# Config variables
 		self.config = {}
 
-		# Start screen and current line variables
+		# Start screen, play screen and current line variables
 		self.startScreen = ""
+		self.playScreen  = ""
 		self.currentLine = ""
 
 		# Line counters variables
 		self.currentStart = 0
-		self.currentEnd = len(data)
+		self.currentEnd   = len(data)
 
 		# Data processing
 		self.lineProcessing()
@@ -67,6 +68,10 @@ class Screen:
 		# Start screen
 		elif command == "init":
 			self.startScreen = value.replace(" ", "")
+
+		# Play screen
+		elif command == "playinit":
+			self.playScreen = value.replace(" ", "")
 
 		# Processing screens
 		elif command == "screen":
@@ -145,6 +150,7 @@ class Screen:
 			# Handling element actions
 			elif command == "actions":
 				self.config[screen]["actions"] = {}
+				self.config[screen]["actions"]["mouse"] = []
 				self.config[screen]["actions"]["icons"] = []
 				self.config[screen]["actions"]["links"] = []
 				self.processingActions(screen, self.actions)
@@ -205,15 +211,22 @@ class Screen:
 			# Initial parsing of the line
 			command, value = self.parsingLine(line)
 
+			# Assigning events to mouse
+			if command == "mouse":
+				# Event assignment
+				obj = self.actionMouse(value)
+				# Adding event parameters
+				self.config[screen]["actions"]["mouse"].append(obj)
+
 			# Assigning events to icon
-			if command == "icon":
+			elif command == "icon":
 				# Event assignment
 				obj = self.actionIcon(value)
 				# Adding event parameters
 				self.config[screen]["actions"]["icons"].append(obj)
 
 			# Assigning events to link
-			if command == "link":
+			elif command == "link":
 				# Event assignment
 				obj = self.actionLink(value)
 				# Adding event parameters
@@ -222,7 +235,7 @@ class Screen:
 	# Prcessing subscreen
 	def processingSubscreen(self, subscreen, lines):
 		# Optimizable commands
-		statics = ["id", "type", "background", "calltype"]
+		statics = ["id", "type", "background", "calltype", "eventmainlock"]
 		# Main screen variable
 		screen = ""
 		
@@ -272,6 +285,7 @@ class Screen:
 			# Handling element actions
 			elif command == "actions":
 				self.config[screen]["subscreens"][subscreen]["actions"] = {}
+				self.config[screen]["subscreens"][subscreen]["actions"]["mouse"] = []
 				self.config[screen]["subscreens"][subscreen]["actions"]["icons"] = []
 				self.config[screen]["subscreens"][subscreen]["actions"]["links"] = []
 				self.processingSubActions(screen, subscreen, self.actions)
@@ -330,15 +344,22 @@ class Screen:
 			# Initial parsing of the line
 			command, value = self.parsingLine(line)
 
+			# Assigning events to mouse
+			if command == "mouse":
+				# Event assignment
+				obj = self.actionMouse(value)
+				# Adding event parameters
+				self.config[screen]["subscreens"][subscreen]["actions"]["mouse"].append(obj)
+
 			# Assigning events to icon
-			if command == "icon":
+			elif command == "icon":
 				# Event assignment
 				obj = self.actionIcon(value)
 				# Adding event parameters
 				self.config[screen]["subscreens"][subscreen]["actions"]["icons"].append(obj)
 
 			# Assigning events to link
-			if command == "link":
+			elif command == "link":
 				# Event assignment
 				obj = self.actionLink(value)
 				# Adding event parameters
@@ -370,7 +391,7 @@ class Screen:
 		xy = defineSize(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
 
 		# Creating link
-		link = Link(name, val, xy, self.options["linkColor"], self.options["linkAim"], self.options["linkSelected"], self.options["linkSize"], self.options["systemFont"])
+		link = Link(name, val, xy, self.options["linkColor"], self.options["linkAim"], self.options["linkSelected"], self.options["linkSize"], self.options["usedFont"], self.options["typeFont"])
 		return link
 
 	# Create text
@@ -382,7 +403,7 @@ class Screen:
 		width = defineOneSize(re.findall(r"(\(.*?\))", value)[1], self.options["size"][0])
 
 		# Creating text
-		text = Text(name, val, xy, width, self.options["textColor"], self.options["textSize"], self.options["textLineHeight"], self.options["systemFont"])
+		text = Text(name, val, xy, width, self.options["textColor"], self.options["textSize"], self.options["textLineHeight"], self.options["usedFont"], self.options["typeFont"])
 		return text
 
 	# Create texture
@@ -418,8 +439,41 @@ class Screen:
 		xy = defineSize(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
 
 		# Creating inscription
-		inscription = Inscription(name, val, xy, self.options["inscriptionColor"], self.options["inscriptionSize"], self.options["systemFont"])
+		inscription = Inscription(name, val, xy, self.options["inscriptionColor"], self.options["inscriptionSize"], self.options["usedFont"], self.options["typeFont"])
 		return inscription
+
+	# Action mouse
+	def actionMouse(self, value):
+		# Getting data to add
+		parse = re.findall(r"\w+", value)
+		tpe, button = None, None
+		event, rtrn = None, None
+
+		if parse[0] == "leftclick": button = 1
+		elif parse[0] == "middleclick": button = 2
+		elif parse[0] == "rightclick": button = 3
+
+		# Calling and hide up the screen
+		if parse[1] == "call" or parse[1] == "hide":
+			tpe = 1025 #MOUSEBUTTONDOWN
+			event = parse[1] # Event
+			rtrn = parse[2] # Return value
+
+		# Closing the current screen or Closing the window
+		elif parse[1] == "close" or parse[1] == "end" or parse[1] == "start":
+			tpe = 1025
+			event = parse[1]
+			rtrn = parse[1]
+
+		# Composing an event object
+		obj = {
+			"type": tpe,
+			"button": button,
+			"event": event,
+			"return": rtrn
+		}
+
+		return obj
 
 	# Action icon
 	def actionIcon(self, value):
@@ -443,7 +497,7 @@ class Screen:
 			rtrn = parse[2] # Return value
 
 		# Closing the current screen or Closing the window
-		elif parse[1] == "close" or parse[1] == "end":
+		elif parse[1] == "close" or parse[1] == "end" or parse[1] == "start":
 			tpe = 1025
 			button = 1
 			event = parse[1]
@@ -477,7 +531,7 @@ class Screen:
 			rtrn = parse[2] # Return value
 
 		# Closing the current screen or Closing the window
-		elif parse[1] == "close" or parse[1] == "end":
+		elif parse[1] == "close" or parse[1] == "end" or parse[1] == "start":
 			tpe = 1025
 			button = 1
 			event = parse[1]
