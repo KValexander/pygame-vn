@@ -71,11 +71,13 @@ class Play:
 	# Processing screen data
 	def processingScreen(self):
 		self.screen = Screen(self.window, self.screensdata, self.option.config)
-		self.refreshScreen(self.screen.startScreen)
+		self.refreshScreen(self.screen.config["startScreen"])
 
 	# Processing script data
 	def processingScript(self):
-		self.script = Script(self.window, self.scriptsdata, self.option.config)
+		self.refreshScreen(self.screen.config["playScreen"])
+		if not "play" in self.currentScreen: return
+		self.script = Script(self.window, self.scriptsdata, self.option.config, self.currentScreen)
 
 	# Refresh screen
 	def refreshScreen(self, screen):
@@ -172,7 +174,7 @@ class Play:
 			self.subbackground = None
 			self.eventmainlock = False
 		elif command == "start":
-			self.refreshScreen(self.screen.playScreen)
+			self.processingScript()
 
 	# Launch window
 	def launchScreen(self):
@@ -195,6 +197,9 @@ class Play:
 				if self.subbackground == None and self.eventmainlock == False:
 					# Handling actions for interface elements
 					self.actions(event, self.currentScreen)
+					# Handling play events
+					if "play" in self.currentScreen:
+						self.script.events(event)
 
 				# Subscreen events
 				if self.currentScreen["subdisplay"]:

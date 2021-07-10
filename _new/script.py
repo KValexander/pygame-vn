@@ -13,18 +13,64 @@ class Script:
 	def __init__(self, window, data, options, screen):
 		# Window, lines, options, screen and config variables
 		self.window  = window
-		self.lines 	 = data
+		self.data 	 = data
 		self.options = options
 		self.screen  = screen
-		self.config  = {}
+
+		# Config variables
+		self.config  = {
+			"variables": {
+				"counters": {},
+				"names": {
+					"value": "",
+					"color": ()
+				},
+				"characters": {
+					"src": "",
+					"coord": ()
+				},
+			},
+			"rendering": {
+				"characters": {
+					"image": "",
+					"coord": ()
+				},
+			},
+		}
 
 		# Booleand variables
-		self.hide = False
-		self.back = False
+		self.hide 	= False
+		self.back 	= False
+		self.choice = False
 
 		# Numeric vairables
 		self.currentStart = 0
 		self.currentEnd = len(self.data)
+
+		# Line variables
+		self.currentLine = ""
+
+		# Handling variables
+		self.variables = []
+		self.lines = []
+
+		# Data processing
+		self.dataProcessing()
+		# Variables processing
+		self.variablesProcessing()
+
+	# Data processing
+	def dataProcessing(self):
+		linestart = self.data.index("start:")
+		self.variables = self.data[0:linestart]
+		self.lines = self.data[linestart:self.currentEnd]
+
+	# Variables processing
+	def variablesProcessing(self):
+		# Handling lines
+		for variable in self.variables:
+			if commonCommands(variable) == False: return self.nextLine()
+			print(variable)
 
 	# Next line
 	def nextLine(self):
@@ -41,9 +87,13 @@ class Script:
 	# Processing the current line
 	def lineProcessing(self):
 		self.currentLine = self.lines[self.currentStart]
-		if commonCommands(self.currentLine) == False: return self.nextLine()
-		
-		
+		if commonCommands(self.currentLine) == False:
+			if self.back: return self.prevLine()
+			else: return self.nextLine()
+
+	# Handling events
+	def events(self, e):
+		pass
 
 	# Passing data to the main class
 	def getConfig(self):

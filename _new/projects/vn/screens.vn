@@ -5,7 +5,7 @@ screens [main, play, sett]
 init main
 
 # Экран игры
-playinit aboba
+playinit play
 
 # Все изобажения находятся в папке по пути настройки screen_folder в файле options.vn
 # Если вы хотите хранить все изображения в другой папке, поменяйте значение gui/ на своё, в пределах папки проекта
@@ -77,9 +77,9 @@ screen main:
 	# Присваивание событий для элементов на экране
 	actions:
 		# команда call вызывает экран
-		# команда start вызывает экран заданный в playinit
+		# команда start вызывает экран заданный в playinit и вызывает обработку скрипта
 		# type id command screen
-		link play call play
+		link play call start
 		link load call load
 		link settings call settings
 		link about call about
@@ -122,6 +122,30 @@ screen play:
 		# middleclick - нажатие средней клавиши мыши
 		# rightclick  - нажатие правой клавиши мыши
 		mouse rightclick call menu_save
+
+	# Настройки игрового экрана, доступно только для главного экрана игры, в других экранах работать не будет
+	play:
+		# Конфигурации экрана выбора, обязателен
+		condition:
+			textcolor (255, 255, 255)
+			background (0, 0, 0)
+			indentation 20
+			width (0.5)
+			height (0.05)
+
+		# Конфигурация текста, обязателен
+		text:
+			startcoord (0.0, 0.0)
+			width (0.3)
+			size 20
+			color (255, 255, 255)
+			lineheight 25
+
+		# Специальные события для экрана игры, обязателен
+		events:
+			mouse leftclick nextline
+			mouse up 		nextline
+			mouse bottom 	prevline
 
 	# Обязательная команда для закрытия конфигурирования экрана
 	end play

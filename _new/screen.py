@@ -21,8 +21,6 @@ class Screen:
 		self.config = {}
 
 		# Start screen, play screen and current line variables
-		self.startScreen = ""
-		self.playScreen  = ""
 		self.currentLine = ""
 
 		# Line counters variables
@@ -48,7 +46,6 @@ class Screen:
 		else: command = define[0]
 		return command, value
 
-
 	# Processing the current line
 	def lineProcessing(self):
 		self.currentLine = self.lines[self.currentStart]
@@ -67,11 +64,11 @@ class Screen:
 
 		# Start screen
 		elif command == "init":
-			self.startScreen = value.replace(" ", "")
+			self.config["startScreen"] = value.replace(" ", "")
 
 		# Play screen
 		elif command == "playinit":
-			self.playScreen = value.replace(" ", "")
+			self.config["playScreen"] = value.replace(" ", "")
 
 		# Processing screens
 		elif command == "screen":
@@ -102,16 +99,20 @@ class Screen:
 		# Stock position
 		elemStart = len(lines)
 		actStart = len(lines)
+		playStart = len(lines)
 
 		# Initial positions
 		if "elements:" in lines:
 			elemStart = lines.index("elements:")
 		if "actions:" in lines:
 			actStart = lines.index("actions:")
+		if "play:" in lines:
+			playStart = lines.index("play:")
 
 		# Lists elements and actions
 		self.elements = lines[elemStart:actStart]
-		self.actions  = lines[actStart:len(lines)]
+		self.actions  = lines[actStart:playStart]
+		self.play 	  = lines[playStart:len(lines)]
 
 		# Handling lines
 		for line in lines:
@@ -154,6 +155,13 @@ class Screen:
 				self.config[screen]["actions"]["icons"] = []
 				self.config[screen]["actions"]["links"] = []
 				self.processingActions(screen, self.actions)
+
+			# Play screen only
+			elif command == "play" and screen == self.config["playScreen"]:
+				self.config[screen]["play"] = {}
+				self.config[screen]["play"]["condition"] = []
+				self.config[screen]["play"]["actions"] = []
+				self.processingPlay(screen, self.play)
 
 	# Processing elements
 	def processingElements(self, screen, lines):
@@ -231,6 +239,43 @@ class Screen:
 				obj = self.actionLink(value)
 				# Adding event parameters
 				self.config[screen]["actions"]["links"].append(obj)
+
+	# Processing play
+	def processingPlay(self, screen, lines):
+		# Stock position
+		condStart = len(lines)
+		textStart = len(lines)
+		evenStart  = len(lines)
+
+		# Initial positions
+		if "condition:" in lines:
+			condStart = lines.index("condition:")
+		if "text:" in lines:
+			textStart = lines.index("text:")
+		if "events:" in lines:
+			evenStart = lines.index("events:")
+
+		# Lists elements and actions
+		self.condition 	= lines[condStart:textStart]
+		self.text  		= lines[textStart:evenStart]
+		self.events 	= lines[evenStart:len(lines)]
+
+		# Handling condition
+		for line in self.condition:
+			if commonCommands(line) == False: continue
+			print(line)
+
+		# Handling text
+		for line in self.text:
+			if commonCommands(line) == False: continue
+			print(line)
+
+		# Handling events
+		for line in self.events:
+			if commonCommands(line) == False: continue
+			print(line)
+
+
 
 	# Prcessing subscreen
 	def processingSubscreen(self, subscreen, lines):
