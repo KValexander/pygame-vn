@@ -1,5 +1,6 @@
 # Connecting libraries
 import pygame
+import re
 
 # Connecting file
 from settings import *
@@ -50,6 +51,16 @@ def clearVariable(var, clear):
 	var = var.split("=")
 	return var
 
+# Initial parsing of the line
+def parsingLine(line):
+	define = re.split(r"(^\w+)", line)
+	define = [x for x in define if x != '']
+	command, value = "", ""
+	if len(define) >= 2:
+		command, value = define[0], define[1]
+	else: command = define[0]
+	return command, value
+
 # Cleaning the lines
 def clearLines(lines):
 	badChars = ['\r', '\n', '\t']
@@ -62,12 +73,9 @@ def clearLines(lines):
 # Define color
 def defineColor(color):
 	result = ()
-	if color == "WHITE": result = WHITE
-	elif color == "BLACK": result = BLACK
-	else:
-		color = removeChar(color)
-		arr = color.split(",")
-		result = (int(arr[0]), int(arr[1]), int(arr[2]))
+	color = removeChar(color)
+	arr = color.split(",")
+	result = (int(arr[0]), int(arr[1]), int(arr[2]))
 	return result
 
 # Define size

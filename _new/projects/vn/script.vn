@@ -1,11 +1,14 @@
-name n1 = ("Первая", WHITE)
-name n2 = ("Вторая", WHITE)
-name n3 = ("Третья", WHITE)
+# type name = ("value", color)
+name n1 = ("Первая", (255, 255, 255))
+name n2 = ("Вторая", (255, 255, 255))
+name n3 = ("Третья", (255, 255, 255))
 
-character one = ("1.png", (0.0; 0.0))
-character two = ("2.png", (0.0; 0.0))
-character three = ("3.png", (0.0; 0.0))
+# type name = ("src", xy)
+character one = ("1.png", (0.0, 0.0))
+character two = ("2.png", (0.0, 0.0))
+character three = ("3.png", (0.0, 0.0))
 
+# type name = n
 count i = 0
 count j = 0
 count e = 0

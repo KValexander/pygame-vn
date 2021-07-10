@@ -215,7 +215,6 @@ class Play:
 			if re.search(r"{.}", self.currentLine):
 				for count in re.finditer(r"{.}", self.currentLine):
 					counter = removeChar(count[0])
-					print(self.counters[counter])
 					if counter in self.counters:
 						self.currentLine = re.sub(r"{"+counter+"}", str(self.counters[counter]), self.currentLine)
 

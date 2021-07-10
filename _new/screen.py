@@ -36,23 +36,13 @@ class Screen:
 		if self.currentStart >= self.currentEnd: return
 		self.lineProcessing()
 
-	# Initial parsing of the line
-	def parsingLine(self, line):
-		define = re.split(r"(^\w+)", line)
-		define = [x for x in define if x != '']
-		command, value = "", ""
-		if len(define) >= 2:
-			command, value = define[0], define[1]
-		else: command = define[0]
-		return command, value
-
 	# Processing the current line
 	def lineProcessing(self):
 		self.currentLine = self.lines[self.currentStart]
 		if commonCommands(self.currentLine) == False: return self.nextLine()
 
 		# Initial parsing of the line
-		command, value = self.parsingLine(self.currentLine)
+		command, value = parsingLine(self.currentLine)
 
 		# Getting screens
 		if command == "screens":
@@ -119,7 +109,7 @@ class Screen:
 			if commonCommands(line) == False: continue
 
 			# Initial parsing of the line
-			command, value = self.parsingLine(line)
+			command, value = parsingLine(line)
 
 			# As an example of some optimization
 			if command in statics:
@@ -159,8 +149,9 @@ class Screen:
 			# Play screen only
 			elif command == "play" and screen == self.config["playScreen"]:
 				self.config[screen]["play"] = {}
-				self.config[screen]["play"]["condition"] = []
-				self.config[screen]["play"]["actions"] = []
+				self.config[screen]["play"]["condition"] = {}
+				self.config[screen]["play"]["text"] = {}
+				self.config[screen]["play"]["events"] = []
 				self.processingPlay(screen, self.play)
 
 	# Processing elements
@@ -170,7 +161,7 @@ class Screen:
 			if commonCommands(line) == False: continue
 
 			# Initial parsing of the line
-			command, value = self.parsingLine(line)
+			command, value = parsingLine(line)
 
 			# Adding icon
 			if command == "icon":
@@ -196,7 +187,6 @@ class Screen:
 				texture = self.createTexture(value)
 				self.config[screen]["elements"]["textures"].append(texture)
 
-
 			# Adding surface
 			elif command == "surface":
 				# Creating and adding surface
@@ -209,7 +199,6 @@ class Screen:
 				inscription = self.createInscription(value)
 				self.config[screen]["elements"]["inscriptions"].append(inscription)
 
-
 	# Processing actions
 	def processingActions(self, screen, lines):
 		# Handling lines
@@ -217,7 +206,7 @@ class Screen:
 			if commonCommands(line) == False: continue
 
 			# Initial parsing of the line
-			command, value = self.parsingLine(line)
+			command, value = parsingLine(line)
 
 			# Assigning events to mouse
 			if command == "mouse":
@@ -263,19 +252,64 @@ class Screen:
 		# Handling condition
 		for line in self.condition:
 			if commonCommands(line) == False: continue
-			print(line)
+
+			# Initial parsing of the line
+			command, value = parsingLine(line)
+			value = value.replace(" ", "")
+
+			# Text color
+			if command == "textcolor":
+				self.config[screen]["play"]["condition"]["textColor"] = defineColor(value)
+			# Background color
+			elif command == "backgroundcolor":
+				self.config[screen]["play"]["condition"]["backgroundColor"] = defineColor(value)
+			# Indentation
+			elif command == "indentation":
+				self.config[screen]["play"]["condition"]["indentation"] = int(value)
+			# Width
+			elif command == "width":
+				self.config[screen]["play"]["condition"]["width"] = defineOneSize(value, self.options["size"][0])
+			# Height
+			elif command == "height":
+				self.config[screen]["play"]["condition"]["height"] = defineOneSize(value, self.options["size"][1])
 
 		# Handling text
 		for line in self.text:
 			if commonCommands(line) == False: continue
-			print(line)
+
+			# Initial parsing of the line
+			command, value = parsingLine(line)
+			value = value.replace(" ", "")
+
+			# Start coordinate
+			if command == "startcoord":
+				self.config[screen]["play"]["text"]["startCoord"] = defineSize(value, self.options["size"])
+			# Width
+			elif command == "width":
+				self.config[screen]["play"]["text"]["width"] = defineOneSize(value, self.options["size"][0])
+			# Size
+			elif command == "size":
+				self.config[screen]["play"]["text"]["size"] = int(value)
+			# Color
+			elif command == "color":
+				self.config[screen]["play"]["text"]["color"] = defineColor(value)
+			# Line height
+			elif command == "lineheight":
+				self.config[screen]["play"]["text"]["lineHeight"] = int(value)
 
 		# Handling events
 		for line in self.events:
 			if commonCommands(line) == False: continue
-			print(line)
 
+			# Initial parsing of the line
+			command, value = parsingLine(line)
 
+			# Mouse handling
+			if command == "mouse":
+				# Event assignment
+				obj = self.actionMouse(value)
+				# Adding event parameters
+				self.config[screen]["play"]["events"].append(obj)
 
 	# Prcessing subscreen
 	def processingSubscreen(self, subscreen, lines):
@@ -303,7 +337,7 @@ class Screen:
 			if commonCommands(line) == False: continue
 
 			# Initial parsing of the line
-			command, value = self.parsingLine(line)
+			command, value = parsingLine(line)
 
 			# Getting and check main screen
 			screen = getMainScreen(subscreen, self.config)
@@ -342,7 +376,7 @@ class Screen:
 			if commonCommands(line) == False: continue
 
 			# Initial parsing of the line
-			command, value = self.parsingLine(line)
+			command, value = parsingLine(line)
 
 			# Adding icon
 			if command == "icon":
@@ -387,7 +421,7 @@ class Screen:
 			if commonCommands(line) == False: continue
 
 			# Initial parsing of the line
-			command, value = self.parsingLine(line)
+			command, value = parsingLine(line)
 
 			# Assigning events to mouse
 			if command == "mouse":
@@ -497,6 +531,8 @@ class Screen:
 		if parse[0] == "leftclick": button = 1
 		elif parse[0] == "middleclick": button = 2
 		elif parse[0] == "rightclick": button = 3
+		elif parse[0] == "wheelup": button = 4
+		elif parse[0] == "wheelbottom": button = 5
 
 		# Calling and hide up the screen
 		if parse[1] == "call" or parse[1] == "hide":
@@ -506,6 +542,12 @@ class Screen:
 
 		# Closing the current screen or Closing the window
 		elif parse[1] == "close" or parse[1] == "end" or parse[1] == "start":
+			tpe = 1025
+			event = parse[1]
+			rtrn = parse[1]
+
+		# Otherwise
+		else:
 			tpe = 1025
 			event = parse[1]
 			rtrn = parse[1]

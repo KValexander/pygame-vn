@@ -121,31 +121,32 @@ screen play:
 		# leftclick   - нажатие левой клавиши мыши
 		# middleclick - нажатие средней клавиши мыши
 		# rightclick  - нажатие правой клавиши мыши
-		mouse rightclick call menu_save
+		mouse middleclick call menu_save
 
 	# Настройки игрового экрана, доступно только для главного экрана игры, в других экранах работать не будет
 	play:
-		# Конфигурации экрана выбора, обязателен
+		# Конфигурация полей выбора, обязателен
 		condition:
 			textcolor (255, 255, 255)
-			background (0, 0, 0)
+			backgroundcolor (0, 0, 0)
 			indentation 20
 			width (0.5)
 			height (0.05)
 
 		# Конфигурация текста, обязателен
 		text:
-			startcoord (0.0, 0.0)
-			width (0.3)
-			size 20
+			startcoord (0.005, 0.805)
+			width (0.995)
+			size 25
 			color (255, 255, 255)
 			lineheight 25
 
 		# Специальные события для экрана игры, обязателен
 		events:
 			mouse leftclick nextline
-			mouse up 		nextline
-			mouse bottom 	prevline
+			mouse rightclick prevline
+			mouse wheelup nextline
+			mouse wheelbottom prevline
 
 	# Обязательная команда для закрытия конфигурирования экрана
 	end play

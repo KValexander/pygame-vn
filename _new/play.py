@@ -77,7 +77,7 @@ class Play:
 	def processingScript(self):
 		self.refreshScreen(self.screen.config["playScreen"])
 		if not "play" in self.currentScreen: return
-		self.script = Script(self.window, self.scriptsdata, self.option.config, self.currentScreen)
+		self.script = Script(self.window, self.scriptsdata, self.option.config, self.currentScreen["play"])
 
 	# Refresh screen
 	def refreshScreen(self, screen):
@@ -274,7 +274,6 @@ class Play:
 	# Intermediant calculation
 	def update(self):
 		self.clock.tick(self.option.config["FPS"])
-
 		self.events()
 
 	# Rendering game objects
@@ -308,6 +307,10 @@ class Play:
 					# Rendering icons
 					for icon in self.currentScreen["elements"]["icons"]:
 						icon.draw(self.window)
+				
+				# Rendering script
+				if "play" in self.currentScreen:
+						self.script.draw(self.window)
 
 			# Rendering subscreen
 			if self.currentScreen["subdisplay"]:
