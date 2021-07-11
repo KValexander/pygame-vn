@@ -156,7 +156,7 @@ class Script:
 			else: return self.nextLine()
 
 		# Line output with no name
-		if re.search(r"(^\".*?\"$)", self.config["lines"]["line"]):
+		if re.search(r"(^\".*?\"$)|(^\'.*?\'$)", self.config["lines"]["line"]):
 			self.setReplica()
 		# Line with commands
 		else: self.commandProcessing()
@@ -204,6 +204,32 @@ class Script:
 		if self.config["bool"]["back"]: self.prevLine()
 		else: self.nextLine()
 
+	# Condition fulfillment processing
+	def conditionProcessing(self, commands):
+		commands = commands.split(";")
+		self.config["bool"]["back"] = False
+		self.config["bool"]["choice"] = False
+
+		# Handling commands
+		for command in commands:
+			parse = re.findall(r"\w+", command)
+			# Handling counters
+			if parse[0] in self.config["variables"]["counters"]:
+				if command.find("++") != -1:
+					self.config["variables"]["counters"][parse[0]] += 1
+				elif command.find("--") != -1:
+					self.config["variables"]["counters"][parse[0]] -= 1
+
+			# Going to label
+			elif parse[0] == "go":
+				self.setLabel(parse[1])
+
+			# Continue
+			elif parse[0] == "continue":
+				self.config["bool"]["choice"] = False
+
+		self.lineProcessing()
+
 	# Handling events
 	def events(self, e):
 		if self.config["bool"]["start"] == False: self.config["bool"]["start"] = True
@@ -218,7 +244,27 @@ class Script:
 						elif event["event"] == "prevline":
 							self.prevLine()
 		elif self.config["bool"]["choice"]:
-			pass
+			# Condition clause events
+			self.eventCondition(e)
+
+	# Condition clause events
+	def eventCondition(self, e):
+		# Condition clause selection processing
+		y = self.config["condition"]["xy"][1]
+		for clause in self.config["condition"]["clauses"]:
+			y += self.screen["condition"]["indentation"]
+			# Handling a click on a condition clause
+			if e.type == pygame.MOUSEBUTTONDOWN:
+				if e.button == 1:
+					if mouseCollision((self.config["condition"]["xy"][0], y), self.config["condition"]["wh"], e.pos):
+						self.conditionProcessing(clause["return"])
+
+			# Processing of pointing to a condition clause
+			if e.type == pygame.MOUSEMOTION:
+				if mouseCollision((self.config["condition"]["xy"][0], y), self.config["condition"]["wh"], e.pos):
+					clause["hover"] = True
+				else: clause["hover"] = False
+
 
 	# Rendering objects
 	def draw(self, window):
@@ -258,14 +304,14 @@ class Script:
 		window.blit(self.config["condition"]["text"], self.config["condition"]["location"])
 
 		yy = [self.config["condition"]["xy"][1], self.config["condition"]["location"][1]]
-		for claus in self.config["condition"]["clauses"]:
+		for clause in self.config["condition"]["clauses"]:
 			yy[0] += self.screen["condition"]["indentation"]
 			yy[1] += self.screen["condition"]["indentation"]
-			x = self.config["condition"]["xy"][0] + self.config["condition"]["wh"][0] / 2 - claus["textwh"][0] / 2
+			x = self.config["condition"]["xy"][0] + self.config["condition"]["wh"][0] / 2 - clause["textwh"][0] / 2
 			window.blit(self.config["condition"]["surface"], (self.config["condition"]["xy"][0], yy[0]))
-			window.blit(claus["text"], (x, yy[1]))
-			if claus["hover"]:
-				pygame.draw.rect(window, self.screen["condition"]["outline"], ((self.config["condition"]["xy"][0], yy[0]), self.config["condition"]["wh"]), self.screen["condition"]["outline"])
+			window.blit(clause["text"], (x, yy[1]))
+			if clause["hover"]:
+				pygame.draw.rect(window, self.screen["condition"]["outline"], ((self.config["condition"]["xy"][0], yy[0]), self.config["condition"]["wh"]), self.screen["condition"]["border"])
 
 	# Passing data to the main class
 	def getConfig(self):
@@ -380,8 +426,8 @@ class Script:
 		self.config["render"]["clauses"].clear()
 
 		# Parsing in the output of a condition
-		value = re.findall(r"\w+", value)
-		value = " ".join(value)
+		value = re.findall(r"(\".*?\")|(\'.*?\')", value)[0]
+		value = removeChar([x for x in value if x != ''][0])
 		self.config["lines"]["line"] = value
 		self.setTextOnLine()
 
