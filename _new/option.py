@@ -116,26 +116,6 @@ class Option:
 			elif line.find("inscription_size") != -1:
 				self.config["inscriptionSize"] = int(value)
 
-			# Play text coordinate
-			elif line.find("play_text_coord") != -1:
-				self.config["playTextCoord"] = defineSize(value, self.config["size"])
-
-			# Play text width
-			elif line.find("play_text_width") != -1:
-				self.config["playTextWidth"] = defineOneSize(value, self.config["size"][0])
-
-			# Play text size
-			elif line.find("play_text_size") != -1:
-				self.config["playTextSize"] = int(value)
-
-			# Play text color
-			elif line.find("play_text_color") != -1:
-				self.config["playTextColor"] = defineColor(value)
-
-			# Play line height
-			elif line.find("play_line_height") != -1:
-				self.config["playLineHeight"] = int(value)
-
 		# Path to screen
 		self.config["pathToScreen"] = self.config["pathToProject"] + self.config["screenFolder"]
 		# Path to character

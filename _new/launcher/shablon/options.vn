@@ -33,10 +33,3 @@ text_line_height = 25
 # Настройки надписей
 inscription_color = (255,255,255)
 inscription_size  = 50
-
-# Настройки текста экрана игры
-play_text_coord  = (0.0, 0.0)
-play_text_width  = (0.3)
-play_text_size   = 20
-play_text_color  = (255,255,255)
-play_line_height = 25

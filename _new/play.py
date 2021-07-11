@@ -356,4 +356,3 @@ class Play:
 		while self.running:
 			self.update()
 			self.render()
-

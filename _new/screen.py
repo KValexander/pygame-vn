@@ -268,15 +268,21 @@ class Screen:
 			# Background color
 			elif command == "backgroundcolor":
 				self.config[screen]["play"]["condition"]["backgroundColor"] = defineColor(value)
+			# Background color
+			elif command == "outline":
+				self.config[screen]["play"]["condition"]["outline"] = defineColor(value)
+			# Background color
+			elif command == "margin":
+				self.config[screen]["play"]["condition"]["margin"] = int(value)
+			# Background color
+			elif command == "border":
+				self.config[screen]["play"]["condition"]["border"] = int(value)
+			# Background color
+			elif command == "alpha":
+				self.config[screen]["play"]["condition"]["alpha"] = int(value)
 			# Indentation
 			elif command == "indentation":
 				self.config[screen]["play"]["condition"]["indentation"] = int(value)
-			# Width
-			elif command == "width":
-				self.config[screen]["play"]["condition"]["width"] = defineOneSize(value, self.options["size"][0])
-			# Height
-			elif command == "height":
-				self.config[screen]["play"]["condition"]["height"] = defineOneSize(value, self.options["size"][1])
 
 		# Handling name
 		for line in name:

@@ -43,9 +43,10 @@ class Script:
 			# Rendering
 			"render": {
 				"characters": {},
+				"clauses": []
 			},
-			# Conditions
-			"conditions": {},
+			# Condition
+			"condition": {},
 			# Boolean
 			"bool": {
 				"hide": False,
@@ -171,7 +172,7 @@ class Script:
 			self.config["bool"]["nameshow"] = True
 			self.setNameOnLine()
 
-			self.config["lines"]["line"] = removeChar(value.replace(" ", "", 1))
+			self.config["lines"]["line"] = removeChar(value)
 			return self.setTextOnLine()
 
 		# Background
@@ -185,6 +186,12 @@ class Script:
 		# Hide characters
 		elif command == "hide":
 			self.hideCharacter(value)
+
+		# Condition
+		elif command == "condition":
+			if "condition" in self.screen:
+				self.config["bool"]["choice"] = True
+				return self.setCondition(value)
 
 		# Going to label
 		elif command == "go":
@@ -200,7 +207,7 @@ class Script:
 	# Handling events
 	def events(self, e):
 		if self.config["bool"]["start"] == False: self.config["bool"]["start"] = True
-		else:
+		elif self.config["bool"]["choice"] == False:
 			# Handling events
 			for event in self.screen["events"]:
 				# Event handling
@@ -210,6 +217,8 @@ class Script:
 							self.nextLine()
 						elif event["event"] == "prevline":
 							self.prevLine()
+		elif self.config["bool"]["choice"]:
+			pass
 
 	# Rendering objects
 	def draw(self, window):
@@ -227,6 +236,10 @@ class Script:
 				if self.config["render"]["characters"][character]["state"]:
 					drawImage(window, self.config["render"]["characters"][character]["image"], self.config["render"]["characters"][character]["coord"])
 
+		# Rendering condition
+		if self.config["bool"]["choice"]:
+			self.drawCondition(window)
+
 	# Output text on window
 	def outTextOnWindow(self, window):
 		# Rendering lines
@@ -239,10 +252,24 @@ class Script:
 		if self.config["bool"]["nameshow"]:
 			window.blit(self.config["lines"]["name"], self.screen["name"]["startCoord"])
 
+	# Rendering cluses condition
+	def drawCondition(self, window):
+		window.blit(self.config["condition"]["surface"], self.config["condition"]["xy"])
+		window.blit(self.config["condition"]["text"], self.config["condition"]["location"])
+
+		yy = [self.config["condition"]["xy"][1], self.config["condition"]["location"][1]]
+		for claus in self.config["condition"]["clauses"]:
+			yy[0] += self.screen["condition"]["indentation"]
+			yy[1] += self.screen["condition"]["indentation"]
+			x = self.config["condition"]["xy"][0] + self.config["condition"]["wh"][0] / 2 - claus["textwh"][0] / 2
+			window.blit(self.config["condition"]["surface"], (self.config["condition"]["xy"][0], yy[0]))
+			window.blit(claus["text"], (x, yy[1]))
+			if claus["hover"]:
+				pygame.draw.rect(window, self.screen["condition"]["outline"], ((self.config["condition"]["xy"][0], yy[0]), self.config["condition"]["wh"]), self.screen["condition"]["outline"])
+
 	# Passing data to the main class
 	def getConfig(self):
 		return self.config
-
 
 	# Set font
 	def setFont(self, case):
@@ -307,7 +334,8 @@ class Script:
 			# Getting src and coord for image
 			if value[0] in self.config["variables"]["characters"]:
 				coord = self.config["variables"]["characters"][value[0]]["coord"]
-				src = self.options["pathToCharacter"] + value[0]
+				src = self.options["pathToCharacter"] + self.config["variables"]["characters"][value[0]]["src"]
+				print(src)
 				if os.path.exists(src) == False:
 					src = self.options["pathToCharacterStock"]
 			else:
@@ -345,6 +373,69 @@ class Script:
 		elif character == "characters":
 			for char in self.config["render"]["characters"]:
 				self.config["render"]["characters"][char]["state"] = False
+
+	# Set condition
+	def setCondition(self, value):
+		self.config["condition"].clear()
+		self.config["render"]["clauses"].clear()
+
+		# Parsing in the output of a condition
+		value = re.findall(r"\w+", value)
+		value = " ".join(value)
+		self.config["lines"]["line"] = value
+		self.setTextOnLine()
+
+		# Receiving all clauses of conditions
+		start = self.config["lines"]["start"]
+		ends = [x[0] for x in enumerate(self.lines) if x[1] == "end condition"]
+		
+		# Sorting and getting the closest condition close value
+		ends = [x for x in ends if x > start]
+		minimum = float("inf")
+		for val in ends:
+			if abs(val - start) < minimum:
+				end = val
+				minimum = abs(val - start)
+
+		# Getting a list of conditions
+		clauses = self.lines[start:end]
+		clauses.pop(0)
+
+		# By the end of the condition
+		self.config["lines"]["start"] = end
+
+		# Getting condition data
+		size = self.config["font"].size(value)
+		text = self.config["font"].render(value, True, self.screen["condition"]["textColor"])
+		wh = (size[0] + self.screen["condition"]["margin"] * 2, size[1] + self.screen["condition"]["margin"])
+		xy = (self.options["size"][0] / 2 - wh[0] / 2, self.options["size"][0] / 2 - wh[1] - (len(clauses) * self.screen["condition"]["indentation"] * 1.5))
+		surface = pygame.Surface(wh)
+		location = (xy[0] + self.screen["condition"]["margin"], xy[1] + self.screen["condition"]["margin"] / 2)
+
+		surface.fill(self.screen["condition"]["backgroundColor"])
+		surface.set_alpha(self.screen["condition"]["alpha"])
+
+		# Adding condition data
+		self.config["condition"]["size"] = size
+		self.config["condition"]["text"] = text
+		self.config["condition"]["wh"] = wh
+		self.config["condition"]["xy"] = xy
+		self.config["condition"]["surface"] = surface
+		self.config["condition"]["location"] = location
+		self.config["condition"]["clauses"] = []
+
+		# Handling clauses
+		for claus in clauses:
+			value, commands = claus.split(":")
+			text = self.config["font"].render(value, True, self.screen["condition"]["textColor"])
+			textwh = self.config["font"].size(value)
+
+			self.config["condition"]["clauses"].append({
+				"text": text,
+				"textwh": textwh,
+				"return": commands,
+				"hover": False
+			})
 
 	# Set label
 	def setLabel(self, value):
