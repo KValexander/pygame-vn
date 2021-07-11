@@ -41,6 +41,11 @@ class Play:
 		# Event main lock
 		self.eventmainlock = False
 
+		# Objects
+		self.option = None
+		self.screen = None
+		self.script = None
+
 		# Retrieving script files data
 		self.gettingFilesData()
 		# Processing option data
@@ -71,13 +76,14 @@ class Play:
 	# Processing screen data
 	def processingScreen(self):
 		self.screen = Screen(self.window, self.screensdata, self.option.config)
-		self.refreshScreen(self.screen.config["startScreen"])
+		self.startScreen = self.screen.config["startScreen"]
+		self.refreshScreen(self.startScreen)
 
 	# Processing script data
 	def processingScript(self):
 		self.refreshScreen(self.screen.config["playScreen"])
 		if not "play" in self.currentScreen: return
-		self.script = Script(self.window, self.scriptsdata, self.option.config, self.currentScreen["play"])
+		self.script = Script(self.window, self.scriptsdata, self.option.config, self.currentScreen["play"], self)
 
 	# Refresh screen
 	def refreshScreen(self, screen):
@@ -101,7 +107,7 @@ class Play:
 				if "background" in self.currentScreen:
 					src = self.folder + self.option.config["screenFolder"] + self.currentScreen["background"]
 					if os.path.exists(src) == False:
-						src = self.option.config["pathToScreen"] + "stock.jpg"
+						src = self.option.config["pathToBackgroundStock"]
 					self.background = scLoadImage(src, self.option.config["size"])
 			# Sub screen
 			else:
@@ -139,7 +145,7 @@ class Play:
 					if "background" in self.currentSubscreen:
 						src = self.folder + self.option.config["screenFolder"] + self.currentSubscreen["background"]
 						if os.path.exists(src) == False:
-							src = self.option.config["pathToScreen"] + "stock.jpg"
+							src = self.option.config["pathToBackgroundStock"]
 						self.subbackground = scLoadImage(src, self.option.config["size"])
 
 	# Hiding the screen
@@ -198,7 +204,7 @@ class Play:
 					# Handling actions for interface elements
 					self.actions(event, self.currentScreen)
 					# Handling play events
-					if "play" in self.currentScreen:
+					if "play" in self.currentScreen and self.script != None:
 						self.script.events(event)
 
 				# Subscreen events
@@ -284,7 +290,9 @@ class Play:
 		if self.currentScreen["display"]:
 			if self.subbackground == None:
 				# Rendering background
-				if "background" in self.currentScreen:
+				if "play" in self.currentScreen and self.script != None:
+					self.script.background(self.window)
+				elif "background" in self.currentScreen:
 					drawImage(self.window, self.background, (0, 0))
 
 				# Rendering elements
@@ -309,7 +317,7 @@ class Play:
 						icon.draw(self.window)
 				
 				# Rendering script
-				if "play" in self.currentScreen:
+				if "play" in self.currentScreen and self.script != None:
 						self.script.draw(self.window)
 
 			# Rendering subscreen

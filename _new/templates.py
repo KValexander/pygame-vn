@@ -16,13 +16,14 @@ from common import *
 
 # class Icon
 class Icon:
-	def __init__(self, name, src, xy, wh, folder):
+	def __init__(self, name, src, xy, wh, folder, srcstock):
 		# Custom variables
 		self.name 	= name
 		self.src  	= src
 		self.xy   	= xy
 		self.wh   	= wh
 		self.folder = folder
+		self.srcstock = srcstock
 
 		# Boolean variables
 		self.hide 		= False
@@ -35,7 +36,7 @@ class Icon:
 		self.pathToImageHover = ""
 		self.pathToImage = self.folder + self.src
 		if os.path.exists(self.pathToImage) == False:
-			self.pathToImage = self.folder + "noimage.png"
+			self.pathToImage = self.srcstock
 		if self.wh != None:self.image = scLoadImage(self.pathToImage, self.wh)
 		else: self.image = loadImage(self.pathToImage)
 		self.rect = self.image.get_rect()
@@ -53,7 +54,7 @@ class Icon:
 			self.setHover = True
 			self.pathToImageHover = self.folder + src
 			if os.path.exists(self.pathToImageHover) == False:
-				self.pathToImageHover = self.folder + "noimage.png"
+				self.pathToImageHover = self.srcstock
 			self.hoverImage = scLoadImage(self.pathToImageHover, self.wh)
 
 # class Link
@@ -153,13 +154,14 @@ class Text:
 
 # class Texture
 class Texture:
-	def __init__(self, name, src, xy, wh, folder):
+	def __init__(self, name, src, xy, wh, folder, srcstock):
 		# Custom variables
 		self.name 	= name
 		self.src  	= src
 		self.xy   	= xy
 		self.wh   	= wh
 		self.folder = folder
+		self.srcstock = srcstock
 
 		# Boolean variables
 		self.hide 		= False
@@ -167,7 +169,7 @@ class Texture:
 		# Default variables
 		self.pathToImage = self.folder + self.src
 		if os.path.exists(self.pathToImage) == False:
-			self.pathToImage = self.folder + "noimage.png"
+			self.pathToImage = self.srcstock
 		self.image = scLoadImage(self.pathToImage, self.wh)
 		self.rect = self.image.get_rect()
 

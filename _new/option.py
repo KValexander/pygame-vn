@@ -44,9 +44,29 @@ class Option:
 			elif line.find("screen_folder") != -1:
 				self.config["screenFolder"] = value
 
-			# Screen directory
+			# Src icon
 			elif line.find("src_icon") != -1:
 				self.config["srcIcon"] = value
+
+			# Character directory
+			elif line.find("character_folder") != -1:
+				self.config["characterFolder"] = value
+
+			# Background directory
+			elif line.find("background_folder") != -1:
+				self.config["backgroundFolder"] = value
+
+			# Image stock
+			elif line.find("image_stock") != -1:
+				self.config["imageStock"] = value
+
+			# Character stock
+			elif line.find("character_stock") != -1:
+				self.config["characterStock"] = value
+
+			# Background stock
+			elif line.find("background_stock") != -1:
+				self.config["backgroundStock"] = value
 
 			# System font
 			elif line.find("system_font") != -1:
@@ -118,6 +138,16 @@ class Option:
 
 		# Path to screen
 		self.config["pathToScreen"] = self.config["pathToProject"] + self.config["screenFolder"]
+		# Path to character
+		self.config["pathToCharacter"] = self.config["pathToProject"] + self.config["characterFolder"]
+		# Path to background
+		self.config["pathToBackground"] = self.config["pathToProject"] + self.config["backgroundFolder"]
+		# Path to image stock
+		self.config["pathToImageStock"] = self.config["pathToScreen"] + self.config["imageStock"]
+		# Path to character stock
+		self.config["pathToCharacterStock"] = self.config["pathToScreen"] + self.config["characterStock"]
+		# Path to background stock
+		self.config["pathToBackgroundStock"] = self.config["pathToScreen"] + self.config["backgroundStock"]
 
 		# Font
 		if self.config["typeFont"] == "system": self.config["usedFont"] = self.config["systemFont"]

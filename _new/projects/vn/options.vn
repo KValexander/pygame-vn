@@ -1,11 +1,17 @@
 # Переменные экрана
 window_size 	= (1024, 768)
 project_name 	= "VN"
-fps 			= 30
+fps 			= 20
 
 # Настройки путей
-screen_folder 	= gui/
-src_icon 		= gui/icon.png
+screen_folder 	  = gui/
+src_icon 		  = gui/icon.png
+character_folder  = images/characters/
+background_folder = images/medley/
+# Стоковые фотографии по пути папки screen_folder
+image_stock		  = noimage.png
+character_stock	  = characterstock.png
+background_stock  = backgroundstock.jpg
 
 # Шрифты
 system_font = calibri

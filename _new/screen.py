@@ -100,9 +100,9 @@ class Screen:
 			playStart = lines.index("play:")
 
 		# Lists elements and actions
-		self.elements = lines[elemStart:actStart]
-		self.actions  = lines[actStart:playStart]
-		self.play 	  = lines[playStart:len(lines)]
+		elements = lines[elemStart:actStart]
+		actions  = lines[actStart:playStart]
+		play 	  = lines[playStart:len(lines)]
 
 		# Handling lines
 		for line in lines:
@@ -136,7 +136,7 @@ class Screen:
 				self.config[screen]["elements"]["textures"] = []
 				self.config[screen]["elements"]["surfaces"] = []
 				self.config[screen]["elements"]["inscriptions"] = []
-				self.processingElements(screen, self.elements)
+				self.processingElements(screen, elements)
 
 			# Handling element actions
 			elif command == "actions":
@@ -144,15 +144,16 @@ class Screen:
 				self.config[screen]["actions"]["mouse"] = []
 				self.config[screen]["actions"]["icons"] = []
 				self.config[screen]["actions"]["links"] = []
-				self.processingActions(screen, self.actions)
+				self.processingActions(screen, actions)
 
 			# Play screen only
 			elif command == "play" and screen == self.config["playScreen"]:
 				self.config[screen]["play"] = {}
 				self.config[screen]["play"]["condition"] = {}
+				self.config[screen]["play"]["name"] = {}
 				self.config[screen]["play"]["text"] = {}
 				self.config[screen]["play"]["events"] = []
-				self.processingPlay(screen, self.play)
+				self.processingPlay(screen, play)
 
 	# Processing elements
 	def processingElements(self, screen, lines):
@@ -170,19 +171,19 @@ class Screen:
 				self.config[screen]["elements"]["icons"].append(link)
 
 			# Adding link
-			if command == "link":
+			elif command == "link":
 				# Creating and adding link
 				link = self.createLink(value)
 				self.config[screen]["elements"]["links"].append(link)
 
 			# Adding text
-			if command == "text":
+			elif command == "text":
 				# Creating and adding text
 				text = self.createText(value)
 				self.config[screen]["elements"]["texts"].append(text)
 
 			# Adding texture
-			if command == "texture":
+			elif command == "texture":
 				# Creating and adding texture
 				texture = self.createTexture(value)
 				self.config[screen]["elements"]["textures"].append(texture)
@@ -234,23 +235,27 @@ class Screen:
 		# Stock position
 		condStart = len(lines)
 		textStart = len(lines)
-		evenStart  = len(lines)
+		nameStart = len(lines)
+		evenStart = len(lines)
 
 		# Initial positions
-		if "condition:" in lines:
-			condStart = lines.index("condition:")
-		if "text:" in lines:
-			textStart = lines.index("text:")
-		if "events:" in lines:
-			evenStart = lines.index("events:")
+		if "condition:" in lines: condStart = lines.index("condition:")
+		if "name:" 		in lines: nameStart = lines.index("name:")
+		if "text:" 		in lines: textStart = lines.index("text:")
+		if "events:" 	in lines: evenStart = lines.index("events:")
+
+		# Sorting
+		sort = [condStart, textStart, nameStart, evenStart]
+		sort.sort()
 
 		# Lists elements and actions
-		self.condition 	= lines[condStart:textStart]
-		self.text  		= lines[textStart:evenStart]
-		self.events 	= lines[evenStart:len(lines)]
+		condition 	= lines[condStart:nameStart]
+		name 		= lines[nameStart:textStart]
+		text  		= lines[textStart:evenStart]
+		events 		= lines[evenStart:len(lines)]
 
 		# Handling condition
-		for line in self.condition:
+		for line in condition:
 			if commonCommands(line) == False: continue
 
 			# Initial parsing of the line
@@ -273,8 +278,24 @@ class Screen:
 			elif command == "height":
 				self.config[screen]["play"]["condition"]["height"] = defineOneSize(value, self.options["size"][1])
 
+		# Handling name
+		for line in name:
+			if commonCommands(line) == False: continue
+
+			# Initial parsing of the line
+			command, value = parsingLine(line)
+			value = value.replace(" ", "")
+
+			# Start coordinate
+			if command == "startcoord":
+				self.config[screen]["play"]["name"]["startCoord"] = defineSize(value, self.options["size"])
+
+			# Size
+			elif command == "size":
+				self.config[screen]["play"]["name"]["size"] = int(value)
+
 		# Handling text
-		for line in self.text:
+		for line in text:
 			if commonCommands(line) == False: continue
 
 			# Initial parsing of the line
@@ -298,7 +319,7 @@ class Screen:
 				self.config[screen]["play"]["text"]["lineHeight"] = int(value)
 
 		# Handling events
-		for line in self.events:
+		for line in events:
 			if commonCommands(line) == False: continue
 
 			# Initial parsing of the line
@@ -329,8 +350,8 @@ class Screen:
 			actStart = lines.index("actions:")
 
 		# Lists elements and actions
-		self.elements = lines[elemStart:actStart]
-		self.actions  = lines[actStart:len(lines)]
+		elements = lines[elemStart:actStart]
+		actions  = lines[actStart:len(lines)]
 
 		# Handling lines
 		for line in lines:
@@ -359,7 +380,7 @@ class Screen:
 				self.config[screen]["subscreens"][subscreen]["elements"]["textures"] = []
 				self.config[screen]["subscreens"][subscreen]["elements"]["surfaces"] = []
 				self.config[screen]["subscreens"][subscreen]["elements"]["inscriptions"] = []
-				self.processingSubElements(screen, subscreen, self.elements)
+				self.processingSubElements(screen, subscreen, elements)
 
 			# Handling element actions
 			elif command == "actions":
@@ -367,7 +388,7 @@ class Screen:
 				self.config[screen]["subscreens"][subscreen]["actions"]["mouse"] = []
 				self.config[screen]["subscreens"][subscreen]["actions"]["icons"] = []
 				self.config[screen]["subscreens"][subscreen]["actions"]["links"] = []
-				self.processingSubActions(screen, subscreen, self.actions)
+				self.processingSubActions(screen, subscreen, actions)
 
 	# Processing elements for subscreen
 	def processingSubElements(self, screen, subscreen, lines):
@@ -385,19 +406,19 @@ class Screen:
 				self.config[screen]["subscreens"][subscreen]["elements"]["icons"].append(link)
 
 			# Adding link
-			if command == "link":
+			elif command == "link":
 				# Creating and adding link
 				link = self.createLink(value)
 				self.config[screen]["subscreens"][subscreen]["elements"]["links"].append(link)
 
 			# Adding text
-			if command == "text":
+			elif command == "text":
 				# Creating and adding text
 				text = self.createText(value)
 				self.config[screen]["subscreens"][subscreen]["elements"]["texts"].append(text)
 
 			# Adding texture
-			if command == "texture":
+			elif command == "texture":
 				# Creating and adding texture
 				texture = self.createTexture(value)
 				self.config[screen]["subscreens"][subscreen]["elements"]["textures"].append(texture)
@@ -459,7 +480,7 @@ class Screen:
 			wh = fetchSize(parse[1])
 
 		# Create icon
-		icon = Icon(name, src, xy, wh, self.options["pathToScreen"])
+		icon = Icon(name, src, xy, wh, self.options["pathToScreen"], self.options["pathToImageStock"])
 		return icon
 
 	# Create link
@@ -494,7 +515,7 @@ class Screen:
 		xy, wh = defineSize(parse[0], self.options["size"]), defineSize(parse[1], self.options["size"])
 
 		# Create texture
-		texture = Texture(name, src, xy, wh, self.options["pathToScreen"])
+		texture = Texture(name, src, xy, wh, self.options["pathToScreen"], self.options["pathToImageStock"])
 		return texture
 
 	# Create surface

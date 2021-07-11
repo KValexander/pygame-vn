@@ -36,13 +36,15 @@ playinit play
 # Настройка конфигураций игровых экранов
 # Конфигурация главных экранов
 
+# Для главных экранов атрибут background обязателен
+
 # Главный экран
 screen main:
 	# Идентификатор экрана
 	id main
 	# Тип экрана
 	type main
-	# Задний фон во время вывод экрана
+	# Задний фон во время вывод экрана, обязателен
 	background backgroundmenu.jpg
 	# Подчинённые экраны
 	subscreens [load, settings, about, help]
@@ -101,13 +103,13 @@ screen main:
 screen play:
 	id play
 	type main
-	background backgroundplay.jpg
+	background stock.jpg
 	subscreens [menu_save, menu_load]
 
 	# Добавление элементов на экран
 	elements:
 		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
-		surface dialogbox 140 (0, 0, 0) (0.0, 0.8) (1.0, 0.201)
+		surface dialogbox 140 (0, 0, 0) (0.0, 0.75) (1.0, 0.251)
 
 		# type name value xy(x.x, y.y)
 		link return "Вернуться" (0.025, 0.025)
@@ -133,10 +135,15 @@ screen play:
 			width (0.5)
 			height (0.05)
 
+		# Конфигурация имен персонажей, обязателен
+		name:
+			startcoord (0.01, 0.76)
+			size 25
+
 		# Конфигурация текста, обязателен
 		text:
-			startcoord (0.005, 0.805)
-			width (0.995)
+			startcoord (0.01, 0.8)
+			width (0.99)
 			size 25
 			color (255, 255, 255)
 			lineheight 25
@@ -145,8 +152,6 @@ screen play:
 		events:
 			mouse leftclick nextline
 			mouse rightclick prevline
-			mouse wheelup nextline
-			mouse wheelbottom prevline
 
 	# Обязательная команда для закрытия конфигурирования экрана
 	end play
@@ -277,6 +282,7 @@ subscreen menu_save:
 		inscription loadscreen "Сохранить" (0.4, 0.05)
 
 	actions:
+		# type id command screen
 		link continue hide menu_save
 		link save call menu_save
 		link load call menu_load
@@ -312,6 +318,7 @@ subscreen menu_load:
 
 	actions:
 		link continue close
+		# type id command screen
 		link save call menu_save
 		link load call menu_load
 		link main call main
