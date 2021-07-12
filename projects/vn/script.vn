@@ -129,9 +129,10 @@ label transitional:
 	"Количество ваших очков: i - {i}, j - {j}, e - {e}"
 
 	if i > 1: go first
-	elif j > 1: go second
-	elif e > 1: go third
-	else: continue
+		elif j > 1: go second
+		elif e > 1: go third
+		else: continue
+	end if
 
 	"Вы продолжаете идти по строкам той же метки, потому что не достигли ни одного из условий и был вызван оператор else"
 

@@ -172,7 +172,7 @@ class Script:
 			self.config["bool"]["nameshow"] = True
 			self.setNameOnLine()
 
-			self.config["lines"]["line"] = removeChar(value)
+			self.config["lines"]["line"] = removeChar(value.replace(" ", "", 1))
 			return self.setTextOnLine()
 
 		# Background
@@ -193,6 +193,10 @@ class Script:
 				self.config["bool"]["choice"] = True
 				return self.setCondition(value)
 
+		# If else condition
+		elif command == "if":
+			self.operatorsHandling()
+
 		# Going to label
 		elif command == "go":
 			self.setLabel(value)
@@ -204,12 +208,8 @@ class Script:
 		if self.config["bool"]["back"]: self.prevLine()
 		else: self.nextLine()
 
-	# Condition fulfillment processing
-	def conditionProcessing(self, commands):
-		commands = commands.split(";")
-		self.config["bool"]["back"] = False
-		self.config["bool"]["choice"] = False
-
+	# Handling commands
+	def handlingCommands(self, commands):
 		# Handling commands
 		for command in commands:
 			parse = re.findall(r"\w+", command)
@@ -221,14 +221,10 @@ class Script:
 					self.config["variables"]["counters"][parse[0]] -= 1
 
 			# Going to label
-			elif parse[0] == "go":
-				self.setLabel(parse[1])
+			elif parse[0] == "go": self.setLabel(parse[1])
 
 			# Continue
-			elif parse[0] == "continue":
-				self.config["bool"]["choice"] = False
-
-		self.lineProcessing()
+			elif parse[0] == "continue": continue
 
 	# Handling events
 	def events(self, e):
@@ -420,6 +416,17 @@ class Script:
 			for char in self.config["render"]["characters"]:
 				self.config["render"]["characters"][char]["state"] = False
 
+	# Condition fulfillment processing
+	def conditionProcessing(self, commands):
+		commands = commands.split(";")
+		self.config["bool"]["back"] = False
+		self.config["bool"]["choice"] = False
+
+		# Handling commands
+		self.handlingCommands(commands)
+
+		self.lineProcessing()
+
 	# Set condition
 	def setCondition(self, value):
 		self.config["condition"].clear()
@@ -482,6 +489,73 @@ class Script:
 				"return": commands,
 				"hover": False
 			})
+
+	# Operator command processing
+	def operatorProcessing(self, commands):
+		commands = commands.split(";")
+
+		# Handling commands
+		self.handlingCommands(commands)
+
+	# Operators handling
+	def operatorsHandling(self):
+		start = self.config["lines"]["start"]
+		ends = [x[0] for x in enumerate(self.lines) if x[1] == "end if"]
+		
+		# Sorting and getting the closest operators close value
+		ends = [x for x in ends if x > start]
+		minimum = float("inf")
+		for val in ends:
+			if abs(val - start) < minimum:
+				end = val
+				minimum = abs(val - start)
+
+		# Getting a list of operators
+		operators = self.lines[start:end]
+
+		# Handling operators
+		for line in operators:
+			operator, value = parsingLine(line)
+			value = value.split(":")
+			if operator == "else":
+				self.operatorProcessing(value[1])
+				break
+			elif operator == "if":
+				if self.operatorsCheck(value[0]):
+					self.operatorProcessing(value[1])
+					break
+			elif operator == "elif":
+				if self.operatorsCheck(value[0]):
+					self.operatorProcessing(value[1])
+					break
+			else: break
+
+	# Checking comparison operators
+	def operatorsCheck(self, check):
+		check = check.replace(" ", "")
+		arrcond = ["==", "<=", ">=", "<", ">", "!="]
+		for i in range(len(arrcond)):
+			if check.find(arrcond[i]) != -1:
+				cond = check.split(arrcond[i])
+				if cond[0] in self.config["variables"]["counters"]: cond[0] = self.config["variables"]["counters"][cond[0]]
+				else: cond[0] = int(cond[0])
+				if cond[1] in self.config["variables"]["counters"]: cond[1] = self.config["variables"]["counters"][cond[1]]
+				else: cond[1] = int(cond[1])
+
+				# If possible, this should be optimized.
+				if arrcond[i] == "==":
+					if cond[0] == cond[1]: return True
+				elif arrcond[i] == "<=":
+					if cond[0] <= cond[1]: return True
+				elif arrcond[i] == ">=":
+					if cond[0] >= cond[1]: return True
+				elif arrcond[i] == "<":
+					if cond[0] < cond[1]: return True
+				elif arrcond[i] == ">":
+					if cond[0] > cond[1]: return True
+				elif arrcond[i] == "!=":
+					if cond[0] != cond[1]: return True
+				else: return False
 
 	# Set label
 	def setLabel(self, value):

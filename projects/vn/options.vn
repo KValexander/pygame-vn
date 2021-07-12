@@ -26,10 +26,27 @@ link_selected 	= (100, 100, 100)
 link_size 		= 25
 
 # Настройки текста
-text_size 		 = 20
-text_color 		 = (255, 255, 255)
-text_line_height = 25
+t_text_size 		 = 20
+t_text_color 		 = (255, 255, 255)
+t_text_line_height = 25
 
 # Настройки надписей
 inscription_color = (255,255,255)
 inscription_size  = 50
+
+# Настройки ячеек
+cells_outline_color 	= (255, 255, 255)
+cells_background_color 	= (255,255,255)
+cells_text_color 		= (255,255,255)
+cells_text_size 		= 20
+cells_margin 			= 10
+cells_border 			= 3
+
+# Настройки панели условий
+condition_text_color = (255, 255, 255)
+condition_background_color = (0, 0, 0)
+condition_outline_color = (255, 255, 255)
+condition_margin = 20
+condition_border = 3
+condition_alpha = 240
+condition_indentation = 50

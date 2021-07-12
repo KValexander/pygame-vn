@@ -93,15 +93,15 @@ class Option:
 				self.config["linkSelected"] = defineColor(value)
 
 			# Text size
-			elif line.find("text_size") != -1:
+			elif line.find("t_text_size") != -1:
 				self.config["textSize"] = int(value)
 
 			# Text color
-			elif line.find("text_color") != -1:
+			elif line.find("t_text_color") != -1:
 				self.config["textColor"] = defineColor(value)
 
 			# Text line height
-			elif line.find("text_line_height") != -1:
+			elif line.find("t_text_line_height") != -1:
 				self.config["textLineHeight"] = int(value)
 
 			# Link size
@@ -115,6 +115,58 @@ class Option:
 			# Inscription size
 			elif line.find("inscription_size") != -1:
 				self.config["inscriptionSize"] = int(value)
+
+			# Cells outline color
+			elif line.find("cells_outline_color") != -1:
+				self.config["cellsOutlineColor"] = defineColor(value)
+
+			# Cells background color
+			elif line.find("cells_background_color") != -1:
+				self.config["cellsBackgroundColor"] = defineColor(value)
+
+			# Cells text color
+			elif line.find("cells_text_color") != -1:
+				self.config["cellsTextColor"] = defineColor(value)
+
+			# Cells text size
+			elif line.find("cells_text_size") != -1:
+				self.config["cellsTextSize"] = int(value)
+
+			# Cells margin
+			elif line.find("cells_margin") != -1:
+				self.config["cellsMargin"] = int(value)
+
+			# Cells border
+			elif line.find("cells_border") != -1:
+				self.config["cellsBorder"] = int(value)
+
+			# Condition text color
+			elif line.find("condition_text_color") != -1:
+				self.config["conditionTextColor"] = defineColor(value)
+
+			# Condition background color
+			elif line.find("condition_background_color") != -1:
+				self.config["conditionBackgroundColor"] = defineColor(value)
+
+			# Condition outline color
+			elif line.find("condition_outline_color") != -1:
+				self.config["conditionOutlineColor"] = defineColor(value)
+
+			# Condition margin
+			elif line.find("condition_margin") != -1:
+				self.config["conditionMargin"] = int(value)
+
+			# Condition border
+			elif line.find("condition_border") != -1:
+				self.config["conditionBorder"] = int(value)
+
+			# Condition alpha
+			elif line.find("condition_alpha") != -1:
+				self.config["conditionAlpha"] = int(value)
+
+			# Condition indentation
+			elif line.find("condition_indentation") != -1:
+				self.config["conditionIndentation"] = int(value)
 
 		# Path to screen
 		self.config["pathToScreen"] = self.config["pathToProject"] + self.config["screenFolder"]

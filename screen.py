@@ -182,6 +182,16 @@ class Screen:
 				text = self.createText(value)
 				self.config[screen]["elements"]["texts"].append(text)
 
+			# Adding cells
+			elif command == "cells":
+				self.config[screen]["elements"]["cells"] = None
+				start = self.lines.index(line)
+				end = self.lines.index("end cells")
+				value = self.lines[start:end]
+				# Creating and adding cells
+				cells = self.createCells(value)
+				self.config[screen]["elements"]["cells"] = cells
+
 			# Adding texture
 			elif command == "texture":
 				# Creating and adding texture
@@ -216,6 +226,11 @@ class Screen:
 				# Adding event parameters
 				self.config[screen]["actions"]["mouse"].append(obj)
 
+			# Assigning events to cells
+			if command == "cells":
+				# Adding event parameters
+				self.config[screen]["actions"]["cells"] = value.replace(" ", "")
+
 			# Assigning events to icon
 			elif command == "icon":
 				# Event assignment
@@ -233,56 +248,28 @@ class Screen:
 	# Processing play
 	def processingPlay(self, screen, lines):
 		# Stock position
-		condStart = len(lines)
 		textStart = len(lines)
 		nameStart = len(lines)
 		evenStart = len(lines)
 
 		# Initial positions
-		if "condition:" in lines: condStart = lines.index("condition:")
 		if "name:" 		in lines: nameStart = lines.index("name:")
 		if "text:" 		in lines: textStart = lines.index("text:")
 		if "events:" 	in lines: evenStart = lines.index("events:")
 
-		# Sorting
-		sort = [condStart, textStart, nameStart, evenStart]
-		sort.sort()
-
 		# Lists elements and actions
-		condition 	= lines[condStart:nameStart]
 		name 		= lines[nameStart:textStart]
 		text  		= lines[textStart:evenStart]
 		events 		= lines[evenStart:len(lines)]
 
-		# Handling condition
-		for line in condition:
-			if commonCommands(line) == False: continue
-
-			# Initial parsing of the line
-			command, value = parsingLine(line)
-			value = value.replace(" ", "")
-
-			# Text color
-			if command == "textcolor":
-				self.config[screen]["play"]["condition"]["textColor"] = defineColor(value)
-			# Background color
-			elif command == "backgroundcolor":
-				self.config[screen]["play"]["condition"]["backgroundColor"] = defineColor(value)
-			# Background color
-			elif command == "outline":
-				self.config[screen]["play"]["condition"]["outline"] = defineColor(value)
-			# Background color
-			elif command == "margin":
-				self.config[screen]["play"]["condition"]["margin"] = int(value)
-			# Background color
-			elif command == "border":
-				self.config[screen]["play"]["condition"]["border"] = int(value)
-			# Background color
-			elif command == "alpha":
-				self.config[screen]["play"]["condition"]["alpha"] = int(value)
-			# Indentation
-			elif command == "indentation":
-				self.config[screen]["play"]["condition"]["indentation"] = int(value)
+		# Condition settings
+		self.config[screen]["play"]["condition"]["textColor"] = self.options["conditionTextColor"]
+		self.config[screen]["play"]["condition"]["backgroundColor"] = self.options["conditionBackgroundColor"]
+		self.config[screen]["play"]["condition"]["outline"] = self.options["conditionOutlineColor"]
+		self.config[screen]["play"]["condition"]["margin"] = self.options["conditionMargin"]
+		self.config[screen]["play"]["condition"]["border"] = self.options["conditionBorder"]
+		self.config[screen]["play"]["condition"]["alpha"] = self.options["conditionAlpha"]
+		self.config[screen]["play"]["condition"]["indentation"] = self.options["conditionIndentation"]
 
 		# Handling name
 		for line in name:
@@ -423,6 +410,16 @@ class Screen:
 				text = self.createText(value)
 				self.config[screen]["subscreens"][subscreen]["elements"]["texts"].append(text)
 
+			# Adding cells
+			elif command == "cells":
+				self.config[screen]["subscreens"][subscreen]["elements"]["cells"] = None
+				start = self.lines.index(line)
+				end = self.lines.index("end cells")
+				value = self.lines[start:end]
+				# Creating and adding cells
+				cells = self.createCells(value)
+				self.config[screen]["subscreens"][subscreen]["elements"]["cells"] = cells
+
 			# Adding texture
 			elif command == "texture":
 				# Creating and adding texture
@@ -456,6 +453,11 @@ class Screen:
 				obj = self.actionMouse(value)
 				# Adding event parameters
 				self.config[screen]["subscreens"][subscreen]["actions"]["mouse"].append(obj)
+
+			# Assigning events to cells
+			if command == "cells":
+				# Adding event parameters
+				self.config[screen]["subscreens"][subscreen]["actions"]["cells"] = value.replace(" ", "")
 
 			# Assigning events to icon
 			elif command == "icon":
@@ -511,6 +513,29 @@ class Screen:
 		# Creating text
 		text = Text(name, val, xy, width, self.options["textColor"], self.options["textSize"], self.options["textLineHeight"], self.options["usedFont"], self.options["typeFont"])
 		return text
+
+	# Create cells
+	def createCells(self, value):
+		value.pop(0)
+		# Variables
+		xy, wh = None, None
+		horiz, vert = None, None
+		pages, alpha = None, None
+
+		# Handling line
+		for line in value:
+			prop, value = parsingLine(line)
+			value = value.replace(" ", "")
+			if prop == "xy": xy = defineSize(value, self.options["size"])
+			elif prop == "wh": wh = defineSize(value, self.options["size"])
+			elif prop == "horizontally": horiz = int(value)
+			elif prop == "vertically": vert = int(value)
+			elif prop == "pages": pages = value
+			elif prop == "alpha": alpha = int(value)
+
+		# Creating cells
+		cells = Cells(xy, wh, self.options["usedFont"], self.options["typeFont"], horiz, vert, pages, self.options["cellsBackgroundColor"], self.options["cellsOutlineColor"], self.options["cellsBorder"], alpha, self.options["cellsMargin"], self.options["cellsTextColor"], self.options["cellsTextSize"])
+		return cells
 
 	# Create texture
 	def createTexture(self, value):
