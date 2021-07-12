@@ -56,6 +56,10 @@ class Option:
 			elif line.find("background_folder") != -1:
 				self.config["backgroundFolder"] = value
 
+			# Background directory
+			elif line.find("saves_folder") != -1:
+				self.config["savesFolder"] = value
+
 			# Image stock
 			elif line.find("image_stock") != -1:
 				self.config["imageStock"] = value
@@ -140,6 +144,10 @@ class Option:
 			elif line.find("cells_border") != -1:
 				self.config["cellsBorder"] = int(value)
 
+			# Cells pages
+			elif line.find("cells_pages") != -1:
+				self.config["cellsPages"] = int(value)
+
 			# Condition text color
 			elif line.find("condition_text_color") != -1:
 				self.config["conditionTextColor"] = defineColor(value)
@@ -174,6 +182,8 @@ class Option:
 		self.config["pathToCharacter"] = self.config["pathToProject"] + self.config["characterFolder"]
 		# Path to background
 		self.config["pathToBackground"] = self.config["pathToProject"] + self.config["backgroundFolder"]
+		# Path to saves
+		self.config["pathToSaves"] = self.config["pathToProject"] + self.config["savesFolder"]
 		# Path to image stock
 		self.config["pathToImageStock"] = self.config["pathToScreen"] + self.config["imageStock"]
 		# Path to character stock

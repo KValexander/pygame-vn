@@ -93,7 +93,9 @@ class Play:
 	# Saving data
 	def saveConfig(self, cell, config):
 		if self.script == None: return
-		print(cell, config)
+		path = self.option.config["pathToSaves"] + cell["name"] + ".save"
+		with open(path, "w") as file:
+			file.write(str(config))
 
 	# Refresh screen
 	def refreshScreen(self, screen):
@@ -239,6 +241,11 @@ class Play:
 						if mouseCollision(cell["xy"], cell["wh"], e.pos):
 							cell["hover"] = True
 						else: cell["hover"] = False
+					for point in screen["elements"]["cells"].points:
+						if mouseCollision(point["xy"], point["wh"], e.pos):
+							point["hover"] = True
+						else: point["hover"] = False
+
 
 		# Handling events
 		if "actions" in screen:
@@ -253,7 +260,7 @@ class Play:
 							self.hideScreen(jmouse["return"])
 						elif jmouse["event"] == "close" or jmouse["event"] == "end" or jlink["event"] == "start":
 								self.reservedCommands(jmouse["return"])
-								
+
 			# Handling cells events
 			if "cells" in screen["actions"]:
 				for cell in screen["elements"]["cells"].cells:
@@ -264,6 +271,12 @@ class Play:
 									self.saveConfig(cell, self.script.config)
 								elif screen["actions"]["cells"] == "load":
 									self.loadConfig(cell)
+				for point in screen["elements"]["cells"].points:
+					if e.type == pygame.MOUSEBUTTONDOWN:
+						if e.button == 1:
+							if mouseCollision(point["xy"], point["wh"], e.pos):
+								screen["elements"]["cells"].setPage(point["return"])
+
 
 			# Handling link events
 			for jlink in screen["actions"]["links"]:

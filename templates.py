@@ -155,7 +155,7 @@ class Text:
 
 # class Cells
 class Cells:
-	def __init__(self, xy, wh, font, typefont, horiz, vert, pages, backcol, outline, border, alpha, margin, tcolor, tsize):
+	def __init__(self, xy, wh, font, typefont, horiz, vert, pages, backcol, outline, border, alpha, margin, tcolor, tsize, pathToSaves):
 		# Custom variables
 		self.xy 					= xy
 		self.wh 					= wh
@@ -168,7 +168,6 @@ class Cells:
 		self.vertically 			= vert
 
 		if pages == None: pages 	= "auto"
-		elif pages != "auto": pages = int(pages)
 		self.pages 					= pages
 
 		if backcol == None: backcol = (0,0,0) 
@@ -192,6 +191,8 @@ class Cells:
 		if tsize == None: tsize 	= 20
 		self.tsize 					= tsize
 
+		self.pathToSaves 			= pathToSaves
+
 		# Font variable
 		if self.typefont == "system":
 			self.font = pygame.font.SysFont(font, self.tsize)
@@ -202,7 +203,7 @@ class Cells:
 		else: self.font = pygame.font.SysFont("calibri", self.tsize)
 
 		# Default variables
-		self.page = 0
+		self.page = 1
 		self.cells = []
 		self.textstock = "Пусто"
 		self.twh = self.font.size(self.textstock)
@@ -214,14 +215,69 @@ class Cells:
 		# Text stock x/y
 		self.txy = (self.xy[0] + self.cwh[0] / 2 - self.twh[0] / 2, self.xy[1] + self.cwh[1] / 2 - self.twh[1] / 2)
 
-		self.setPage(0)
+		# Pointers variables
+		self.points = []
+		self.pxy = (self.xy[0], self.xy[1] + self.cwh[1] * self.vertically + self.margin * 2)
+		self.pwh = (self.wh[0], self.margin * 3)
+
+		self.arrays = False
+		self.perpage = self.pages
+		if self.pages == 0 or self.pages > 10:
+			self.arrays = True
+			self.perpage = 10
+
+		self.limit = self.pages
+		if self.pages == 0: self.limit = 999
+
+		self.setPage(self.page)
 
 	# Set page
 	def setPage(self, page):
+		if page < 0: page = 0
+		elif page > self.limit: page = self.limit
+
+		self.textstock = "Пусто #" + str(page)
+		self.twh = self.font.size(self.textstock)
+		self.print = self.font.render(self.textstock, True, self.tcolor)
+		self.txy = (self.xy[0] + self.cwh[0] / 2 - self.twh[0] / 2, self.xy[1] + self.cwh[1] / 2 - self.twh[1] / 2)
+
 		self.page = page
 		self.createCells()
+		self.createPaginator()
 
-	# Create cell
+	# Create paginator
+	def createPaginator(self):
+		self.points.clear()
+		self.pxy = (self.xy[0], self.xy[1] + self.cwh[1] * self.vertically + self.margin * 2)
+		self.pwh = (self.wh[0], self.margin * 3)
+
+		countdown = 1
+		margin = (self.pwh[0] - self.margin * 3) / self.perpage
+
+		for i in range(self.perpage):
+			number = self.font.render(str(countdown), True, self.tcolor)
+			twh = self.font.size(str(countdown))
+
+			x, y = self.pxy[0] + self.margin * 3, self.pxy[1] + self.pwh[1] / 2 - twh[1] / 2
+			x += margin * i
+
+			self.points.append({
+				"xy": (x - 10, y - 3),
+				"wh": (twh[0] + 20, twh[1] + 6),
+				"txy": (x, y),
+				"twh": twh,
+				"number": number,
+				"hover": False,
+				"selected": False,
+				"return": countdown,
+			})
+
+			if self.page == self.points[i]["return"]:
+				self.points[i]["selected"] = True
+
+			countdown += 1
+
+	# Create cells
 	def createCells(self):
 		self.cells.clear()
 		x, y = self.xy
@@ -230,7 +286,7 @@ class Cells:
 		surface.fill(self.backgroundcolor)
 		surface.set_alpha(self.alpha)
 		for i in range(self.cellsonpage):
-			name = "cell_" + str(self.page) + "_" + str(i)
+			name = "save_" + str(self.page) + "_" + str(i)
 			if i % self.horizontally == 0 and i != 0:
 				y += self.cwh[1] + self.margin
 				ty += self.cwh[1] + self.margin
@@ -266,6 +322,13 @@ class Cells:
 			window.blit(cell["text"], cell["txy"])
 			if cell["hover"]:
 				pygame.draw.rect(window, self.outline, (cell["xy"], cell["wh"]), self.border)
+
+		#pygame.draw.rect(window, WHITE, (self.pxy, self.pwh), 1)
+
+		for point in self.points:
+			window.blit(point["number"], point["txy"])
+			if point["hover"] or point["selected"]:
+				pygame.draw.rect(window, WHITE, (point["xy"], point["wh"]), 1)
 
 # class Texture
 class Texture:

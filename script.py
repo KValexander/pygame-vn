@@ -189,9 +189,8 @@ class Script:
 
 		# Condition
 		elif command == "condition":
-			if "condition" in self.screen:
-				self.config["bool"]["choice"] = True
-				return self.setCondition(value)
+			self.config["bool"]["choice"] = True
+			return self.setCondition(value)
 
 		# If else condition
 		elif command == "if":
@@ -246,18 +245,16 @@ class Script:
 	# Condition clause events
 	def eventCondition(self, e):
 		# Condition clause selection processing
-		y = self.config["condition"]["xy"][1]
 		for clause in self.config["condition"]["clauses"]:
-			y += self.screen["condition"]["indentation"]
 			# Handling a click on a condition clause
 			if e.type == pygame.MOUSEBUTTONDOWN:
 				if e.button == 1:
-					if mouseCollision((self.config["condition"]["xy"][0], y), self.config["condition"]["wh"], e.pos):
+					if mouseCollision(clause["xy"], clause["wh"], e.pos):
 						self.conditionProcessing(clause["return"])
 
 			# Processing of pointing to a condition clause
 			if e.type == pygame.MOUSEMOTION:
-				if mouseCollision((self.config["condition"]["xy"][0], y), self.config["condition"]["wh"], e.pos):
+				if mouseCollision(clause["xy"], clause["wh"], e.pos):
 					clause["hover"] = True
 				else: clause["hover"] = False
 
@@ -297,17 +294,13 @@ class Script:
 	# Rendering cluses condition
 	def drawCondition(self, window):
 		window.blit(self.config["condition"]["surface"], self.config["condition"]["xy"])
-		window.blit(self.config["condition"]["text"], self.config["condition"]["location"])
+		window.blit(self.config["condition"]["text"], self.config["condition"]["txy"])
 
-		yy = [self.config["condition"]["xy"][1], self.config["condition"]["location"][1]]
 		for clause in self.config["condition"]["clauses"]:
-			yy[0] += self.screen["condition"]["indentation"]
-			yy[1] += self.screen["condition"]["indentation"]
-			x = self.config["condition"]["xy"][0] + self.config["condition"]["wh"][0] / 2 - clause["textwh"][0] / 2
-			window.blit(self.config["condition"]["surface"], (self.config["condition"]["xy"][0], yy[0]))
-			window.blit(clause["text"], (x, yy[1]))
+			window.blit(self.config["condition"]["surface"], clause["xy"])
+			window.blit(clause["text"], clause["txy"])
 			if clause["hover"]:
-				pygame.draw.rect(window, self.screen["condition"]["outline"], ((self.config["condition"]["xy"][0], yy[0]), self.config["condition"]["wh"]), self.screen["condition"]["border"])
+				pygame.draw.rect(window, self.options["conditionOutlineColor"], (clause["xy"], clause["wh"]), self.options["conditionBorder"])
 
 	# Passing data to the main class
 	def getConfig(self):
@@ -459,33 +452,39 @@ class Script:
 
 		# Getting condition data
 		size = self.config["font"].size(value)
-		text = self.config["font"].render(value, True, self.screen["condition"]["textColor"])
-		wh = (size[0] + self.screen["condition"]["margin"] * 2, size[1] + self.screen["condition"]["margin"])
-		xy = (self.options["size"][0] / 2 - wh[0] / 2, self.options["size"][0] / 2 - wh[1] - (len(clauses) * self.screen["condition"]["indentation"] * 1.5))
+		text = self.config["font"].render(value, True, self.options["conditionTextColor"])
+		wh = (size[0] + self.options["conditionMargin"] * 2, size[1] + self.options["conditionMargin"])
+		xy = (self.options["size"][0] / 2 - wh[0] / 2, self.options["size"][0] / 2 - wh[1] - (len(clauses) * self.options["conditionIndentation"] * 1.5))
+		txy = (xy[0] + self.options["conditionMargin"], xy[1] + self.options["conditionMargin"] / 2)
+		
 		surface = pygame.Surface(wh)
-		location = (xy[0] + self.screen["condition"]["margin"], xy[1] + self.screen["condition"]["margin"] / 2)
-
-		surface.fill(self.screen["condition"]["backgroundColor"])
-		surface.set_alpha(self.screen["condition"]["alpha"])
+		surface.fill(self.options["conditionBackgroundColor"])
+		surface.set_alpha(self.options["conditionAlpha"])
 
 		# Adding condition data
 		self.config["condition"]["size"] = size
 		self.config["condition"]["text"] = text
 		self.config["condition"]["wh"] = wh
 		self.config["condition"]["xy"] = xy
+		self.config["condition"]["txy"] = txy
 		self.config["condition"]["surface"] = surface
-		self.config["condition"]["location"] = location
 		self.config["condition"]["clauses"] = []
 
+		x, y = xy
 		# Handling clauses
 		for claus in clauses:
+			y += self.options["conditionIndentation"]
 			value, commands = claus.split(":")
-			text = self.config["font"].render(value, True, self.screen["condition"]["textColor"])
-			textwh = self.config["font"].size(value)
+			text = self.config["font"].render(value, True, self.options["conditionTextColor"])
+			twh = self.config["font"].size(value)
+			txy = x + wh[0] / 2 - twh[0] / 2, y + wh[1] / 2 - twh[1] / 2
 
 			self.config["condition"]["clauses"].append({
+				"xy": (x, y),
+				"wh": wh,
 				"text": text,
-				"textwh": textwh,
+				"txy": txy,
+				"twh": twh,
 				"return": commands,
 				"hover": False
 			})

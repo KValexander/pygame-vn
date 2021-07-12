@@ -8,6 +8,7 @@ screen_folder 	  = gui/
 src_icon 		  = gui/icon.png
 character_folder  = images/characters/
 background_folder = images/medley/
+saves_folder 	  = saves/
 # Стоковые фотографии по пути папки screen_folder
 image_stock		  = noimage.png
 character_stock	  = characterstock.png
@@ -41,12 +42,13 @@ cells_text_color 		= (255,255,255)
 cells_text_size 		= 20
 cells_margin 			= 10
 cells_border 			= 3
+cells_pages 			= 0
 
-# Настройки панели условий
-condition_text_color = (255, 255, 255)
-condition_background_color = (0, 0, 0)
-condition_outline_color = (255, 255, 255)
-condition_margin = 20
-condition_border = 3
-condition_alpha = 240
-condition_indentation = 50
+# Настройки панели выбора
+condition_text_color 		= (255, 255, 255)
+condition_background_color 	= (0, 0, 0)
+condition_outline_color 	= (255, 255, 255)
+condition_margin 			= 20
+condition_border 			= 3
+condition_alpha 			= 240
+condition_indentation 		= 50

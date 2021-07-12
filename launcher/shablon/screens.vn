@@ -23,6 +23,7 @@ playinit play
 # text 			- type name value xy(x.x, y.y) width(w.w)
 # link			- type name value xy(x.x, y.y)
 # icon 			- type name src xy wh(w, h)(необязательно)
+# cells			- type:...
 
 # На link и icon возможно навешывать события:
 # call - вызов экрана
@@ -32,6 +33,10 @@ playinit play
 
 # Только для icon можно повесить события:
 # hover - вызов изображения при наведение на иконку
+
+# На cell можно навешывать события:
+# load - загрузка данных
+# save - сохранение данных
 
 # Настройка конфигураций игровых экранов
 # Конфигурация главных экранов
@@ -127,28 +132,13 @@ screen play:
 
 	# Настройки игрового экрана, доступно только для главного экрана игры, в других экранах работать не будет
 	play:
-		# Конфигурация пунктов выбора, обязателен
-		condition:
-			textcolor (255, 255, 255)
-			backgroundcolor (0, 0, 0)
-			outline (255, 255, 255)
-			margin 20
-			border 3
-			alpha 240
-			indentation 50
-
 		# Конфигурация имен персонажей, обязателен
-		name:
-			startcoord (0.01, 0.76)
-			size 25
+		# type xy textsize
+		name (0.01, 0.76) 30
 
 		# Конфигурация текста, обязателен
-		text:
-			startcoord (0.01, 0.8)
-			width (0.99)
-			size 25
-			color (255, 255, 255)
-			lineheight 25
+		# type xy width color textsize lineheight
+		text (0.01, 0.8) (0.99) (255,255,255) 25 25
 
 		# Специальные события для экрана игры, обязателен
 		events:
@@ -194,6 +184,20 @@ subscreen load:
 		# type name value xy(x.x, y.y)
 		link close "Закрыть" (0.4, 0.12)
 
+		# type:
+		#	xy (x.x, y.y), обязательно
+		#	wh (w.w, h.h), обязательно
+		#	horizontally n
+		#	vertically n
+		#	alpha a, a - от 0 до 255
+		cells:
+			xy (0.4, 0.2)
+			wh (0.55, 0.5)
+			horizontally 3
+			vertically 2
+			alpha 140
+		end cells
+
 	actions:
 		# команда hide скрывает экран
 		# type id command screen
@@ -203,6 +207,8 @@ subscreen load:
 		# так же есть иные вариации закрытие текущего подчинённого экрана
 		# link close call close
 		# link close hide close
+
+		cells load
 
 	end load
 
@@ -226,6 +232,8 @@ subscreen settings:
 	actions:
 		# type id command screen
 		link close call close
+
+		mouse rightclick close
 
 	end settings
 
@@ -270,6 +278,12 @@ subscreen menu_save:
 		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
 		surface menuscreen 140 (0, 0, 0) (0.0, 0.0) (0.3, 1.0)
 
+		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
+		surface loadscreen 140 (0,0,0) (0.35, 0.0) (0.651, 1.0)
+
+		# type name value xy(x.x, y.y)
+		inscription loadscreen "Сохранить" (0.4, 0.05)
+
 		# type name value xy(x.x, y.y)
 		link continue "Продолжить" (0.05, 0.2)
 		link save "Сохранить" (0.05, 0.25)
@@ -277,11 +291,19 @@ subscreen menu_save:
 		link settings "Настройки" (0.05, 0.35)
 		link main "Главное меню" (0.05, 0.4)
 
-		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
-		surface loadscreen 140 (0,0,0) (0.35, 0.0) (0.651, 1.0)
-
-		# type name value xy(x.x, y.y)
-		inscription loadscreen "Сохранить" (0.4, 0.05)
+		# type:
+		#	xy (x.x, y.y), обязательно
+		#	wh (w.w, h.h), обязательно
+		#	horizontally n
+		#	vertically n
+		#	alpha a, a - от 0 до 255
+		cells:
+			xy (0.4, 0.2)
+			wh (0.55, 0.5)
+			horizontally 3
+			vertically 2
+			alpha 140
+		end cells
 
 	actions:
 		# type id command screen
@@ -289,6 +311,11 @@ subscreen menu_save:
 		link save call menu_save
 		link load call menu_load
 		link main call main
+
+		mouse rightclick close
+
+		# type command
+		cells save
 
 	end menu_save
 
@@ -318,11 +345,30 @@ subscreen menu_load:
 		# type name value xy(x.x, y.y)
 		inscription loadscreen "Загрузить" (0.4, 0.05)
 
+		# type:
+		#	xy (x.x, y.y), обязательно
+		#	wh (w.w, h.h), обязательно
+		#	horizontally n
+		#	vertically n
+		#	alpha a, a - от 0 до 255
+		cells:
+			xy (0.4, 0.2)
+			wh (0.55, 0.5)
+			horizontally 3
+			vertically 2
+			alpha 140
+		end cells
+
 	actions:
 		link continue close
 		# type id command screen
 		link save call menu_save
 		link load call menu_load
 		link main call main
+
+		mouse rightclick close
+
+		# type command
+		cells load
 
 	end menu_load

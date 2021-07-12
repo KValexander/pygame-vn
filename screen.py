@@ -149,7 +149,6 @@ class Screen:
 			# Play screen only
 			elif command == "play" and screen == self.config["playScreen"]:
 				self.config[screen]["play"] = {}
-				self.config[screen]["play"]["condition"] = {}
 				self.config[screen]["play"]["name"] = {}
 				self.config[screen]["play"]["text"] = {}
 				self.config[screen]["play"]["events"] = []
@@ -248,68 +247,37 @@ class Screen:
 	# Processing play
 	def processingPlay(self, screen, lines):
 		# Stock position
-		textStart = len(lines)
-		nameStart = len(lines)
 		evenStart = len(lines)
 
 		# Initial positions
-		if "name:" 		in lines: nameStart = lines.index("name:")
-		if "text:" 		in lines: textStart = lines.index("text:")
 		if "events:" 	in lines: evenStart = lines.index("events:")
 
 		# Lists elements and actions
-		name 		= lines[nameStart:textStart]
-		text  		= lines[textStart:evenStart]
 		events 		= lines[evenStart:len(lines)]
 
-		# Condition settings
-		self.config[screen]["play"]["condition"]["textColor"] = self.options["conditionTextColor"]
-		self.config[screen]["play"]["condition"]["backgroundColor"] = self.options["conditionBackgroundColor"]
-		self.config[screen]["play"]["condition"]["outline"] = self.options["conditionOutlineColor"]
-		self.config[screen]["play"]["condition"]["margin"] = self.options["conditionMargin"]
-		self.config[screen]["play"]["condition"]["border"] = self.options["conditionBorder"]
-		self.config[screen]["play"]["condition"]["alpha"] = self.options["conditionAlpha"]
-		self.config[screen]["play"]["condition"]["indentation"] = self.options["conditionIndentation"]
-
-		# Handling name
-		for line in name:
+		# Handling lines
+		for line in lines:
 			if commonCommands(line) == False: continue
 
 			# Initial parsing of the line
 			command, value = parsingLine(line)
-			value = value.replace(" ", "")
 
-			# Start coordinate
-			if command == "startcoord":
-				self.config[screen]["play"]["name"]["startCoord"] = defineSize(value, self.options["size"])
+			# Handling name
+			if command == "name":
+				self.config[screen]["play"]["name"]["startCoord"] = defineSize(re.findall(r"\(.*?\)", value)[0], self.options["size"])
+				self.config[screen]["play"]["name"]["size"] = int(re.split(r"\(.*?\)", value)[1])
 
-			# Size
-			elif command == "size":
-				self.config[screen]["play"]["name"]["size"] = int(value)
-
-		# Handling text
-		for line in text:
-			if commonCommands(line) == False: continue
-
-			# Initial parsing of the line
-			command, value = parsingLine(line)
-			value = value.replace(" ", "")
-
-			# Start coordinate
-			if command == "startcoord":
-				self.config[screen]["play"]["text"]["startCoord"] = defineSize(value, self.options["size"])
-			# Width
-			elif command == "width":
-				self.config[screen]["play"]["text"]["width"] = defineOneSize(value, self.options["size"][0])
-			# Size
-			elif command == "size":
-				self.config[screen]["play"]["text"]["size"] = int(value)
-			# Color
-			elif command == "color":
-				self.config[screen]["play"]["text"]["color"] = defineColor(value)
-			# Line height
-			elif command == "lineheight":
-				self.config[screen]["play"]["text"]["lineHeight"] = int(value)
+			# Handling text
+			elif command == "text":
+				parse = re.findall(r"\(.*?\)", value)
+				p = re.split(r"\(.*?\)", value)
+				p = [x for x in p if x != ' '][0]
+				p = re.findall(r"\d+", p)
+				self.config[screen]["play"]["text"]["startCoord"] = defineSize(parse[0], self.options["size"])
+				self.config[screen]["play"]["text"]["width"] = defineOneSize(parse[1], self.options["size"][0])
+				self.config[screen]["play"]["text"]["color"] = defineColor(parse[2])
+				self.config[screen]["play"]["text"]["size"] = int(p[0])
+				self.config[screen]["play"]["text"]["lineHeight"] = int(p[1])
 
 		# Handling events
 		for line in events:
@@ -530,11 +498,10 @@ class Screen:
 			elif prop == "wh": wh = defineSize(value, self.options["size"])
 			elif prop == "horizontally": horiz = int(value)
 			elif prop == "vertically": vert = int(value)
-			elif prop == "pages": pages = value
 			elif prop == "alpha": alpha = int(value)
 
 		# Creating cells
-		cells = Cells(xy, wh, self.options["usedFont"], self.options["typeFont"], horiz, vert, pages, self.options["cellsBackgroundColor"], self.options["cellsOutlineColor"], self.options["cellsBorder"], alpha, self.options["cellsMargin"], self.options["cellsTextColor"], self.options["cellsTextSize"])
+		cells = Cells(xy, wh, self.options["usedFont"], self.options["typeFont"], horiz, vert, self.options["cellsPages"], self.options["cellsBackgroundColor"], self.options["cellsOutlineColor"], self.options["cellsBorder"], alpha, self.options["cellsMargin"], self.options["cellsTextColor"], self.options["cellsTextSize"], self.options["pathToSaves"])
 		return cells
 
 	# Create texture
