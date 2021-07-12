@@ -13,8 +13,30 @@ count i = 0
 count j = 0
 count e = 0
 
+count t = 0
+
+# только False или True
+# type name = state
+bool state = False
+
+# type name = state
+bool fi = False
+bool tw = False
+bool th = False
+
 start:
 	background "class.jpg"
+
+	# Увеличение переменной счётчика прямо в тексте
+	# t++
+	# Изменение состояние булийной переменной
+	# state True
+
+	#"Первая тестовая реплика"
+
+	# Проверка состояния булийной переменной
+	#if state: n1 "Вторая тестовая реплика для проверки возможности вывода сообщений в условиях"
+	#endif
 	
 	"Стартовая реплика"
 	
@@ -142,6 +164,8 @@ label first:
 
 	show one center
 
+	fi True
+
 	"Вы только что перешли на метку условия if i > 1"
 
 	"Для достижения этого условия необходимо достичь 2 и более баллов для счётчика i"
@@ -154,6 +178,8 @@ label second:
 
 	show two center
 
+	tw True
+
 	"Вы только что перешли на метку условия elif j > 1"
 
 	"Для достижения этого условия необходимо достичь 2 и более баллов для счётчика j"
@@ -165,6 +191,8 @@ label second:
 label third:
 
 	show three center
+
+	th True
 
 	"Вы только что перешли на метку условия elif e > 1"
 
@@ -198,6 +226,12 @@ label common:
 	return
 
 label next:
+	
+	if fi: "Вы выбрали первую девушку"
+	elif tw: "Вы выбрали вторую девушку"
+	elif th: "Вы выбрали третью девушку"
+	else: continue
+	end if
 
 	"Это тестовый полигон проверок различных операторов"
 

@@ -37,6 +37,7 @@ class Script:
 			# Variables
 			"variables": {
 				"counters": {},
+				"booleans": {},
 				"names": {},
 				"characters": {},
 			},
@@ -118,6 +119,16 @@ class Script:
 				# Adding data
 				self.config["variables"]["counters"][name] = count
 
+			# Variable handling with type "boolean"
+			elif command == "bool":
+				# Getting data to add
+				parse = re.findall(r"\w+", value)
+				name, state = parse[0], parse[1]
+
+				# Adding data
+				self.config["variables"]["booleans"][name] = state
+
+
 	# Next line
 	def nextLine(self):
 		self.config["lines"]["start"] += 1
@@ -169,11 +180,22 @@ class Script:
 		# Check name
 		if command in self.config["variables"]["names"]:
 			self.config["namekey"] = command
-			self.config["bool"]["nameshow"] = True
 			self.setNameOnLine()
 
 			self.config["lines"]["line"] = removeChar(value.replace(" ", "", 1))
 			return self.setTextOnLine()
+
+		# Check boolean
+		elif command in self.config["variables"]["booleans"]:
+			value = value.replace(" ", "")
+			if value == "True" or value == "False": self.config["variables"]["booleans"][command] = value
+
+		# Check counters
+		elif command in self.config["variables"]["counters"]:
+			if value == "++":
+				self.config["variables"]["counters"][command] += 1
+			elif value == "--":
+				self.config["variables"]["counters"][command] -= 1
 
 		# Background
 		elif command == "background":
@@ -194,7 +216,7 @@ class Script:
 
 		# If else condition
 		elif command == "if":
-			self.operatorsHandling()
+			return self.operatorsHandling()
 
 		# Going to label
 		elif command == "go":
@@ -211,9 +233,33 @@ class Script:
 	def handlingCommands(self, commands):
 		# Handling commands
 		for command in commands:
+			command = command.replace(" ", "", 1)
+
+			# Check text
+			if re.search(r"(^\".*?\"$)|(^\'.*?\'$)", command):
+				self.config["lines"]["line"] = command
+				self.setReplica()
+				return False
+
 			parse = re.findall(r"\w+", command)
-			# Handling counters
-			if parse[0] in self.config["variables"]["counters"]:
+
+			# Check name
+			if parse[0] in self.config["variables"]["names"]:
+				name, value = parsingLine(command)
+				self.config["namekey"] = name
+				self.setNameOnLine()
+
+				self.config["lines"]["line"] = removeChar(value.replace(" ", "", 1))
+				self.setTextOnLine()
+				return False
+
+			# Check boolean
+			elif parse[0] in self.config["variables"]["booleans"]:
+				if parse[1] == "True" or parse[1] == "False": 
+					self.config["variables"]["booleans"][parse[0]] = parse[1]
+
+			# Check counters
+			elif parse[0] in self.config["variables"]["counters"]:
 				if command.find("++") != -1:
 					self.config["variables"]["counters"][parse[0]] += 1
 				elif command.find("--") != -1:
@@ -224,6 +270,7 @@ class Script:
 
 			# Continue
 			elif parse[0] == "continue": continue
+		return True
 
 	# Handling events
 	def events(self, e):
@@ -319,24 +366,31 @@ class Script:
 
 	# Set replica
 	def setReplica(self):
+		# Set text on line
 		self.config["lines"]["line"] = removeChar(self.config["lines"]["line"])
+		self.config["bool"]["nameshow"] = False
+		self.setTextOnLine()
+
+	# Replacing Variables with Values
+	def replacingLines(self):
 		# Replacing part of a string with variables
 		if re.search(r"{.}", self.config["lines"]["line"]):
 			for count in re.finditer(r"{.}", self.config["lines"]["line"]):
 				counter = removeChar(count[0])
 				if counter in self.config["variables"]["counters"]:
 					self.config["lines"]["line"] = re.sub(r"{"+counter+"}", str(self.config["variables"]["counters"][counter]), self.config["lines"]["line"])
-		# Set text on line
-		self.config["bool"]["nameshow"] = False
-		self.setTextOnLine()
+
 
 	# Set name on line
 	def setNameOnLine(self):
+		self.config["bool"]["nameshow"] = True
 		self.setFont("name")
 		self.config["lines"]["name"] = self.config["font"].render(self.config["variables"]["names"][self.config["namekey"]]["value"], True, self.config["variables"]["names"][self.config["namekey"]]["color"])
 
 	# Set text to line
 	def setTextOnLine(self):
+		# Replacing part of a string with variables
+		self.replacingLines()
 		self.setFont("text")
 		self.config["lines"]["lines"].clear()
 		for value in processingLine(self.config["lines"]["line"], self.screen["text"]["width"], self.config["font"]):
@@ -370,7 +424,6 @@ class Script:
 			if value[0] in self.config["variables"]["characters"]:
 				coord = self.config["variables"]["characters"][value[0]]["coord"]
 				src = self.options["pathToCharacter"] + self.config["variables"]["characters"][value[0]]["src"]
-				print(src)
 				if os.path.exists(src) == False:
 					src = self.options["pathToCharacterStock"]
 			else:
@@ -416,9 +469,8 @@ class Script:
 		self.config["bool"]["choice"] = False
 
 		# Handling commands
-		self.handlingCommands(commands)
-
-		self.lineProcessing()
+		if self.handlingCommands(commands):
+			self.lineProcessing()
 
 	# Set condition
 	def setCondition(self, value):
@@ -494,12 +546,13 @@ class Script:
 		commands = commands.split(";")
 
 		# Handling commands
-		self.handlingCommands(commands)
+		if self.handlingCommands(commands):
+			self.nextLine()
 
 	# Operators handling
 	def operatorsHandling(self):
 		start = self.config["lines"]["start"]
-		ends = [x[0] for x in enumerate(self.lines) if x[1] == "end if"]
+		ends = [x[0] for x in enumerate(self.lines) if x[1] == "end if" or x[1] == "endif"]
 		
 		# Sorting and getting the closest operators close value
 		ends = [x for x in ends if x > start]
@@ -516,6 +569,8 @@ class Script:
 		for line in operators:
 			operator, value = parsingLine(line)
 			value = value.split(":")
+			value[0] = value[0].replace(" ", "")
+
 			if operator == "else":
 				self.operatorProcessing(value[1])
 				break
@@ -531,7 +586,13 @@ class Script:
 
 	# Checking comparison operators
 	def operatorsCheck(self, check):
-		check = check.replace(" ", "")
+		# Check boolean variables
+		if check in self.config["variables"]["booleans"]:
+			if self.config["variables"]["booleans"][check] == "True":
+				return True
+			else: return False
+
+		# Check counter variables
 		arrcond = ["==", "<=", ">=", "<", ">", "!="]
 		for i in range(len(arrcond)):
 			if check.find(arrcond[i]) != -1:
