@@ -253,6 +253,8 @@ class Cells:
 
 		countdown = 1
 		margin = (self.pwh[0] - self.margin * 3) / self.perpage
+		xm = 10
+		ym = 3
 
 		for i in range(self.perpage):
 			number = self.font.render(str(countdown), True, self.tcolor)
@@ -262,8 +264,8 @@ class Cells:
 			x += margin * i
 
 			self.points.append({
-				"xy": (x - 10, y - 3),
-				"wh": (twh[0] + 20, twh[1] + 6),
+				"xy": (x - xm, y - ym),
+				"wh": (twh[0] + xm * 2, twh[1] + ym * 2),
 				"txy": (x, y),
 				"twh": twh,
 				"number": number,
@@ -303,7 +305,8 @@ class Cells:
 				"text": self.print,
 				"surface": surface,
 				"hover": False,
-				"workload": False
+				"workload": False,
+				"pathToSave": ""
 			}
 
 			self.cells.append(cell)
@@ -313,7 +316,19 @@ class Cells:
 
 	# Check cells for saving
 	def checkCells(self):
-		pass
+		for cell in self.cells:
+			path = self.pathToSaves + cell["name"] + ".save"
+			if os.path.exists(path):
+				cell["workload"] = True
+				cell["pathToSave"] = path
+
+				text = "Загрузить #" + str(self.page)
+				size = self.font.size(text)
+				text = self.font.render(text, True, self.tcolor)
+				txy = (cell["xy"][0] + cell["wh"][0] / 2 - size[0] / 2, cell["xy"][1] + cell["wh"][1] / 2 - size[1] / 2)
+
+				cell["txy"] = txy
+				cell["text"] = text
 
 	# Draw cells
 	def draw(self, window):

@@ -42,6 +42,9 @@ class Play:
 		# Event main lock
 		self.eventmainlock = False
 
+		self.startScreen = ""
+		self.playScreen = ""
+
 		# Objects
 		self.option = None
 		self.screen = None
@@ -89,13 +92,75 @@ class Play:
 	# Loading data
 	def loadConfig(self, cell):
 		if cell["workload"] == False: return
+		self.processingScript()
+
+		# Retrieving and Clearing Data 
+		file = codecs.open(cell["pathToSave"], "r")
+		config = file.read().split("\n")
+		config = [x for x in config if x != ""]
+		result = {}
+
+		# Data parsing
+		for conf in config:
+			key, value = parsingLine(conf)
+			value = value.replace(" ", "", 1)
+			result[key] = {}
+			printstate = False
+
+			# For objects without nesting
+			singly = re.findall(r"(?:\'.*?\':\s\w+)|(?:\'.*?\':\s\'.*?\')", value)
+			# For nested objects
+			nested = re.findall(r"\'.*?\':\s\{.*?\}", value)
+			# For max nested objects
+			maxnested = re.findall(r"(\'(?:names|characters)\':\s\{(?:\'.*?\':\s\{.*?\})*\})", value)
+			# print(maxnested)
+			if printstate:
+				print(f"==========={key}============")
+				print(f"{key} || {value}")
+				
+				if key == "lines" or key == "background" or key == "bool":
+					print("-----------singly------------")
+					print(singly)
+				elif key == "variables" or key == "render":
+					print("-----------nested------------")
+					print(nested)
+				else:
+					print("-----------unclear-----------")
+				print("------ЗаГраньюДобраИЗла------")
+				print(maxnested)
+				print("")
+
+			# Parsing variables
+			if key == "variables":
+				for nest in nested:
+					value = nest.split(":", 1)
+					name, items = removeChar(value[0]), removeChar(value[1])
+					items = re.sub(r"(\')|(\s)|(\{)|(\})", "", items)
+					# Handling counters and booleans
+					if name == "counters" or name == "booleans":
+						result[key][name] = {}
+						items = items.split(",")
+						for item in items:
+							counter, val = item.split(":")
+							if name == "counters": val = int(val)
+							result[key][name][counter] = val
+
 
 	# Saving data
 	def saveConfig(self, cell, config):
 		if self.script == None: return
 		path = self.option.config["pathToSaves"] + cell["name"] + ".save"
 		with open(path, "w") as file:
-			file.write(str(config))
+			for key, value in config.items():
+				print("=============================")
+				print(f"{key} || {value}")
+				file.write(f"{key} {value}\n")
+
+		# Check cells
+		if "cells" in self.currentScreen["elements"]:
+			self.currentScreen["elements"]["cells"].checkCells()
+		elif "cells" in self.currentSubscreen["elements"]:
+			self.currentSubscreen["elements"]["cells"].checkCells()
 
 	# Refresh screen
 	def refreshScreen(self, screen):
@@ -112,6 +177,9 @@ class Play:
 				self.currentScreen["subdisplay"] = False
 				self.subbackground = None
 				self.eventmainlock = False
+				# Check cells
+				if "cells" in self.currentScreen["elements"]:
+					self.currentScreen["elements"]["cells"].checkCells()
 				# Сall subscreen on screen startup
 				if "startsubscreen" in self.currentScreen:
 					self.refreshScreen(self.currentScreen["startsubscreen"])
@@ -150,6 +218,9 @@ class Play:
 					self.subcallcheck = False
 					self.currentScreen["subdisplay"] = True
 					self.currentSubscreen = self.screen.config[screen]["subscreens"][subscreen]
+					# Check cells
+					if "cells" in self.currentSubscreen["elements"]:
+						self.currentSubscreen["elements"]["cells"].checkCells()
 					# Event main lock
 					if "eventmainlock" in self.currentSubscreen: self.eventmainlock = True
 					else: self.eventmainlock = False

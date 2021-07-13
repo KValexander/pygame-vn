@@ -22,18 +22,6 @@ class Script:
 		self.config  = {
 			# Font
 			"font": "",
-			# Lines
-			"lines": {
-				"start": 0,
-				"end": 0,
-				"name": "",
-				"line": "",
-				"lines": []
-			},
-			# Name key
-			"namekey": "",
-			# Background
-			"background": scLoadImage(self.options["pathToBackgroundStock"], self.options["size"]),
 			# Variables
 			"variables": {
 				"counters": {},
@@ -41,10 +29,23 @@ class Script:
 				"names": {},
 				"characters": {},
 			},
+			# Lines
+			"lines": {
+				"start": 0,
+				"end": 0,
+				"namekey": "",
+				"name": "",
+				"line": "",
+				"lines": []
+			},
+			# Background
+			"background": {
+				"src": self.options["pathToBackgroundStock"],
+				"image":scLoadImage(self.options["pathToBackgroundStock"], self.options["size"]),
+			},
 			# Rendering
 			"render": {
 				"characters": {},
-				"clauses": []
 			},
 			# Condition
 			"condition": {},
@@ -128,7 +129,6 @@ class Script:
 				# Adding data
 				self.config["variables"]["booleans"][name] = state
 
-
 	# Next line
 	def nextLine(self):
 		self.config["lines"]["start"] += 1
@@ -179,16 +179,11 @@ class Script:
 
 		# Check name
 		if command in self.config["variables"]["names"]:
-			self.config["namekey"] = command
+			self.config["lines"]["namekey"] = command
 			self.setNameOnLine()
 
 			self.config["lines"]["line"] = removeChar(value.replace(" ", "", 1))
 			return self.setTextOnLine()
-
-		# Check boolean
-		elif command in self.config["variables"]["booleans"]:
-			value = value.replace(" ", "")
-			if value == "True" or value == "False": self.config["variables"]["booleans"][command] = value
 
 		# Check counters
 		elif command in self.config["variables"]["counters"]:
@@ -196,6 +191,11 @@ class Script:
 				self.config["variables"]["counters"][command] += 1
 			elif value == "--":
 				self.config["variables"]["counters"][command] -= 1
+				
+		# Check boolean
+		elif command in self.config["variables"]["booleans"]:
+			value = value.replace(" ", "")
+			if value == "True" or value == "False": self.config["variables"]["booleans"][command] = value
 
 		# Background
 		elif command == "background":
@@ -246,7 +246,7 @@ class Script:
 			# Check name
 			if parse[0] in self.config["variables"]["names"]:
 				name, value = parsingLine(command)
-				self.config["namekey"] = name
+				self.config["lines"]["namekey"] = name
 				self.setNameOnLine()
 
 				self.config["lines"]["line"] = removeChar(value.replace(" ", "", 1))
@@ -313,8 +313,7 @@ class Script:
 	# Rendering background
 	def background(self, window):
 		# Rendering background
-		if self.config["background"] != None:
-			drawImage(self.window, self.config["background"], (0,0))
+		drawImage(self.window, self.config["background"]["image"], (0,0))
 
 		# Rendering characters
 		if len(self.config["render"]["characters"]) != 0:
@@ -385,7 +384,7 @@ class Script:
 	def setNameOnLine(self):
 		self.config["bool"]["nameshow"] = True
 		self.setFont("name")
-		self.config["lines"]["name"] = self.config["font"].render(self.config["variables"]["names"][self.config["namekey"]]["value"], True, self.config["variables"]["names"][self.config["namekey"]]["color"])
+		self.config["lines"]["name"] = self.config["font"].render(self.config["variables"]["names"][self.config["lines"]["namekey"]]["value"], True, self.config["variables"]["names"][self.config["lines"]["namekey"]]["color"])
 
 	# Set text to line
 	def setTextOnLine(self):
@@ -403,7 +402,8 @@ class Script:
 		src = self.options["pathToBackground"] + value
 		if os.path.exists(src) == False:
 			src = self.options["pathToBackgroundStock"]
-		self.config["background"] = scLoadImage(src, self.options["size"])
+		self.config["background"]["src"] = src
+		self.config["background"]["image"] = scLoadImage(src, self.options["size"])
 
 	# Handling show characters
 	def showCharacters(self, value):
@@ -475,7 +475,6 @@ class Script:
 	# Set condition
 	def setCondition(self, value):
 		self.config["condition"].clear()
-		self.config["render"]["clauses"].clear()
 
 		# Parsing in the output of a condition
 		value = re.findall(r"(\".*?\")|(\'.*?\')", value)[0]
@@ -516,6 +515,7 @@ class Script:
 		# Adding condition data
 		self.config["condition"]["size"] = size
 		self.config["condition"]["text"] = text
+		self.config["condition"]["value"] = value
 		self.config["condition"]["wh"] = wh
 		self.config["condition"]["xy"] = xy
 		self.config["condition"]["txy"] = txy
@@ -535,6 +535,7 @@ class Script:
 				"xy": (x, y),
 				"wh": wh,
 				"text": text,
+				"value": value,
 				"txy": txy,
 				"twh": twh,
 				"return": commands,
