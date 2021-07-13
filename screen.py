@@ -184,9 +184,9 @@ class Screen:
 			# Adding cells
 			elif command == "cells":
 				self.config[screen]["elements"]["cells"] = None
-				start = self.lines.index(line)
-				end = self.lines.index("end cells")
-				value = self.lines[start:end]
+				start = lines.index(line)
+				end = lines.index("end cells")
+				value = lines[start:end]
 				# Creating and adding cells
 				cells = self.createCells(value)
 				self.config[screen]["elements"]["cells"] = cells
@@ -250,10 +250,10 @@ class Screen:
 		evenStart = len(lines)
 
 		# Initial positions
-		if "events:" 	in lines: evenStart = lines.index("events:")
+		if "events:" in lines: evenStart = lines.index("events:")
 
 		# Lists elements and actions
-		events 		= lines[evenStart:len(lines)]
+		events = lines[evenStart:len(lines)]
 
 		# Handling lines
 		for line in lines:
@@ -381,9 +381,9 @@ class Screen:
 			# Adding cells
 			elif command == "cells":
 				self.config[screen]["subscreens"][subscreen]["elements"]["cells"] = None
-				start = self.lines.index(line)
-				end = self.lines.index("end cells")
-				value = self.lines[start:end]
+				start = lines.index(line)
+				end = lines.index("end cells")
+				value = lines[start:end]
 				# Creating and adding cells
 				cells = self.createCells(value)
 				self.config[screen]["subscreens"][subscreen]["elements"]["cells"] = cells
