@@ -8,6 +8,7 @@ screen_folder 	  = gui/
 src_icon 		  = gui/icon.png
 character_folder  = images/characters/
 background_folder = images/medley/
+sounds_folder	  = sounds/
 saves_folder 	  = saves/
 # Стоковые фотографии по пути папки screen_folder
 image_stock		  = noimage.png

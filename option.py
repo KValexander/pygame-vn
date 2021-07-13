@@ -56,7 +56,11 @@ class Option:
 			elif line.find("background_folder") != -1:
 				self.config["backgroundFolder"] = value
 
-			# Background directory
+			# Sounds directory
+			elif line.find("sounds_folder") != -1:
+				self.config["soundsFolder"] = value
+
+			# Saves directory
 			elif line.find("saves_folder") != -1:
 				self.config["savesFolder"] = value
 
@@ -182,6 +186,8 @@ class Option:
 		self.config["pathToCharacter"] = self.config["pathToProject"] + self.config["characterFolder"]
 		# Path to background
 		self.config["pathToBackground"] = self.config["pathToProject"] + self.config["backgroundFolder"]
+		# Path to sound
+		self.config["pathToSounds"] = self.config["pathToProject"] + self.config["soundsFolder"]
 		# Path to saves
 		self.config["pathToSaves"] = self.config["pathToProject"] + self.config["savesFolder"]
 		# Path to image stock

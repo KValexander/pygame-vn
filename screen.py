@@ -84,7 +84,7 @@ class Screen:
 	# Processing screen
 	def processingScreen(self, screen, lines):
 		# Optimizable commands
-		statics = ["id", "type", "background", "startsubscreen"]
+		statics = ["id", "type", "background", "startsubscreen", "loopsound"]
 		
 		# Stock position
 		elemStart = len(lines)

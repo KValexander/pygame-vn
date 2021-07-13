@@ -258,9 +258,17 @@ class Play:
 				# Сall subscreen on screen startup
 				if "startsubscreen" in self.currentScreen:
 					self.refreshScreen(self.currentScreen["startsubscreen"])
+				# Screen background loop sound
+				if "loopsound" in self.currentScreen:
+					src = self.option.config["pathToSounds"] + self.currentScreen["loopsound"]
+					if os.path.exists(src):
+						pygame.mixer.music.load(src)
+						pygame.mixer.music.play()
+					else: pygame.mixer.music.stop()
+				else: pygame.mixer.music.stop()
 				# Screen background
 				if "background" in self.currentScreen:
-					src = self.folder + self.option.config["screenFolder"] + self.currentScreen["background"]
+					src = self.option.config["pathToScreen"] + self.currentScreen["background"]
 					if os.path.exists(src) == False:
 						src = self.option.config["pathToBackgroundStock"]
 					self.background = scLoadImage(src, self.option.config["size"])
@@ -318,6 +326,7 @@ class Play:
 					# Clear screen
 					self.currentScreen["display"] = False
 					self.currentScreen["subdisplay"] = False
+					pygame.mixer.music.stop()
 			else:
 				# Getting and check main screen
 				subscreen, screen = screen, getMainScreen(screen, self.screen.config)
