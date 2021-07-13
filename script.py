@@ -380,7 +380,6 @@ class Script:
 				if counter in self.config["variables"]["counters"]:
 					self.config["lines"]["line"] = re.sub(r"{"+counter+"}", str(self.config["variables"]["counters"][counter]), self.config["lines"]["line"])
 
-
 	# Set name on line
 	def setNameOnLine(self):
 		self.config["bool"]["nameshow"] = True
@@ -507,7 +506,7 @@ class Script:
 		size = self.config["font"].size(value)
 		text = self.config["font"].render(value, True, self.options["conditionTextColor"])
 		wh = (size[0] + self.options["conditionMargin"] * 2, size[1] + self.options["conditionMargin"])
-		xy = (self.options["size"][0] / 2 - wh[0] / 2, self.options["size"][0] / 2 - wh[1] - (len(clauses) * self.options["conditionIndentation"] * 1.5))
+		xy = (self.options["size"][0] / 2 - wh[0] / 2, self.options["size"][1] / 2 - wh[1] - ((len(clauses) - 1) * self.options["conditionIndentation"]))
 		txy = (xy[0] + self.options["conditionMargin"], xy[1] + self.options["conditionMargin"] / 2)
 		
 		surface = pygame.Surface(wh)
