@@ -102,23 +102,27 @@ class Play:
 
 		# Data parsing
 		for conf in config:
+			# Parsing data
 			key, value = parsingLine(conf)
 			value = value.replace(" ", "", 1)
+			value = re.sub(r"<.*?>", "''", value)
 			result[key] = {}
-			printstate = False
+			printstate = True
 
 			# For objects without nesting
-			singly = re.findall(r"(?:\'.*?\':\s\w+)|(?:\'.*?\':\s\'.*?\')", value)
+			singly = re.findall(r"(?:\'.*?\':\s\w+)|(?:\'.*?\':\s\'.*?\')|(?:\'.*?\':\s\(.*?\))", value)
 			# For nested objects
 			nested = re.findall(r"\'.*?\':\s\{.*?\}", value)
 			# For max nested objects
 			maxnested = re.findall(r"(\'(?:names|characters)\':\s\{(?:\'.*?\':\s\{.*?\})*\})", value)
+			# For arrays of objects
+			arrays = re.findall(r"\'(?:clauses)\':\s\[.*?\]", value)
 			# print(maxnested)
 			if printstate:
 				print(f"==========={key}============")
 				print(f"{key} || {value}")
 				
-				if key == "lines" or key == "background" or key == "bool":
+				if key == "lines" or key == "background" or key == "bool" or key == "condition":
 					print("-----------singly------------")
 					print(singly)
 				elif key == "variables" or key == "render":
@@ -126,24 +130,95 @@ class Play:
 					print(nested)
 				else:
 					print("-----------unclear-----------")
-				print("------ЗаГраньюДобраИЗла------")
+				print("----------maxnested----------")
 				print(maxnested)
+				print("------------arrays-----------")
+				print(arrays)
 				print("")
 
 			# Parsing variables
 			if key == "variables":
+				# For nested objects
 				for nest in nested:
-					value = nest.split(":", 1)
-					name, items = removeChar(value[0]), removeChar(value[1])
+					nest = nest.split(":", 1)
+					name, items = removeChar(nest[0]), removeChar(nest[1])
 					items = re.sub(r"(\')|(\s)|(\{)|(\})", "", items)
 					# Handling counters and booleans
 					if name == "counters" or name == "booleans":
 						result[key][name] = {}
 						items = items.split(",")
 						for item in items:
-							counter, val = item.split(":")
+							subname, val = item.split(":")
 							if name == "counters": val = int(val)
-							result[key][name][counter] = val
+							result[key][name][subname] = val
+				# For max nested objects
+				for nest in maxnested:
+					name, objects = nest.split(":", 1)
+					name = removeChar(name)
+					result[key][name] = {}
+					if name == "names" or name == "characters":
+						objects = re.findall(r"\'.*?\':\s\{.*?\}", objects)
+						for obj in objects:
+							obj = obj.split(":", 1)
+							subname, items = removeChar(obj[0]), removeChar(obj[1])
+							items = re.sub(r"(\')|(\s)|(\{)|(\})", "", items)
+							result[key][name][subname] = {}
+							items = items.split(",", 1)
+							for item in items:
+								undername, val = item.split(":")
+								if undername == "color": val = defineColor(val)
+								elif undername == "coord": val = fetchSize(val)
+								result[key][name][subname][undername] = val
+			# Parsing lines
+			elif key == "lines":
+				for single in singly:
+					single = single.replace("'", "")
+					name, val = single.split(":", 1)
+					val = val.replace(" ", "", 1)
+					if name == "start" or name == "end": val = int(val)
+					elif name == "lines": val = list()
+					result[key][name] = val
+
+			# Parsing background
+			elif key == "background":
+				for single in singly:
+					single = single.replace("'", "")
+					name, val = single.split(":", 1)
+					val = val.replace(" ", "", 1)
+					if name == "src":
+						result[key][name] = val
+						result[key]["image"] = scLoadImage(val, self.option.config["size"])
+
+			# Parsing render
+			elif key == "render":
+				# For max nested objects
+				for nest in maxnested:
+					name, objects = nest.split(":", 1)
+					name = removeChar(name)
+					result[key][name] = {}
+					if name == "characters":
+						objects = re.findall(r"\'.*?\':\s\{.*?\}", objects)
+						for obj in objects:
+							obj = obj.split(":", 1)
+							subname, items = removeChar(obj[0]), removeChar(obj[1])
+							src = self.option.config["pathToCharacter"] + result["variables"]["characters"][subname]["src"]
+							items = re.sub(r"(\')|(\s)|(\{)|(\})", "", items)
+							result[key][name][subname] = {}
+							items = items.split(",", 2)
+							for item in items:
+								undername, val = item.split(":")
+								if undername == "coord": val = fetchSize(val)
+								elif undername == "image": val = loadImage(src)
+								result[key][name][subname][undername] = val
+			# Parsing bool
+			elif key == "bool":
+				for single in singly:
+					single = single.replace("'", "")
+					name, val = single.split(":", 1)
+					val = val.replace(" ", "", 1)
+					if val == "True": val = True
+					elif val == "False": val = False
+					result[key][name] = val
 
 
 	# Saving data

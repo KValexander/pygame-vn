@@ -21,7 +21,7 @@ class Script:
 		# Config variables
 		self.config  = {
 			# Font
-			"font": "",
+			"font": {},
 			# Variables
 			"variables": {
 				"counters": {},
@@ -46,6 +46,7 @@ class Script:
 			# Rendering
 			"render": {
 				"characters": {},
+				"clauses": [],
 			},
 			# Condition
 			"condition": {},
@@ -292,7 +293,7 @@ class Script:
 	# Condition clause events
 	def eventCondition(self, e):
 		# Condition clause selection processing
-		for clause in self.config["condition"]["clauses"]:
+		for clause in self.config["render"]["clauses"]:
 			# Handling a click on a condition clause
 			if e.type == pygame.MOUSEBUTTONDOWN:
 				if e.button == 1:
@@ -342,7 +343,7 @@ class Script:
 		window.blit(self.config["condition"]["surface"], self.config["condition"]["xy"])
 		window.blit(self.config["condition"]["text"], self.config["condition"]["txy"])
 
-		for clause in self.config["condition"]["clauses"]:
+		for clause in self.config["render"]["clauses"]:
 			window.blit(self.config["condition"]["surface"], clause["xy"])
 			window.blit(clause["text"], clause["txy"])
 			if clause["hover"]:
@@ -433,8 +434,8 @@ class Script:
 			# Adding data
 			self.config["render"]["characters"][value[0]] = {
 				"image": loadImage(src),
+				"state": True,
 				"coord": coord,
-				"state": True
 			}
 
 			# If there is positioning
@@ -475,6 +476,7 @@ class Script:
 	# Set condition
 	def setCondition(self, value):
 		self.config["condition"].clear()
+		self.config["render"]["clauses"].clear()
 
 		# Parsing in the output of a condition
 		value = re.findall(r"(\".*?\")|(\'.*?\')", value)[0]
@@ -520,7 +522,6 @@ class Script:
 		self.config["condition"]["xy"] = xy
 		self.config["condition"]["txy"] = txy
 		self.config["condition"]["surface"] = surface
-		self.config["condition"]["clauses"] = []
 
 		x, y = xy
 		# Handling clauses
@@ -531,7 +532,7 @@ class Script:
 			twh = self.config["font"].size(value)
 			txy = x + wh[0] / 2 - twh[0] / 2, y + wh[1] / 2 - twh[1] / 2
 
-			self.config["condition"]["clauses"].append({
+			self.config["render"]["clauses"].append({
 				"xy": (x, y),
 				"wh": wh,
 				"text": text,

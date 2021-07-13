@@ -93,7 +93,7 @@ def defineSize(size, wh):
 def fetchSize(size):
 	size = size.replace(" ", "")
 	size = removeChar(size).split(",")
-	size = (int(size[0]), int(size[1]))
+	size = (int(abs(float(size[0]))), int(abs(float(size[1]))))
 	return size
 
 # Define one size
