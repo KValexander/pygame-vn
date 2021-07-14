@@ -316,19 +316,21 @@ class Cells:
 
 	# Check cells for saving
 	def checkCells(self):
+		i = 0
 		for cell in self.cells:
 			path = self.pathToSaves + cell["name"] + ".save"
 			if os.path.exists(path):
 				cell["workload"] = True
 				cell["pathToSave"] = path
 
-				text = "Загрузить #" + str(self.page)
+				text = "Загрузить #" + str(self.page) + " $" +str(i)
 				size = self.font.size(text)
 				text = self.font.render(text, True, self.tcolor)
 				txy = (cell["xy"][0] + cell["wh"][0] / 2 - size[0] / 2, cell["xy"][1] + cell["wh"][1] / 2 - size[1] / 2)
 
 				cell["txy"] = txy
 				cell["text"] = text
+			i += 1
 
 	# Draw cells
 	def draw(self, window):

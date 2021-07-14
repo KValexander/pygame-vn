@@ -30,7 +30,7 @@ link_size 		= 25
 # Настройки текста
 t_text_size 		 = 20
 t_text_color 		 = (255, 255, 255)
-t_text_line_height = 25
+t_text_line_height 	 = 25
 
 # Настройки надписей
 inscription_color = (255,255,255)

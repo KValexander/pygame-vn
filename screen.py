@@ -151,7 +151,10 @@ class Screen:
 				self.config[screen]["play"] = {}
 				self.config[screen]["play"]["name"] = {}
 				self.config[screen]["play"]["text"] = {}
-				self.config[screen]["play"]["events"] = []
+				self.config[screen]["play"]["events"] = {}
+				self.config[screen]["play"]["events"]["mouse"] = []
+				self.config[screen]["play"]["events"]["icons"] = []
+				self.config[screen]["play"]["events"]["links"] = []
 				self.processingPlay(screen, play)
 
 	# Processing elements
@@ -291,7 +294,22 @@ class Screen:
 				# Event assignment
 				obj = self.actionMouse(value)
 				# Adding event parameters
-				self.config[screen]["play"]["events"].append(obj)
+				self.config[screen]["play"]["events"]["mouse"].append(obj)
+
+			# Assigning events to icon
+			elif command == "icon":
+				# Event assignment
+				obj = self.actionIcon(value)
+				# Adding event parameters
+				self.config[screen]["play"]["events"]["icons"].append(obj)
+
+			# Assigning events to link
+			elif command == "link":
+				# Event assignment
+				obj = self.actionLink(value)
+				# Adding event parameters
+				self.config[screen]["play"]["events"]["links"].append(obj)
+		print(self.config[screen]["play"]["events"])
 
 	# Prcessing subscreen
 	def processingSubscreen(self, subscreen, lines):
@@ -602,8 +620,7 @@ class Screen:
 			event = parse[1] # Event
 			rtrn = parse[2] # Return value
 
-		# Closing the current screen or Closing the window
-		elif parse[1] == "close" or parse[1] == "end" or parse[1] == "start":
+		else:
 			tpe = 1025
 			button = 1
 			event = parse[1]
@@ -636,8 +653,7 @@ class Screen:
 			event = parse[1] # Event
 			rtrn = parse[2] # Return value
 
-		# Closing the current screen or Closing the window
-		elif parse[1] == "close" or parse[1] == "end" or parse[1] == "start":
+		else:
 			tpe = 1025
 			button = 1
 			event = parse[1]

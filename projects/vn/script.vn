@@ -7,6 +7,7 @@ name n3 = ("Третья", (255, 255, 255))
 character one = ("1.png", (0.0, 0.0))
 character two = ("2.png", (0.0, 0.0))
 character three = ("3.png", (0.0, 0.0))
+character hana = ("hana.png", (0.0, 0.0))
 
 # type name = n
 count i = 0
@@ -24,6 +25,8 @@ bool fi = False
 bool tw = False
 bool th = False
 
+bool hanashow = False
+
 start:
 	background "class.jpg"
 
@@ -36,7 +39,7 @@ start:
 
 	# Проверка состояния булийной переменной
 	#if state: n1 "Вторая тестовая реплика для проверки возможности вывода сообщений в условиях"
-	#endif
+	#end if
 	
 	"Стартовая реплика"
 	
@@ -233,9 +236,19 @@ label next:
 	else: continue
 	end if
 
+	if j > 10: show hana center; hanashow True; background "flume.png"
+	else: continue
+	end if
+
 	"Это тестовый полигон проверок различных операторов"
 
 	"Основные возможности оператора condition проверены. Доступные команды внутри этого оператора: continue - продолжить текущие линии скрипта, go next - переход на метку, где next - это название метки, i++ - увеличение переменной, где i - это название переменной с типом данных счётчик, i-- - уменьшение переменной, где i - это название переменной с типом данных счётчик"
+
+	"С оператором if ещё есть множество проблем, некорретность проверок и возможность составлять только самые простые конструкции. "
+
+	if hanashow: hide hana
+	else: continue
+	endif
 
 	"На данные момент тут более ничего нет"
 

@@ -54,7 +54,7 @@ screen main:
 	# Подчинённые экраны
 	subscreens [load, settings, about, help]
 	# Музыка на фон, в папке по пути sounds_folder в options.vn
-	#loopsound background.ogg
+	loopsound background.ogg
 
 	# Отображение подэкрана при запуске экрана, необязательно
 	# startsubscreen about
@@ -116,7 +116,10 @@ screen play:
 	# Добавление элементов на экран
 	elements:
 		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
-		surface dialogbox 140 (0, 0, 0) (0.0, 0.75) (1.0, 0.251)
+		surface dialogbox 140 (0, 0, 0) (0.05, 0.75) (0.9, 0.251)
+
+		icon prev "line.png" (0.0, 0.75) (51, 200)
+		icon next "line.png" (0.95, 0.75) (52, 200)
 
 		# type name value xy(x.x, y.y)
 		link return "Вернуться" (0.025, 0.025)
@@ -125,6 +128,9 @@ screen play:
 	actions:
 		# type id command screen
 		link return call main
+
+		icon prev hover "linehover.png"
+		icon next hover "linehover.png"
 
 		# Можно присваивать события мыши:
 		# leftclick   - нажатие левой клавиши мыши
@@ -136,14 +142,16 @@ screen play:
 	play:
 		# Конфигурация имен персонажей, обязателен
 		# type xy textsize
-		name (0.01, 0.76) 30
+		name (0.06, 0.76) 30
 
 		# Конфигурация текста, обязателен
 		# type xy width color textsize lineheight
-		text (0.01, 0.8) (0.99) (255,255,255) 25 25
+		text (0.06, 0.8) (0.88) (255,255,255) 25 25
 
 		# Специальные события для экрана игры, обязателен
 		events:
+			#icon prev prevline
+			#icon next nextline
 			mouse leftclick nextline
 			mouse rightclick prevline
 
@@ -314,7 +322,7 @@ subscreen menu_save:
 		link load call menu_load
 		link main call main
 
-		mouse rightclick close
+		#mouse rightclick close
 
 		# type command
 		cells save
@@ -368,7 +376,7 @@ subscreen menu_load:
 		link load call menu_load
 		link main call main
 
-		mouse rightclick close
+		#mouse rightclick close
 
 		# type command
 		cells load

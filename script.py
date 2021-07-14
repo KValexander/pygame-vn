@@ -57,6 +57,8 @@ class Script:
 				"start": False,
 				"choice": False,
 				"nameshow": False,
+				"output": False,
+				"music": False,
 			},
 		}
 
@@ -157,7 +159,7 @@ class Script:
 	def lineProcessing(self):
 		# Current line
 		self.config["lines"]["line"] = self.lines[self.config["lines"]["start"]]
-		
+
 		# If current line = return
 		if self.config["lines"]["line"] == "return":
 			return self.main.refreshScreen(self.main.startScreen)
@@ -200,7 +202,7 @@ class Script:
 
 		# Background
 		elif command == "background":
-			self.setBackground(value)
+			self.setBackground(removeChar(value.replace(" ", "")))
 
 		# Show characters
 		elif command == "show":
@@ -269,6 +271,20 @@ class Script:
 			# Going to label
 			elif parse[0] == "go": self.setLabel(parse[1])
 
+			# Background
+			elif parse[0] == "background":
+				self.setBackground(parse[1] + "." + parse[2])
+
+			# Show characters
+			elif parse[0] == "show":
+				val = parse[1]
+				if len(parse) >= 3: val = parse[1] + " " + parse[2]
+				self.showCharacters(val)
+
+			# Hide characters
+			elif parse[0] == "hide":
+				self.hideCharacter(parse[1])
+
 			# Continue
 			elif parse[0] == "continue": continue
 		return True
@@ -277,8 +293,8 @@ class Script:
 	def events(self, e):
 		if self.config["bool"]["start"] == False: self.config["bool"]["start"] = True
 		elif self.config["bool"]["choice"] == False:
-			# Handling events
-			for event in self.screen["events"]:
+			# Handling mouse events
+			for event in self.screen["events"]["mouse"]:
 				# Event handling
 				if e.type == event["type"]:
 					if e.button == event["button"]:
@@ -286,6 +302,32 @@ class Script:
 							self.nextLine()
 						elif event["event"] == "prevline":
 							self.prevLine()
+			# Handling icons events
+			for jicon in self.screen["events"]["icons"]:
+				# Getting icon
+				ricon = getElementByName(jicon["name"], self.main.currentScreen["elements"]["icons"])
+				if ricon == None: return
+				# Event handling
+				if e.type == jicon["type"]:
+					if e.button == jicon["button"]:
+						if mouseCollision(ricon.xy, ricon.wh, e.pos):
+							if jicon["event"] == "nextline":
+								self.nextLine()
+							elif jicon["event"] == "prevline":
+								self.prevLine()
+			# Handling icons events
+			for jlink in self.screen["events"]["icons"]:
+				# Getting a link
+				rlink = getElementByName(jlink["name"], self.main.currentScreen["elements"]["links"])
+				if rlink == None: return
+				# Event handling
+				if e.type == jlink["type"]:
+					if e.button == jlink["button"]:
+						if mouseCollision(rlink.xy, rlink.twh, e.pos):
+							if jlink["event"] == "nextline":
+								self.nextLine()
+							elif jlink["event"] == "prevline":
+								self.prevLine()
 		elif self.config["bool"]["choice"]:
 			# Condition clause events
 			self.eventCondition(e)
@@ -305,7 +347,6 @@ class Script:
 				if mouseCollision(clause["xy"], clause["wh"], e.pos):
 					clause["hover"] = True
 				else: clause["hover"] = False
-
 
 	# Rendering objects
 	def draw(self, window):
@@ -398,7 +439,6 @@ class Script:
 
 	# Set background
 	def setBackground(self, value):
-		value = removeChar(value.replace(" ", ""))
 		src = self.options["pathToBackground"] + value
 		if os.path.exists(src) == False:
 			src = self.options["pathToBackgroundStock"]
@@ -514,9 +554,8 @@ class Script:
 		surface.set_alpha(self.options["conditionAlpha"])
 
 		# Adding condition data
-		self.config["condition"]["size"] = size
-		self.config["condition"]["text"] = text
 		self.config["condition"]["value"] = value
+		self.config["condition"]["text"] = text
 		self.config["condition"]["wh"] = wh
 		self.config["condition"]["xy"] = xy
 		self.config["condition"]["txy"] = txy
@@ -534,8 +573,8 @@ class Script:
 			self.config["render"]["clauses"].append({
 				"xy": (x, y),
 				"wh": wh,
-				"text": text,
 				"value": value,
+				"text": text,
 				"txy": txy,
 				"twh": twh,
 				"return": commands,
@@ -548,7 +587,8 @@ class Script:
 
 		# Handling commands
 		if self.handlingCommands(commands):
-			self.nextLine()
+			if self.config["bool"]["back"]: return self.prevLine()
+			else: return self.nextLine()
 
 	# Operators handling
 	def operatorsHandling(self):
