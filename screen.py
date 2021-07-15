@@ -49,6 +49,7 @@ class Screen:
 			screens = re.findall(r"\w+", value)
 			for screen in screens:
 				self.config[screen] = {}
+				self.config[screen]["events"] = True
 				self.config[screen]["display"] = True
 				self.config[screen]["subdisplay"] = False
 
@@ -124,6 +125,7 @@ class Screen:
 				for sub in subscreens:
 					self.config[screen]["subscreens"][sub] = {}
 					self.config[screen]["subscreens"][sub]["parent"] = screen
+					self.config[screen]["subscreens"][sub]["events"] = True
 					self.config[screen]["subscreens"][sub]["display"] = True
 
 			# Adding interface elements
@@ -309,7 +311,6 @@ class Screen:
 				obj = self.actionLink(value)
 				# Adding event parameters
 				self.config[screen]["play"]["events"]["links"].append(obj)
-		print(self.config[screen]["play"]["events"])
 
 	# Prcessing subscreen
 	def processingSubscreen(self, subscreen, lines):

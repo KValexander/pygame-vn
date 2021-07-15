@@ -117,7 +117,9 @@ class SaveLoad:
 					if name == "start" or name == "end": val = int(val)
 					result[key][name] = val
 				result[key]["lines"] = []
-				print(result[key])
+				if result[key]["namekey"] != "":
+					nname = result["variables"]["names"][result[key]["namekey"]]
+					result[key]["name"] = result["font"].render(nname["value"], True, nname["color"])
 
 			# Parsing background
 			elif key == "background":
@@ -189,6 +191,14 @@ class SaveLoad:
 				result[key]["surface"] = pygame.Surface(result[key]["wh"])
 				result[key]["surface"].fill(self.option.config["conditionBackgroundColor"])
 				result[key]["surface"].set_alpha(self.option.config["conditionAlpha"])
+
+			# Parsing music
+			elif key == "music":
+				musics = re.sub(r"(\')|(\s)|(\{)|(\})", "", value)
+				musics = musics.split(",")
+				for music in musics:
+					name, val = music.split(":", 1)
+					result[key][name] = val
 			
 			# Parsing bool
 			elif key == "bool":

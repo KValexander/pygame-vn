@@ -50,6 +50,8 @@ class Script:
 			},
 			# Condition
 			"condition": {},
+			# Music
+			"music": {},
 			# Boolean
 			"bool": {
 				"hide": False,
@@ -59,6 +61,7 @@ class Script:
 				"nameshow": False,
 				"output": False,
 				"music": False,
+				"click": False,
 			},
 		}
 
@@ -202,7 +205,42 @@ class Script:
 
 		# Background
 		elif command == "background":
-			self.setBackground(removeChar(value.replace(" ", "")))
+			self.setBackground(value.replace(" ", ""))
+
+		# Music
+		elif command == "music":
+			self.setMusic(value.replace(" ", ""), "music")
+			self.config["music"]["state"] = "play"
+
+		# Stop music
+		elif command == "musicstop":
+			pygame.mixer.music.stop()
+			self.config["music"]["state"] = "stop"
+
+		# Music load
+		elif command == "musicload":
+			self.setMusic(value.replace(" ", ""), "load")
+			self.config["music"]["state"] = "load"
+		
+		# Music play
+		elif command == "musicplay":
+			pygame.mixer.music.play(-1)
+			self.config["music"]["state"] = "play"
+		
+		# Music set volume
+		elif command == "musicvolume":
+			pygame.mixer.music.set_volume(float(value.replace(" ", "")))
+			self.config["music"]["volume"] = float(value.replace(" ", ""))
+
+		# Music pause
+		elif command == "musicpause":
+			pygame.mixer.music.pause()
+			self.config["music"]["state"] = "pause"
+
+		# Music play
+		elif command == "musicunpause":
+			pygame.mixer.music.unpause()
+			self.config["music"]["state"] = "play"
 
 		# Show characters
 		elif command == "show":
@@ -245,6 +283,7 @@ class Script:
 				return False
 
 			parse = re.findall(r"\w+", command)
+			if len(parse) == 0: break
 
 			# Check name
 			if parse[0] in self.config["variables"]["names"]:
@@ -293,41 +332,42 @@ class Script:
 	def events(self, e):
 		if self.config["bool"]["start"] == False: self.config["bool"]["start"] = True
 		elif self.config["bool"]["choice"] == False:
-			# Handling mouse events
-			for event in self.screen["events"]["mouse"]:
-				# Event handling
-				if e.type == event["type"]:
-					if e.button == event["button"]:
-						if event["event"] == "nextline":
-							self.nextLine()
-						elif event["event"] == "prevline":
-							self.prevLine()
+			self.config["bool"]["click"] = False
 			# Handling icons events
 			for jicon in self.screen["events"]["icons"]:
 				# Getting icon
 				ricon = getElementByName(jicon["name"], self.main.currentScreen["elements"]["icons"])
-				if ricon == None: return
+				if ricon == None: break
 				# Event handling
 				if e.type == jicon["type"]:
 					if e.button == jicon["button"]:
 						if mouseCollision(ricon.xy, ricon.wh, e.pos):
-							if jicon["event"] == "nextline":
-								self.nextLine()
-							elif jicon["event"] == "prevline":
-								self.prevLine()
-			# Handling icons events
+							self.config["bool"]["click"] = True
+							if jicon["event"] == "nextline": self.nextLine()
+							elif jicon["event"] == "prevline": self.prevLine()
+
+			# Handling link events
 			for jlink in self.screen["events"]["icons"]:
 				# Getting a link
 				rlink = getElementByName(jlink["name"], self.main.currentScreen["elements"]["links"])
-				if rlink == None: return
+				if rlink == None: break
 				# Event handling
 				if e.type == jlink["type"]:
 					if e.button == jlink["button"]:
 						if mouseCollision(rlink.xy, rlink.twh, e.pos):
-							if jlink["event"] == "nextline":
-								self.nextLine()
-							elif jlink["event"] == "prevline":
-								self.prevLine()
+							self.config["bool"]["click"] = True
+							if jlink["event"] == "nextline": self.nextLine()
+							elif jlink["event"] == "prevline": self.prevLine()
+
+			# Handling mouse events
+			for mouse in self.screen["events"]["mouse"]:
+				# Event handling
+				if e.type == mouse["type"]:
+					if e.button == mouse["button"]:
+						if not self.config["bool"]["click"]:
+							if mouse["event"] == "nextline": self.nextLine()
+							elif mouse["event"] == "prevline": self.prevLine()
+
 		elif self.config["bool"]["choice"]:
 			# Condition clause events
 			self.eventCondition(e)
@@ -444,6 +484,16 @@ class Script:
 			src = self.options["pathToBackgroundStock"]
 		self.config["background"]["src"] = src
 		self.config["background"]["image"] = scLoadImage(src, self.options["size"])
+
+	# Set music
+	def setMusic(self, value, case):
+		src = self.options["pathToSounds"] + value
+		if os.path.exists(src) == False: return
+		self.config["music"]["src"] = src
+		pygame.mixer.music.load(src)
+		self.config["music"]["volume"] = 1.0
+		if case == "music":
+			pygame.mixer.music.play(-1)
 
 	# Handling show characters
 	def showCharacters(self, value):
@@ -617,13 +667,16 @@ class Script:
 				break
 			elif operator == "if":
 				if self.operatorsCheck(value[0]):
-					self.operatorProcessing(value[1])
+					return self.operatorProcessing(value[1])
 					break
 			elif operator == "elif":
 				if self.operatorsCheck(value[0]):
-					self.operatorProcessing(value[1])
+					return self.operatorProcessing(value[1])
 					break
 			else: break
+
+		if self.config["bool"]["back"]: return self.prevLine()
+		else: return self.nextLine()
 
 	# Checking comparison operators
 	def operatorsCheck(self, check):
@@ -633,30 +686,59 @@ class Script:
 				return True
 			else: return False
 
-		# Check counter variables
-		arrcond = ["==", "<=", ">=", "<", ">", "!="]
-		for i in range(len(arrcond)):
-			if check.find(arrcond[i]) != -1:
-				cond = check.split(arrcond[i])
+		# Logical operators
+		logicals = ["||", "&&"]
+
+		# Other
+		logics = ""
+		case = []
+		result = False
+
+		# Check logical operators
+		for logic in logicals:
+			if check.find(logic) != -1:
+				logics = logic
+
+		# Check logic
+		if len(logics) > 0:
+			cond = re.split(r"(?:\|\|)|(?:&&)", check)
+			for c in cond: case.append(self.comparisonCheck(c))
+			if logics == logicals[0]:
+				if case[0] or case[1]: result = True
+			elif logics == logicals[1]:
+				if case[0] and case[1]: result = True
+		else: result = self.comparisonCheck(check)
+
+		return result
+
+	# Comparison checks
+	def comparisonCheck(self, check):
+		# Comparison operators
+		comparisons = ["==", "<=", ">=", "<", ">", "!="]
+		result = False
+		for comparison in comparisons:
+			if check.find(comparison) != -1:
+				cond = check.split(comparison)
 				if cond[0] in self.config["variables"]["counters"]: cond[0] = self.config["variables"]["counters"][cond[0]]
 				else: cond[0] = int(cond[0])
 				if cond[1] in self.config["variables"]["counters"]: cond[1] = self.config["variables"]["counters"][cond[1]]
 				else: cond[1] = int(cond[1])
 
-				# If possible, this should be optimized.
-				if arrcond[i] == "==":
-					if cond[0] == cond[1]: return True
-				elif arrcond[i] == "<=":
-					if cond[0] <= cond[1]: return True
-				elif arrcond[i] == ">=":
-					if cond[0] >= cond[1]: return True
-				elif arrcond[i] == "<":
-					if cond[0] < cond[1]: return True
-				elif arrcond[i] == ">":
-					if cond[0] > cond[1]: return True
-				elif arrcond[i] == "!=":
-					if cond[0] != cond[1]: return True
-				else: return False
+				if comparison == comparisons[0]:
+					if cond[0] == cond[1]: result = True
+				elif comparison == comparisons[1]:
+					if cond[0] <= cond[1]: result = True
+				elif comparison == comparisons[2]:
+					if cond[0] >= cond[1]: result = True
+				elif comparison == comparisons[3]:
+					if cond[0] < cond[1]: result = True
+				elif comparison == comparisons[4]:
+					if cond[0] > cond[1]: result = True
+				elif comparison == comparisons[5]:
+					if cond[0] != cond[1]: result = True
+
+				break
+		return result
 
 	# Set label
 	def setLabel(self, value):

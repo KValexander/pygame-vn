@@ -136,7 +136,7 @@ screen play:
 		# leftclick   - нажатие левой клавиши мыши
 		# middleclick - нажатие средней клавиши мыши
 		# rightclick  - нажатие правой клавиши мыши
-		mouse middleclick call menu_save
+		mouse rightclick call menu_save
 
 	# Настройки игрового экрана, доступно только для главного экрана игры, в других экранах работать не будет
 	play:
@@ -150,10 +150,9 @@ screen play:
 
 		# Специальные события для экрана игры, обязателен
 		events:
-			#icon prev prevline
-			#icon next nextline
+			icon prev prevline
+			icon next nextline
 			mouse leftclick nextline
-			mouse rightclick prevline
 
 	# Обязательная команда для закрытия конфигурирования экрана
 	end play
@@ -182,7 +181,7 @@ subscreen load:
 	# Обязателен
 	calltype local
 	# Необязателен
-	# eventmainlock
+	#eventmainlock
 
 	elements:
 		# type name alpha color xy(x.x, y.y) wh(w.w, h.h)
@@ -322,7 +321,7 @@ subscreen menu_save:
 		link load call menu_load
 		link main call main
 
-		#mouse rightclick close
+		mouse rightclick close
 
 		# type command
 		cells save
@@ -376,7 +375,7 @@ subscreen menu_load:
 		link load call menu_load
 		link main call main
 
-		#mouse rightclick close
+		mouse rightclick close
 
 		# type command
 		cells load

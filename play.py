@@ -41,6 +41,8 @@ class Play:
 		self.subcallcheck = False
 		# Event main lock
 		self.eventmainlock = False
+		# Event main screen
+		self.mainscreenevent = False
 
 		# Objects
 		self.option = None
@@ -118,7 +120,7 @@ class Play:
 					src = self.option.config["pathToSounds"] + self.currentScreen["loopsound"]
 					if os.path.exists(src):
 						pygame.mixer.music.load(src)
-						pygame.mixer.music.play()
+						pygame.mixer.music.play(-1)
 					else: pygame.mixer.music.stop()
 				else: pygame.mixer.music.stop()
 				# Screen background
@@ -219,6 +221,7 @@ class Play:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				self.running = False
+			self.mainscreenevent = False
 
 			# Screen events
 			if self.currentScreen["display"]:
@@ -232,8 +235,9 @@ class Play:
 				# Subscreen events
 				if self.currentScreen["subdisplay"]:
 					if self.currentSubscreen["display"]:
-						# Handling actions for interface elements
-						self.actions(event, self.currentSubscreen)
+						if self.mainscreenevent == False:
+							# Handling actions for interface elements
+							self.actions(event, self.currentSubscreen)
 
 	# Handling actions for interface elements
 	def actions(self, e, screen):
@@ -256,7 +260,6 @@ class Play:
 							point["hover"] = True
 						else: point["hover"] = False
 
-
 		# Handling events
 		if "actions" in screen:
 			# Handling mouse events
@@ -264,6 +267,7 @@ class Play:
 				# Event handling
 				if e.type == jmouse["type"]:
 					if e.button == jmouse["button"]:
+						self.mainscreenevent = True
 						if jmouse["event"] == "call":
 							self.refreshScreen(jmouse["return"])
 						elif jmouse["event"] == "hide":
@@ -290,12 +294,11 @@ class Play:
 							if mouseCollision(point["xy"], point["wh"], e.pos):
 								screen["elements"]["cells"].setPage(point["return"])
 
-
 			# Handling link events
 			for jlink in screen["actions"]["links"]:
 				# Getting a link
 				rlink = getElementByName(jlink["name"], screen["elements"]["links"])
-				if rlink == None: return
+				if rlink == None: break
 				# Event handling
 				if e.type == jlink["type"]:
 					if e.button == jlink["button"]:
@@ -311,7 +314,7 @@ class Play:
 			for jicon in screen["actions"]["icons"]:
 				# Getting icon
 				ricon = getElementByName(jicon["name"], screen["elements"]["icons"])
-				if ricon == None: return
+				if ricon == None: break
 				# Event handling
 				if e.type == jicon["type"]:
 					if mouseCollision(ricon.xy, ricon.wh, e.pos):
