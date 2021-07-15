@@ -10,7 +10,7 @@ from common import *
 
 # Class option
 class Script:
-	def __init__(self, window, data, options, screen, main):
+	def __init__(self, window, data, options, screen, main, state):
 		# Window, lines, options, screen, main and config variables
 		self.window  = window
 		self.data 	 = data
@@ -27,7 +27,10 @@ class Script:
 				"counters": {},
 				"booleans": {},
 				"names": {},
+				"sounds": {},
+				"musics": {},
 				"characters": {},
+				"backgrounds": {},
 			},
 			# Lines
 			"lines": {
@@ -76,8 +79,9 @@ class Script:
 		self.dataProcessing()
 		# Variables processing
 		self.variablesProcessing()
-		# Line processing
-		self.lineProcessing()
+		if state == "start":
+			# Line processing
+			self.lineProcessing()
 
 	# Data processing
 	def dataProcessing(self):
@@ -95,16 +99,41 @@ class Script:
 			# Initial parsing of the line
 			command, value = parsingLine(line)
 
+			# Check for availability
+			if value.find("=") == -1: continue
+
 			# Variable handling with type "name"
 			if command == "name":
 				# Getting data to add
-				name = re.findall(r"\w+", value)[0]
-				parse = removeChar(re.findall(r"\(.*\(.*?\)\)", value)[0])
-				val = removeChar(re.findall(r"\".*?\"", parse)[0])
-				color = defineColor(re.findall(r"\(.*?\)", parse)[0])
+				if re.search(r"\(.*?\)", value):
+					name = re.findall(r"\w+", value)[0]
+					data = re.findall(r"\(.*?\)\)", value)
+					if len(data) == 0: continue
+					parse = removeChar(data[0]).split(",", 1)
+					val, color = parse[0], defineColor(parse[1].replace(" ", ""))
+
+					# Adding data
+					self.config["variables"]["names"][name] = { "value": val, "color": color }
+
+			# Variable handling with type "sound"
+			elif command == "sound":
+				# Getting data to add
+				parse = re.findall(r"\w+", value)
+				name, src = parse[0], f"{parse[1]}.{parse[2]}"
+				src = self.options["pathToSounds"] + src
 
 				# Adding data
-				self.config["variables"]["names"][name] = { "value": val, "color": color }
+				self.config["variables"]["sounds"][name] = { "src": src, "sound": pygame.mixer.Sound(src) }
+
+			# Variable handling with type "music":
+			elif command == "music":
+				# Getting data to add
+				parse = re.findall(r"\w+", value)
+				name, src = parse[0], f"{parse[1]}.{parse[2]}"
+				src = self.options["pathToSounds"] + src
+
+				# Adding data
+				self.config["variables"]["musics"][name] = src
 
 			# Variable handling with type "character"
 			elif command == "character":
@@ -116,6 +145,16 @@ class Script:
 
 				# Adding data
 				self.config["variables"]["characters"][name] = { "src": src, "coord": coord }
+
+			# Variable handling with type "background"
+			elif command == "background":
+				# Getting data to add
+				parse = re.findall(r"\w+", value)
+				name, src = parse[0], f"{parse[1]}.{parse[2]}"
+				src = self.options["pathToBackground"] + src
+
+				# Adding data
+				self.config["variables"]["backgrounds"][name] = src
 
 			# Variable handling with type "count"
 			elif command == "count":
@@ -241,6 +280,10 @@ class Script:
 		elif command == "musicunpause":
 			pygame.mixer.music.unpause()
 			self.config["music"]["state"] = "play"
+
+		# Sound
+		elif command == "sound":
+			self.setSound(value.replace(" ", ""))
 
 		# Show characters
 		elif command == "show":
@@ -479,21 +522,40 @@ class Script:
 
 	# Set background
 	def setBackground(self, value):
-		src = self.options["pathToBackground"] + value
-		if os.path.exists(src) == False:
-			src = self.options["pathToBackgroundStock"]
+		# Getting src
+		if value in self.config["variables"]["backgrounds"]:
+			src = self.config["variables"]["backgrounds"][value]
+		else: src = self.options["pathToBackground"] + value
+		# Check for availability
+		if os.path.exists(src) == False: src = self.options["pathToBackgroundStock"]
+		# Handling background
 		self.config["background"]["src"] = src
 		self.config["background"]["image"] = scLoadImage(src, self.options["size"])
 
 	# Set music
 	def setMusic(self, value, case):
-		src = self.options["pathToSounds"] + value
+		# Getting src
+		if self.config["bool"]["back"]: return pygame.mixer.music.stop()
+		if value in self.config["variables"]["musics"]:
+			src = self.config["variables"]["musics"][value]
+		else: src = self.options["pathToSounds"] + value
+		# Check for availability
 		if os.path.exists(src) == False: return
+		# Handling music
 		self.config["music"]["src"] = src
 		pygame.mixer.music.load(src)
 		self.config["music"]["volume"] = 1.0
-		if case == "music":
+		if case == "music": pygame.mixer.music.play(-1)
+
+	# Play music
+	def playMusic(self):
+		if self.config["music"]["state"] == "play":
 			pygame.mixer.music.play(-1)
+
+	# Set sound
+	def setSound(self, value):
+		if value in self.config["variables"]["sounds"]:
+			self.config["variables"]["sounds"][value]["sound"].play()
 
 	# Handling show characters
 	def showCharacters(self, value):
@@ -596,7 +658,7 @@ class Script:
 		size = self.config["font"].size(value)
 		text = self.config["font"].render(value, True, self.options["conditionTextColor"])
 		wh = (size[0] + self.options["conditionMargin"] * 2, size[1] + self.options["conditionMargin"])
-		xy = (self.options["size"][0] / 2 - wh[0] / 2, self.options["size"][1] / 2 - wh[1] - ((len(clauses) - 1) * self.options["conditionIndentation"]))
+		xy = (self.options["size"][0] / 2 - wh[0] / 2, self.options["size"][1] / 2 - wh[1] - ((len(clauses) - 1) * (self.options["conditionIndentation"] / 2)))
 		txy = (xy[0] + self.options["conditionMargin"], xy[1] + self.options["conditionMargin"] / 2)
 		
 		surface = pygame.Surface(wh)
@@ -614,6 +676,7 @@ class Script:
 		x, y = xy
 		# Handling clauses
 		for claus in clauses:
+			if claus.find(":") == -1: continue
 			y += self.options["conditionIndentation"]
 			value, commands = claus.split(":")
 			text = self.config["font"].render(value, True, self.options["conditionTextColor"])

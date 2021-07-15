@@ -19,7 +19,7 @@ class SaveLoad:
 	# Loading data
 	def loadConfig(self, cell):
 		if cell["workload"] == False: return
-		self.main.processingScript()
+		self.main.processingScript("load")
 
 		# Retrieving and Clearing Data 
 		file = codecs.open(cell["pathToSave"], "r")
@@ -51,7 +51,7 @@ class SaveLoad:
 			# For nested objects
 			nested = re.findall(r"\'.*?\':\s\{.*?\}", value)
 			# For max nested objects
-			maxnested = re.findall(r"(\'(?:names|characters)\':\s\{(?:\'.*?\':\s\{.*?\})*\})", value)
+			maxnested = re.findall(r"(\'(?:names|characters|sounds)\':\s\{(?:\'.*?\':\s\{.*?\})*\})", value)
 			# For arrays of objects
 			arrays = re.findall(r"\'(?:clauses)\':\s\[.*?\]", value)
 
@@ -82,11 +82,11 @@ class SaveLoad:
 					name, items = removeChar(nest[0]), removeChar(nest[1])
 					items = re.sub(r"(\')|(\s)|(\{)|(\})", "", items)
 					# Handling counters and booleans
-					if name == "counters" or name == "booleans":
+					if name == "counters" or name == "booleans" or name == "backgrounds" or name == "musics":
 						result[key][name] = {}
 						items = items.split(",")
 						for item in items:
-							subname, val = item.split(":")
+							subname, val = item.split(":", 1)
 							if name == "counters": val = int(val)
 							result[key][name][subname] = val
 				# For max nested objects
@@ -94,7 +94,7 @@ class SaveLoad:
 					name, objects = nest.split(":", 1)
 					name = removeChar(name)
 					result[key][name] = {}
-					if name == "names" or name == "characters":
+					if name == "names" or name == "characters" or name == "sounds":
 						objects = re.findall(r"\'.*?\':\s\{.*?\}", objects)
 						for obj in objects:
 							obj = obj.split(":", 1)
@@ -103,9 +103,10 @@ class SaveLoad:
 							result[key][name][subname] = {}
 							items = items.split(",", 1)
 							for item in items:
-								undername, val = item.split(":")
+								undername, val = item.split(":", 1)
 								if undername == "color": val = defineColor(val)
 								elif undername == "coord": val = fetchSize(val)
+								elif undername == "sound": val = pygame.mixer.Sound(result[key][name][subname]["src"])
 								result[key][name][subname][undername] = val
 								
 			# Parsing lines
@@ -193,7 +194,7 @@ class SaveLoad:
 				result[key]["surface"].set_alpha(self.option.config["conditionAlpha"])
 
 			# Parsing music
-			elif key == "music":
+			elif key == "music" and len(value) != 2:
 				musics = re.sub(r"(\')|(\s)|(\{)|(\})", "", value)
 				musics = musics.split(",")
 				for music in musics:
@@ -212,6 +213,7 @@ class SaveLoad:
 
 		self.main.script.config = result
 		self.main.script.setTextOnLine()
+		self.main.script.playMusic()
 
 	# Saving data
 	def saveConfig(self, cell, config):

@@ -54,7 +54,7 @@ screen main:
 	# Подчинённые экраны
 	subscreens [load, settings, about, help]
 	# Музыка на фон, в папке по пути sounds_folder в options.vn
-	loopsound background.ogg
+	#loopsound background.ogg
 
 	# Отображение подэкрана при запуске экрана, необязательно
 	# startsubscreen about

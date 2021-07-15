@@ -89,10 +89,10 @@ class Play:
 		self.refreshScreen(self.screen.config["startScreen"])
 
 	# Processing script data
-	def processingScript(self):
+	def processingScript(self, state):
 		self.refreshScreen(self.screen.config["playScreen"])
 		if not "play" in self.currentScreen: return
-		self.script = Script(self.window, self.scriptsdata, self.option.config, self.currentScreen["play"], self)
+		self.script = Script(self.window, self.scriptsdata, self.option.config, self.currentScreen["play"], self, state)
 
 	# Refresh screen
 	def refreshScreen(self, screen):
@@ -204,7 +204,7 @@ class Play:
 			self.subbackground = None
 			self.eventmainlock = False
 		elif command == "start":
-			self.processingScript()
+			self.processingScript("start")
 
 	# Launch window
 	def launchScreen(self):
