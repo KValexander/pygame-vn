@@ -110,8 +110,11 @@ class Play:
 				self.subbackground = None
 				self.eventmainlock = False
 				# Check cells
-				if "cells" in self.currentScreen["elements"]:
-					self.currentScreen["elements"]["cells"].checkCells()
+				if "elements" in self.currentScreen:
+					if "cells" in self.currentScreen["elements"]:
+						if self.currentScreen["elements"]["cells"]!= None:
+							print(self.currentScreen["elements"]["cells"])
+							self.currentScreen["elements"]["cells"].checkCells()
 				# Сall subscreen on screen startup
 				if "startsubscreen" in self.currentScreen:
 					self.refreshScreen(self.currentScreen["startsubscreen"])
@@ -126,7 +129,7 @@ class Play:
 				# Screen background
 				if "background" in self.currentScreen:
 					src = self.option.config["pathToScreen"] + self.currentScreen["background"]
-					if os.path.exists(src) == False:
+					if os.path.exists(src) == False or src.find(".") == -1:
 						src = self.option.config["pathToBackgroundStock"]
 					self.background = scLoadImage(src, self.option.config["size"])
 			# Sub screen

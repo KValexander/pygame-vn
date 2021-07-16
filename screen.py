@@ -22,6 +22,8 @@ class Screen:
 
 		# Start screen, play screen and current line variables
 		self.currentLine = ""
+		self.config["startScreen"] = ""
+		self.config["playScreen"] = ""
 
 		# Line counters variables
 		self.currentStart = 0
@@ -65,20 +67,26 @@ class Screen:
 		elif command == "screen":
 			value = re.sub(r"( )|(:)", "", value)
 			if value in self.config:
-				start = self.lines.index("screen " + value + ":")
-				end = self.lines.index("end " + value)
-				lines = self.lines[start:end]
-				self.processingScreen(value, lines)
-				self.currentStart = end
+				start = "screen " + value + ":"
+				end = "end " + value
+				if start in self.lines and end in self.lines:
+					start = self.lines.index(start)
+					end = self.lines.index(end)
+					lines = self.lines[start:end]
+					self.processingScreen(value, lines)
+					self.currentStart = end
 
 		# Processing subscreens
 		elif command == "subscreen":
 			value = re.sub(r"( )|(:)", "", value)
-			start = self.lines.index("subscreen " + value + ":")
-			end = self.lines.index("end " + value)
-			lines = self.lines[start:end]
-			self.processingSubscreen(value, lines)
-			self.currentStart = end
+			start = "subscreen " + value + ":"
+			end = "end " + value
+			if start in self.lines and end in self.lines:
+				start = self.lines.index(start)
+				end = self.lines.index(end)
+				lines = self.lines[start:end]
+				self.processingSubscreen(value, lines)
+				self.currentStart = end
 
 		self.nextLine()
 
@@ -103,7 +111,7 @@ class Screen:
 		# Lists elements and actions
 		elements = lines[elemStart:actStart]
 		actions  = lines[actStart:playStart]
-		play 	  = lines[playStart:len(lines)]
+		play 	 = lines[playStart:len(lines)]
 
 		# Handling lines
 		for line in lines:
@@ -188,13 +196,15 @@ class Screen:
 
 			# Adding cells
 			elif command == "cells":
-				self.config[screen]["elements"]["cells"] = None
-				start = lines.index(line)
-				end = lines.index("end cells")
-				value = lines[start:end]
-				# Creating and adding cells
-				cells = self.createCells(value)
-				self.config[screen]["elements"]["cells"] = cells
+				start, end = line, "end cells"
+				if start in lines and end in lines:
+					self.config[screen]["elements"]["cells"] = None
+					start = lines.index(start)
+					end = lines.index(end)
+					value = lines[start:end]
+					# Creating and adding cells
+					cells = self.createCells(value)
+					self.config[screen]["elements"]["cells"] = cells
 
 			# Adding texture
 			elif command == "texture":
@@ -399,13 +409,15 @@ class Screen:
 
 			# Adding cells
 			elif command == "cells":
-				self.config[screen]["subscreens"][subscreen]["elements"]["cells"] = None
-				start = lines.index(line)
-				end = lines.index("end cells")
-				value = lines[start:end]
-				# Creating and adding cells
-				cells = self.createCells(value)
-				self.config[screen]["subscreens"][subscreen]["elements"]["cells"] = cells
+				start, end = line, "end cells"
+				if start in lines and end in lines:
+					self.config[screen]["subscreens"][subscreen]["elements"]["cells"] = None
+					start = lines.index(start)
+					end = lines.index(end)
+					value = lines[start:end]
+					# Creating and adding cells
+					cells = self.createCells(value)
+					self.config[screen]["subscreens"][subscreen]["elements"]["cells"] = cells
 
 			# Adding texture
 			elif command == "texture":

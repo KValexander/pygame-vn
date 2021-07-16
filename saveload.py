@@ -86,6 +86,7 @@ class SaveLoad:
 						result[key][name] = {}
 						items = items.split(",")
 						for item in items:
+							if item == "": continue
 							subname, val = item.split(":", 1)
 							if name == "counters": val = int(val)
 							result[key][name][subname] = val

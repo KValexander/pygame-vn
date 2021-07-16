@@ -434,6 +434,7 @@ class Script:
 								elif self.config["bool"]["hide"]: self.config["bool"]["hide"] = False
 
 		elif self.config["bool"]["choice"]:
+			self.config["bool"]["click"] = False
 			# Condition clause events
 			self.eventCondition(e)
 
@@ -444,8 +445,10 @@ class Script:
 			# Handling a click on a condition clause
 			if e.type == pygame.MOUSEBUTTONDOWN:
 				if e.button == 1:
-					if mouseCollision(clause["xy"], clause["wh"], e.pos):
-						self.conditionProcessing(clause["return"])
+					if not self.config["bool"]["click"]:
+						if mouseCollision(clause["xy"], clause["wh"], e.pos):
+							self.config["bool"]["click"] = True
+							self.conditionProcessing(clause["return"])
 
 			# Processing of pointing to a condition clause
 			if e.type == pygame.MOUSEMOTION:
@@ -666,11 +669,11 @@ class Script:
 	# Condition fulfillment processing
 	def conditionProcessing(self, commands):
 		commands = commands.split(";")
+		self.config["bool"]["choice"] = False
 
 		# Handling commands
 		if self.handlingCommands(commands, "condition"):
 			self.config["bool"]["back"] = False
-			self.config["bool"]["choice"] = False
 			self.lineProcessing()
 
 	# Set condition
@@ -864,5 +867,7 @@ class Script:
 
 	# Set label
 	def setLabel(self, value):
-		label = self.lines.index("label " + value.replace(" ", "") + ":")
-		self.config["lines"]["start"] = label
+		src = "label " + value.replace(" ", "") + ":"
+		if src in self.lines:
+			label = self.lines.index(src)
+			self.config["lines"]["start"] = label
