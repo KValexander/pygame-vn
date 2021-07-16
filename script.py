@@ -104,75 +104,92 @@ class Script:
 
 			# Variable handling with type "name"
 			if command == "name":
-				# Getting data to add
+				# Check and getting data to add
 				if re.search(r"\(.*?\)", value):
 					name = re.findall(r"\w+", value)[0]
 					data = re.findall(r"\(.*?\)\)", value)
 					if len(data) == 0: continue
 					parse = removeChar(data[0]).split(",", 1)
-					val, color = parse[0], defineColor(parse[1].replace(" ", ""))
+					if len(parse) == 2:
+						val, color = parse[0], defineColor(parse[1].replace(" ", ""))
 
-					# Adding data
-					self.config["variables"]["names"][name] = { "value": val, "color": color }
+						# Adding data
+						self.config["variables"]["names"][name] = { "value": val, "color": color }
 
 			# Variable handling with type "sound"
 			elif command == "sound":
-				# Getting data to add
-				parse = re.findall(r"\w+", value)
-				name, src = parse[0], f"{parse[1]}.{parse[2]}"
-				src = self.options["pathToSounds"] + src
+				# Check and getting data to add
+				if value.find(".") != -1:
+					parse = value.split("=")
+					if len(parse) == 2:
+						name, src = parse[0].replace(" ", ""), parse[1].replace(" ", "")
+						src = self.options["pathToSounds"] + src
+						if os.path.exists(src) == False: continue
 
-				# Adding data
-				self.config["variables"]["sounds"][name] = { "src": src, "sound": pygame.mixer.Sound(src) }
+						# Adding data
+						self.config["variables"]["sounds"][name] = { "src": src, "sound": pygame.mixer.Sound(src) }
 
 			# Variable handling with type "music":
 			elif command == "music":
-				# Getting data to add
-				parse = re.findall(r"\w+", value)
-				name, src = parse[0], f"{parse[1]}.{parse[2]}"
-				src = self.options["pathToSounds"] + src
+				# Check and getting data to add
+				if value.find(".") != -1:
+					parse = value.split("=")
+					if len(parse) == 2:
+						name, src = parse[0].replace(" ", ""), parse[1].replace(" ", "")
+						src = self.options["pathToSounds"] + src
+						if os.path.exists(src) == False: continue
 
-				# Adding data
-				self.config["variables"]["musics"][name] = src
+						# Adding data
+						self.config["variables"]["musics"][name] = src
 
 			# Variable handling with type "character"
 			elif command == "character":
-				# Getting data to add
-				name = re.findall(r"\w+", value)[0]
-				parse = removeChar(re.findall(r"\(.*\(.*?\)\)", value)[0])
-				src = removeChar(re.findall(r"\".*?\"", parse)[0])
-				coord = defineSize(re.findall(r"\(.*?\)", parse)[0], self.options["size"])
+				# Check and getting data to add
+				if re.search(r"\(.*?\)", value):
+					name = re.findall(r"\w+", value)[0]
+					data = re.findall(r"\(.*?\)\)", value)
+					if len(data) != 0:
+						parse = removeChar(data[0]).split(",", 1)
+						if len(parse) == 2:
+							src, coord = parse[0], defineSize(parse[1].replace(" ", ""), self.options["size"])
 
-				# Adding data
-				self.config["variables"]["characters"][name] = { "src": src, "coord": coord }
+							# Adding data
+							self.config["variables"]["characters"][name] = { "src": src, "coord": coord }
 
 			# Variable handling with type "background"
 			elif command == "background":
-				# Getting data to add
-				parse = re.findall(r"\w+", value)
-				name, src = parse[0], f"{parse[1]}.{parse[2]}"
-				src = self.options["pathToBackground"] + src
+				# Check and getting data to add
+				if value.find(".") != -1:
+					parse = value.split("=")
+					if len(parse) == 2:
+						name, src = parse[0].replace(" ", ""), parse[1].replace(" ", "")
+						src = self.options["pathToBackground"] + src
+						if os.path.exists(src) == False: continue
 
-				# Adding data
-				self.config["variables"]["backgrounds"][name] = src
+						# Adding data
+						self.config["variables"]["backgrounds"][name] = src
 
 			# Variable handling with type "count"
 			elif command == "count":
-				# Getting data to add
+				# Check and getting data to add
 				parse = re.findall(r"\w+", value)
-				name, count = parse[0], int(parse[1])
+				if len(parse) == 2:
+					if parse[1].isdigit():
+						name, count = parse[0], int(parse[1])
 
-				# Adding data
-				self.config["variables"]["counters"][name] = count
+						# Adding data
+						self.config["variables"]["counters"][name] = count
 
 			# Variable handling with type "boolean"
 			elif command == "bool":
-				# Getting data to add
+				# Check and getting data to add
 				parse = re.findall(r"\w+", value)
-				name, state = parse[0], parse[1]
+				if len(parse) == 2:
+					if parse[1] == "True" or parse[1] == "False":
+						name, state = parse[0], parse[1]
 
-				# Adding data
-				self.config["variables"]["booleans"][name] = state
+						# Adding data
+						self.config["variables"]["booleans"][name] = state
 
 	# Next line
 	def nextLine(self):
@@ -201,6 +218,7 @@ class Script:
 	def lineProcessing(self):
 		# Current line
 		self.config["lines"]["line"] = self.lines[self.config["lines"]["start"]]
+		self.config["bool"]["hide"] = False
 
 		# If current line = return
 		if self.config["lines"]["line"] == "return":
@@ -225,17 +243,12 @@ class Script:
 		# Check name
 		if command in self.config["variables"]["names"]:
 			self.config["lines"]["namekey"] = command
-			self.setNameOnLine()
-
-			self.config["lines"]["line"] = removeChar(value.replace(" ", "", 1))
-			return self.setTextOnLine()
+			return self.setNameOnLine(value)
 
 		# Check counters
 		elif command in self.config["variables"]["counters"]:
-			if value == "++":
-				self.config["variables"]["counters"][command] += 1
-			elif value == "--":
-				self.config["variables"]["counters"][command] -= 1
+			# Counter counting
+			self.counterCounting(value, command)
 				
 		# Check boolean
 		elif command in self.config["variables"]["booleans"]:
@@ -314,16 +327,18 @@ class Script:
 		else: self.nextLine()
 
 	# Handling commands
-	def handlingCommands(self, commands):
+	def handlingCommands(self, commands, parent):
+		state = True
 		# Handling commands
 		for command in commands:
 			command = command.replace(" ", "", 1)
+			number = 0
 
 			# Check text
 			if re.search(r"(^\".*?\"$)|(^\'.*?\'$)", command):
 				self.config["lines"]["line"] = command
 				self.setReplica()
-				return False
+				state = False
 
 			parse = re.findall(r"\w+", command)
 			if len(parse) == 0: break
@@ -332,11 +347,8 @@ class Script:
 			if parse[0] in self.config["variables"]["names"]:
 				name, value = parsingLine(command)
 				self.config["lines"]["namekey"] = name
-				self.setNameOnLine()
-
-				self.config["lines"]["line"] = removeChar(value.replace(" ", "", 1))
-				self.setTextOnLine()
-				return False
+				self.setNameOnLine(value)
+				state = False
 
 			# Check boolean
 			elif parse[0] in self.config["variables"]["booleans"]:
@@ -345,17 +357,24 @@ class Script:
 
 			# Check counters
 			elif parse[0] in self.config["variables"]["counters"]:
-				if command.find("++") != -1:
-					self.config["variables"]["counters"][parse[0]] += 1
-				elif command.find("--") != -1:
-					self.config["variables"]["counters"][parse[0]] -= 1
+				# operator
+				operator = ""
+				if command.find("++"): operator = "++"
+				elif command.find("--"): operator = "--"
+
+				# Repeat check
+				if parent == "condition" and "repeat" in self.config["condition"]:
+					if self.config["condition"]["repeat"] == True: operator = "none"
+
+				self.counterCounting(operator, parse[0])
 
 			# Going to label
-			elif parse[0] == "go": self.setLabel(parse[1])
+			elif parse[0] == "go":
+				self.setLabel(parse[1])
 
 			# Background
 			elif parse[0] == "background":
-				self.setBackground(parse[1] + "." + parse[2])
+				self.setBackground(command.split(" ")[1])
 
 			# Show characters
 			elif parse[0] == "show":
@@ -369,7 +388,7 @@ class Script:
 
 			# Continue
 			elif parse[0] == "continue": continue
-		return True
+		return state
 
 	# Handling events
 	def events(self, e):
@@ -410,6 +429,9 @@ class Script:
 						if not self.config["bool"]["click"]:
 							if mouse["event"] == "nextline": self.nextLine()
 							elif mouse["event"] == "prevline": self.prevLine()
+							elif mouse["event"] == "display":
+								if not self.config["bool"]["hide"]: self.config["bool"]["hide"] = True
+								elif self.config["bool"]["hide"]: self.config["bool"]["hide"] = False
 
 		elif self.config["bool"]["choice"]:
 			# Condition clause events
@@ -433,7 +455,8 @@ class Script:
 
 	# Rendering objects
 	def draw(self, window):
-		self.outTextOnWindow(window)
+		if not self.config["bool"]["hide"]:
+			self.outTextOnWindow(window)
 
 	# Rendering background
 	def background(self, window):
@@ -447,7 +470,7 @@ class Script:
 					drawImage(window, self.config["render"]["characters"][character]["image"], self.config["render"]["characters"][character]["coord"])
 
 		# Rendering condition
-		if self.config["bool"]["choice"]:
+		if self.config["bool"]["choice"] and not self.config["bool"]["hide"]:
 			self.drawCondition(window)
 
 	# Output text on window
@@ -498,17 +521,24 @@ class Script:
 	# Replacing Variables with Values
 	def replacingLines(self):
 		# Replacing part of a string with variables
-		if re.search(r"{.}", self.config["lines"]["line"]):
-			for count in re.finditer(r"{.}", self.config["lines"]["line"]):
-				counter = removeChar(count[0])
+		if re.search(r"{.*?}", self.config["lines"]["line"]):
+			for value in re.finditer(r"{.*?}", self.config["lines"]["line"]):
+				counter = removeChar(value[0])
 				if counter in self.config["variables"]["counters"]:
 					self.config["lines"]["line"] = re.sub(r"{"+counter+"}", str(self.config["variables"]["counters"][counter]), self.config["lines"]["line"])
 
 	# Set name on line
-	def setNameOnLine(self):
+	def setNameOnLine(self, value):
+		# Set name
 		self.config["bool"]["nameshow"] = True
 		self.setFont("name")
 		self.config["lines"]["name"] = self.config["font"].render(self.config["variables"]["names"][self.config["lines"]["namekey"]]["value"], True, self.config["variables"]["names"][self.config["lines"]["namekey"]]["color"])
+		# Set text
+		value = re.findall(r"(?:\".*?\")|(?:\'.*?\')", value)
+		if len(value) != 0: self.config["lines"]["line"] = removeChar(value[0])
+		else: self.config["lines"]["line"] = ""
+		self.setTextOnLine()
+
 
 	# Set text to line
 	def setTextOnLine(self):
@@ -520,6 +550,23 @@ class Script:
 			line = self.config["font"].render(str(value), True, self.screen["text"]["color"])
 			self.config["lines"]["lines"].append(line)
 
+	# Counter counting
+	def counterCounting(self, value, counter):
+		number = 0
+		# Calculation of the addition
+		if self.config["bool"]["back"] == False:
+			if value == "++": number = 1
+			elif value == "--": number = -1
+		elif self.config["bool"]["back"]:
+			number = 0
+			# if value == "++": number = -1
+			# elif value == "--": number = 1
+
+		# For repeat condition
+		if value == "none": number = 0
+
+		self.config["variables"]["counters"][counter] += number
+
 	# Set background
 	def setBackground(self, value):
 		# Getting src
@@ -527,7 +574,7 @@ class Script:
 			src = self.config["variables"]["backgrounds"][value]
 		else: src = self.options["pathToBackground"] + value
 		# Check for availability
-		if os.path.exists(src) == False: src = self.options["pathToBackgroundStock"]
+		if os.path.exists(src) == False or src.find(".") == -1: src = self.options["pathToBackgroundStock"]
 		# Handling background
 		self.config["background"]["src"] = src
 		self.config["background"]["image"] = scLoadImage(src, self.options["size"])
@@ -549,13 +596,15 @@ class Script:
 
 	# Play music
 	def playMusic(self):
-		if self.config["music"]["state"] == "play":
-			pygame.mixer.music.play(-1)
+		if "state" in self.config["music"]:
+			if self.config["music"]["state"] == "play":
+				pygame.mixer.music.play(-1)
 
 	# Set sound
 	def setSound(self, value):
 		if value in self.config["variables"]["sounds"]:
-			self.config["variables"]["sounds"][value]["sound"].play()
+			if self.config["variables"]["sounds"][value]["sound"] != None:
+				self.config["variables"]["sounds"][value]["sound"].play()
 
 	# Handling show characters
 	def showCharacters(self, value):
@@ -617,17 +666,26 @@ class Script:
 	# Condition fulfillment processing
 	def conditionProcessing(self, commands):
 		commands = commands.split(";")
-		self.config["bool"]["back"] = False
-		self.config["bool"]["choice"] = False
 
 		# Handling commands
-		if self.handlingCommands(commands):
+		if self.handlingCommands(commands, "condition"):
+			self.config["bool"]["back"] = False
+			self.config["bool"]["choice"] = False
 			self.lineProcessing()
 
 	# Set condition
 	def setCondition(self, value):
+		# Repeat check
+		repeat = False
+		if "check" in self.config["condition"]:
+			if value == self.config["condition"]["check"]:
+				repeat = True
+
+		# Clear dict and list
 		self.config["condition"].clear()
 		self.config["render"]["clauses"].clear()
+		# Writing a check to a dictionary
+		self.config["condition"]["check"] = value
 
 		# Parsing in the output of a condition
 		value = re.findall(r"(\".*?\")|(\'.*?\')", value)[0]
@@ -672,6 +730,7 @@ class Script:
 		self.config["condition"]["xy"] = xy
 		self.config["condition"]["txy"] = txy
 		self.config["condition"]["surface"] = surface
+		self.config["condition"]["repeat"] = repeat
 
 		x, y = xy
 		# Handling clauses
@@ -699,7 +758,7 @@ class Script:
 		commands = commands.split(";")
 
 		# Handling commands
-		if self.handlingCommands(commands):
+		if self.handlingCommands(commands, "if"):
 			if self.config["bool"]["back"]: return self.prevLine()
 			else: return self.nextLine()
 

@@ -9,10 +9,10 @@ background class = class.jpg
 background teachers = teachers.jpg
 
 # type name = ("src", xy)
-character one = ("1.png", (0.0, 0.0))
-character two = ("2.png", (0.0, 0.0))
-character three = ("3.png", (0.0, 0.0))
-character hana = ("hana.png", (0.0, 0.0))
+character one = (1.png, (0.0, 0.0))
+character two = (2.png, (0.0, 0.0))
+character three = (3.png, (0.0, 0.0))
+character hana = (hana.png, (0.0, 0.0))
 
 # type name = src
 sound mario = mario.mp3
@@ -37,11 +37,44 @@ bool th = False
 
 bool hanashow = False
 
+bool test = True
+
 start:
 	# Можно вызывать как по ссылке, так и из переменной
-	background class.jpg
-	# или background class
-	# music back
+	background class
+	# или background class.jpg
+
+	"Тестовый полигон"
+
+	"{t}"
+	t++
+	"{t}"
+	t--
+	"{t}"
+
+	if t == 0: "После этой реплики вернитесь обратно"; t++
+	elif t > 0: "Удивительные чудеса программирования"
+	endif
+
+	if t == 1: "{t}"
+	elif t > 1: "Почему так произошло?"
+	endif
+
+	"После того, как вы увидели реплику о возвращении обратно сработало увеличение счётчика и оно перестало соответствовать старому условию"
+	"Вернувшись, вы попали на новое условие"
+
+	supa "Понимаю"
+	supa Не понимаю
+	supa "Частично" понимаю
+
+	if test: supa "Понимаю"
+	endif
+
+	if test: supa Не понимаю
+	endif
+
+	if test: supa "Частично" понимаю
+	endif
 
 	# Все команды работы со звуком
 	# Можно вызывать как по ссылке, так и из переменной
@@ -65,13 +98,13 @@ start:
 
 label cond:
 	condition "С чем бы вы хотели ознакомиться первым?":
-		"Переменные": go variables
-		"Работа с текстом": go text
-		"Операторы": go operators
-		"Метки": go label
-		"Музыка и звуки": go sound
-		"Старый курс": go old
-		"Главное меню": continue
+		Переменные: go variables
+		Работа с текстом: go text
+		Операторы: go operators
+		Метки: go label
+		Музыка и звуки: go sound
+		Старый курс: go old
+		Главное меню: continue
 	end condition
 
 	return
@@ -144,6 +177,13 @@ label old:
 		Увеличить j: j++
 		Увеличить e: e++
 	end condition
+
+	"{i}, {j}, {e}"
+
+	if i == 1: j++
+	elif j == 1: e++
+	elif e == 1: i++
+	endif
 
 	"{i}, {j}, {e}"
 

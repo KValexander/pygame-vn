@@ -51,12 +51,12 @@ screen main:
 	type main
 	# Задний фон во время вывод экрана, обязателен
 	background backgroundmenu.jpg
-	# Подчинённые экраны
+	# Подчинённые экраны, необязателен
 	subscreens [load, settings, about, help]
-	# Музыка на фон, в папке по пути sounds_folder в options.vn
-	#loopsound background.ogg
+	# Музыка на фон, в папке по пути sounds_folder в options.vn, необязателен
+	# loopsound background.ogg
 
-	# Отображение подэкрана при запуске экрана, необязательно
+	# Отображение подэкрана при запуске экрана, необязателен
 	# startsubscreen about
 
 	# Добавление элементов на экран
@@ -110,7 +110,7 @@ screen main:
 screen play:
 	id play
 	type main
-	background stock.jpg
+	background None
 	subscreens [menu_save, menu_load]
 
 	# Добавление элементов на экран
@@ -153,6 +153,7 @@ screen play:
 			icon prev prevline
 			icon next nextline
 			mouse leftclick nextline
+			#mouse middleclick display
 
 	# Обязательная команда для закрытия конфигурирования экрана
 	end play

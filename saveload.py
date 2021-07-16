@@ -179,7 +179,9 @@ class SaveLoad:
 
 			# Parsing condition
 			elif key == "condition" and len(value) != 2:
-				coords, texts = re.findall(r"\'(?:wh|xy|txy)\':\s\(.*?\)", value), re.findall(r"\'(?:text|value|surface)\':\s\'.*?\'", value) 
+				coords, texts = re.findall(r"\'(?:wh|xy|txy)\':\s\(.*?\)", value), re.findall(r"\'(?:check|text|value|surface)\':\s\'.*?\'", value) 
+				# Is this even legal?
+				repeat = re.findall(r"\'repeat\':\s(?:True|False)", value)[0].split(":")[1].replace(" ", "")
 				for coord in coords:
 					coord = re.sub(r"(\')|(\s)", "", coord)
 					name, val = coord.split(":", 1)
@@ -188,6 +190,7 @@ class SaveLoad:
 					text = re.sub(r"(\')", "", text)
 					name, val = text.split(":", 1)
 					result[key][name] = val.replace(" ", "", 1)
+				result[key]["repeat"] = repeat
 				result[key]["text"] = result["font"].render(result[key]["value"], True, self.option.config["conditionTextColor"])
 				result[key]["surface"] = pygame.Surface(result[key]["wh"])
 				result[key]["surface"].fill(self.option.config["conditionBackgroundColor"])
