@@ -1,8 +1,0 @@
-font <pygame.font.Font object at 0x000001591FDE6CB0>
-variables {'counters': {'i': 0, 'j': 0, 'e': 0, 't': 0}, 'booleans': {'state': 'False', 'fi': 'False', 'tw': 'False', 'th': 'False', 'hanashow': 'False', 'test': 'True'}, 'names': {'n1': {'value': 'Первая', 'color': (255, 255, 255)}, 'n2': {'value': 'Вторая', 'color': (255, 255, 255)}, 'n3': {'value': 'Третья', 'color': (255, 255, 255)}, 'supa': {'value': 'Голос', 'color': (255, 255, 255)}}, 'sounds': {'mario': {'src': 'C:\\gamemake\\VN/projects//vn/sounds/ss/mario.mp3', 'sound': <Sound object at 0x000001591FDAE990>}}, 'musics': {'back': 'C:\\gamemake\\VN/projects//vn/sounds/ss/background.ogg'}, 'characters': {'one': {'src': '1.png', 'coord': (0, 0)}, 'two': {'src': '2.png', 'coord': (0, 0)}, 'three': {'src': '3.png', 'coord': (0, 0)}, 'hana': {'src': 'hana.png', 'coord': (0, 0)}}, 'backgrounds': {'class': 'C:\\gamemake\\VN/projects//vn/images/medley/class.jpg', 'teachers': 'C:\\gamemake\\VN/projects//vn/images/medley/teachers.jpg'}}
-lines {'start': 4, 'end': 219, 'namekey': '', 'name': '', 'line': 'Тестовый полигон', 'lines': [<Surface(198x25x32 SW)>]}
-background {'src': 'C:\\gamemake\\VN/projects//vn/images/medley/class.jpg', 'image': <Surface(1024x768x24 SW)>}
-render {'characters': {}, 'clauses': []}
-condition {}
-music {}
-bool {'hide': False, 'back': False, 'start': True, 'choice': False, 'nameshow': False, 'output': False, 'music': False, 'click': False}

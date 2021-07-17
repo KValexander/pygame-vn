@@ -227,20 +227,21 @@ class Play:
 			self.mainscreenevent = False
 
 			# Screen events
-			if self.currentScreen["display"]:
-				if self.subbackground == None and self.eventmainlock == False:
-					# Handling actions for interface elements
-					self.actions(event, self.currentScreen)
-					# Handling play events
-					if "play" in self.currentScreen and self.script != None:
-						self.script.events(event)
+			if "display" in self.currentScreen:
+				if self.currentScreen["display"]:
+					if self.subbackground == None and self.eventmainlock == False:
+						# Handling actions for interface elements
+						self.actions(event, self.currentScreen)
+						# Handling play events
+						if "play" in self.currentScreen and self.script != None:
+							self.script.events(event)
 
-				# Subscreen events
-				if self.currentScreen["subdisplay"]:
-					if self.currentSubscreen["display"]:
-						if self.mainscreenevent == False:
-							# Handling actions for interface elements
-							self.actions(event, self.currentSubscreen)
+					# Subscreen events
+					if self.currentScreen["subdisplay"]:
+						if self.currentSubscreen["display"]:
+							if self.mainscreenevent == False:
+								# Handling actions for interface elements
+								self.actions(event, self.currentSubscreen)
 
 	# Handling actions for interface elements
 	def actions(self, e, screen):
@@ -346,73 +347,74 @@ class Play:
 		self.window.fill(WHITE)
 
 		# Rendering screen
-		if self.currentScreen["display"]:
-			if self.subbackground == None:
-				# Rendering background
-				if "play" in self.currentScreen and self.script != None:
-					self.script.background(self.window)
-				elif "background" in self.currentScreen:
-					drawImage(self.window, self.background, (0, 0))
-
-				# Rendering elements
-				if "elements" in self.currentScreen:
-					# Rendering surfaces
-					for surface in self.currentScreen["elements"]["surfaces"]:
-						surface.draw(self.window)
-					# Rendering surfaces
-					for texture in self.currentScreen["elements"]["textures"]:
-						texture.draw(self.window)
-					# Rendering cells
-					if "cells" in self.currentScreen["elements"]:
-						self.currentScreen["elements"]["cells"].draw(self.window)
-					# Rendering inscriptions
-					for inscription in self.currentScreen["elements"]["inscriptions"]:
-						inscription.draw(self.window)
-					# Rendering texts
-					for text in self.currentScreen["elements"]["texts"]:
-						text.draw(self.window)
-					# Rendering links
-					for link in self.currentScreen["elements"]["links"]:
-						link.draw(self.window)
-					# Rendering icons
-					for icon in self.currentScreen["elements"]["icons"]:
-						icon.draw(self.window)
-				
-				# Rendering script
-				if "play" in self.currentScreen and self.script != None:
-						self.script.draw(self.window)
-
-			# Rendering subscreen
-			if self.currentScreen["subdisplay"]:
-				if self.currentSubscreen["display"]:
-
+		if "display" in self.currentScreen:
+			if self.currentScreen["display"]:
+				if self.subbackground == None:
 					# Rendering background
-					if "background" in self.currentSubscreen:
-						drawImage(self.window, self.subbackground, (0,0))
+					if "play" in self.currentScreen and self.script != None:
+						self.script.background(self.window)
+					elif "background" in self.currentScreen:
+						drawImage(self.window, self.background, (0, 0))
 
 					# Rendering elements
-					if "elements" in self.currentSubscreen:
+					if "elements" in self.currentScreen:
 						# Rendering surfaces
-						for surface in self.currentSubscreen["elements"]["surfaces"]:
+						for surface in self.currentScreen["elements"]["surfaces"]:
 							surface.draw(self.window)
 						# Rendering surfaces
-						for texture in self.currentSubscreen["elements"]["textures"]:
+						for texture in self.currentScreen["elements"]["textures"]:
 							texture.draw(self.window)
 						# Rendering cells
-						if "cells" in self.currentSubscreen["elements"]:
-							self.currentSubscreen["elements"]["cells"].draw(self.window)
+						if "cells" in self.currentScreen["elements"]:
+							self.currentScreen["elements"]["cells"].draw(self.window)
 						# Rendering inscriptions
-						for inscription in self.currentSubscreen["elements"]["inscriptions"]:
+						for inscription in self.currentScreen["elements"]["inscriptions"]:
 							inscription.draw(self.window)
 						# Rendering texts
-						for text in self.currentSubscreen["elements"]["texts"]:
+						for text in self.currentScreen["elements"]["texts"]:
 							text.draw(self.window)
 						# Rendering links
-						for link in self.currentSubscreen["elements"]["links"]:
+						for link in self.currentScreen["elements"]["links"]:
 							link.draw(self.window)
 						# Rendering icons
-						for icon in self.currentSubscreen["elements"]["icons"]:
+						for icon in self.currentScreen["elements"]["icons"]:
 							icon.draw(self.window)
+					
+					# Rendering script
+					if "play" in self.currentScreen and self.script != None:
+							self.script.draw(self.window)
+
+				# Rendering subscreen
+				if self.currentScreen["subdisplay"]:
+					if self.currentSubscreen["display"]:
+
+						# Rendering background
+						if "background" in self.currentSubscreen:
+							drawImage(self.window, self.subbackground, (0,0))
+
+						# Rendering elements
+						if "elements" in self.currentSubscreen:
+							# Rendering surfaces
+							for surface in self.currentSubscreen["elements"]["surfaces"]:
+								surface.draw(self.window)
+							# Rendering surfaces
+							for texture in self.currentSubscreen["elements"]["textures"]:
+								texture.draw(self.window)
+							# Rendering cells
+							if "cells" in self.currentSubscreen["elements"]:
+								self.currentSubscreen["elements"]["cells"].draw(self.window)
+							# Rendering inscriptions
+							for inscription in self.currentSubscreen["elements"]["inscriptions"]:
+								inscription.draw(self.window)
+							# Rendering texts
+							for text in self.currentSubscreen["elements"]["texts"]:
+								text.draw(self.window)
+							# Rendering links
+							for link in self.currentSubscreen["elements"]["links"]:
+								link.draw(self.window)
+							# Rendering icons
+							for icon in self.currentSubscreen["elements"]["icons"]:
+								icon.draw(self.window)
 
 		pygame.display.update()
 

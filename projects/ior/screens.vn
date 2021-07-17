@@ -1,0 +1,54 @@
+screens [main, play, settings]
+
+init main
+
+playinit play
+
+screen main:
+	background backgroundmenu.jpg
+
+	elements:
+		surface center 200 (0,0,0) (0.35, 0.35) (0.3, 0.3)
+
+		#texture up "title.png" (0.4, 0.1) (0.2, 0.2)
+
+		inscription tts "IOR" (0.46, 0.15)
+
+		link play "Начать игру" (0.45, 0.38)
+		link load "Загрузить" (0.45, 0.44)
+		link settings "Настройки" (0.45, 0.50)
+		link exit "Выход" (0.45, 0.56)
+
+	actions:
+		link play start
+		link exit end
+end main
+
+screen play:
+	background backgroundmenu.jpg
+
+	elements:
+		surface dialogbox 140 (0, 0, 0) (0.05, 0.75) (0.9, 0.251)
+
+		icon prev "line.png" (0.0, 0.75) (51, 200)
+		icon next "line.png" (0.95, 0.75) (52, 200)
+
+		link return "Вернуться" (0.025, 0.025)
+
+	actions:
+		link return call main
+
+		icon prev hover "linehover.png"
+		icon next hover "linehover.png"
+
+	play:
+		name (0.06, 0.76) 30
+
+		text (0.06, 0.8) (0.88) (255,255,255) 25 25
+
+		events:
+			icon prev prevline
+			icon next nextline
+			mouse leftclick nextline
+
+end play

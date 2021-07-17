@@ -3,6 +3,7 @@ import pygame
 import codecs
 import os
 import re
+import sched, time
 
 # Connecting files
 from settings import *
@@ -17,6 +18,7 @@ class Script:
 		self.options = options
 		self.screen  = screen
 		self.main 	 = main
+		self.timer 	 = sched.scheduler(time.time, time.sleep)
 
 		# Config variables
 		self.config  = {
@@ -694,6 +696,7 @@ class Script:
 		value = re.findall(r"(\".*?\")|(\'.*?\')", value)[0]
 		value = removeChar([x for x in value if x != ''][0])
 		self.config["lines"]["line"] = value
+		self.config["bool"]["nameshow"] = False
 		self.setTextOnLine()
 
 		# Receiving all clauses of conditions

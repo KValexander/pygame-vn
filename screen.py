@@ -154,6 +154,8 @@ class Screen:
 				self.config[screen]["actions"]["mouse"] = []
 				self.config[screen]["actions"]["icons"] = []
 				self.config[screen]["actions"]["links"] = []
+				if "cells" in self.config[screen]["elements"]:
+					self.config[screen]["actions"]["cells"] = ""
 				self.processingActions(screen, actions)
 
 			# Play screen only
@@ -179,20 +181,23 @@ class Screen:
 			# Adding icon
 			if command == "icon":
 				# Creating and adding icon
-				link = self.createIcon(value)
-				self.config[screen]["elements"]["icons"].append(link)
+				icon = self.createIcon(value)
+				if icon != None:
+					self.config[screen]["elements"]["icons"].append(icon)
 
 			# Adding link
 			elif command == "link":
 				# Creating and adding link
 				link = self.createLink(value)
-				self.config[screen]["elements"]["links"].append(link)
+				if link != None:
+					self.config[screen]["elements"]["links"].append(link)
 
 			# Adding text
 			elif command == "text":
 				# Creating and adding text
 				text = self.createText(value)
-				self.config[screen]["elements"]["texts"].append(text)
+				if text != None:
+					self.config[screen]["elements"]["texts"].append(text)
 
 			# Adding cells
 			elif command == "cells":
@@ -204,25 +209,29 @@ class Screen:
 					value = lines[start:end]
 					# Creating and adding cells
 					cells = self.createCells(value)
-					self.config[screen]["elements"]["cells"] = cells
+					if cells != None:
+						self.config[screen]["elements"]["cells"] = cells
 
 			# Adding texture
 			elif command == "texture":
 				# Creating and adding texture
 				texture = self.createTexture(value)
-				self.config[screen]["elements"]["textures"].append(texture)
+				if texture != None:
+					self.config[screen]["elements"]["textures"].append(texture)
 
 			# Adding surface
 			elif command == "surface":
 				# Creating and adding surface
 				surface = self.createSurface(value)
-				self.config[screen]["elements"]["surfaces"].append(surface)
+				if surface != None:
+					self.config[screen]["elements"]["surfaces"].append(surface)
 
 			# Adding inscription
 			elif command == "inscription":
 				# Creating and adding inscription
 				inscription = self.createInscription(value)
-				self.config[screen]["elements"]["inscriptions"].append(inscription)
+				if inscription != None:
+					self.config[screen]["elements"]["inscriptions"].append(inscription)
 
 	# Processing actions
 	def processingActions(self, screen, lines):
@@ -279,48 +288,54 @@ class Screen:
 
 			# Handling name
 			if command == "name":
-				self.config[screen]["play"]["name"]["startCoord"] = defineSize(re.findall(r"\(.*?\)", value)[0], self.options["size"])
-				self.config[screen]["play"]["name"]["size"] = int(re.split(r"\(.*?\)", value)[1])
+				if re.search(r"\(.*?\)", value):
+					self.config[screen]["play"]["name"]["startCoord"] = defineSize(re.findall(r"\(.*?\)", value)[0], self.options["size"])
+					self.config[screen]["play"]["name"]["size"] = int(re.split(r"\(.*?\)", value)[1])
 
 			# Handling text
 			elif command == "text":
-				parse = re.findall(r"\(.*?\)", value)
-				p = re.split(r"\(.*?\)", value)
-				p = [x for x in p if x != ' '][0]
-				p = re.findall(r"\d+", p)
-				self.config[screen]["play"]["text"]["startCoord"] = defineSize(parse[0], self.options["size"])
-				self.config[screen]["play"]["text"]["width"] = defineOneSize(parse[1], self.options["size"][0])
-				self.config[screen]["play"]["text"]["color"] = defineColor(parse[2])
-				self.config[screen]["play"]["text"]["size"] = int(p[0])
-				self.config[screen]["play"]["text"]["lineHeight"] = int(p[1])
+				if re.search(r"\(.*?\)", value):
+					parse = re.findall(r"\(.*?\)", value)
+					if len(parse) == 3:
+						p = re.split(r"\(.*?\)", value)
+						p = [x for x in p if x != ' '][0]
+						if len(p) != 0:
+							p = re.findall(r"\d+", p)
+							self.config[screen]["play"]["text"]["startCoord"] = defineSize(parse[0], self.options["size"])
+							self.config[screen]["play"]["text"]["width"] = defineOneSize(parse[1], self.options["size"][0])
+							self.config[screen]["play"]["text"]["color"] = defineColor(parse[2])
+							self.config[screen]["play"]["text"]["size"] = int(p[0])
+							self.config[screen]["play"]["text"]["lineHeight"] = int(p[1])
 
-		# Handling events
-		for line in events:
-			if commonCommands(line) == False: continue
+		if "startCoord" in self.config[screen]["play"]["name"] and "startCoord" in self.config[screen]["play"]["text"]:
+			# Handling events
+			for line in events:
+				if commonCommands(line) == False: continue
 
-			# Initial parsing of the line
-			command, value = parsingLine(line)
+				# Initial parsing of the line
+				command, value = parsingLine(line)
 
-			# Mouse handling
-			if command == "mouse":
-				# Event assignment
-				obj = self.actionMouse(value)
-				# Adding event parameters
-				self.config[screen]["play"]["events"]["mouse"].append(obj)
+				# Mouse handling
+				if command == "mouse":
+					# Event assignment
+					obj = self.actionMouse(value)
+					# Adding event parameters
+					self.config[screen]["play"]["events"]["mouse"].append(obj)
 
-			# Assigning events to icon
-			elif command == "icon":
-				# Event assignment
-				obj = self.actionIcon(value)
-				# Adding event parameters
-				self.config[screen]["play"]["events"]["icons"].append(obj)
+				# Assigning events to icon
+				elif command == "icon":
+					# Event assignment
+					obj = self.actionIcon(value)
+					# Adding event parameters
+					self.config[screen]["play"]["events"]["icons"].append(obj)
 
-			# Assigning events to link
-			elif command == "link":
-				# Event assignment
-				obj = self.actionLink(value)
-				# Adding event parameters
-				self.config[screen]["play"]["events"]["links"].append(obj)
+				# Assigning events to link
+				elif command == "link":
+					# Event assignment
+					obj = self.actionLink(value)
+					# Adding event parameters
+					self.config[screen]["play"]["events"]["links"].append(obj)
+		else: del self.config[screen]["play"]
 
 	# Prcessing subscreen
 	def processingSubscreen(self, subscreen, lines):
@@ -378,6 +393,8 @@ class Screen:
 				self.config[screen]["subscreens"][subscreen]["actions"]["mouse"] = []
 				self.config[screen]["subscreens"][subscreen]["actions"]["icons"] = []
 				self.config[screen]["subscreens"][subscreen]["actions"]["links"] = []
+				if "cells" in self.config[screen]["subscreens"][subscreen]["elements"]:
+					self.config[screen]["subscreens"][subscreen]["actions"]["cells"] = ""
 				self.processingSubActions(screen, subscreen, actions)
 
 	# Processing elements for subscreen
@@ -392,20 +409,23 @@ class Screen:
 			# Adding icon
 			if command == "icon":
 				# Creating and adding icon
-				link = self.createIcon(value)
-				self.config[screen]["subscreens"][subscreen]["elements"]["icons"].append(link)
+				icon = self.createIcon(value)
+				if icon != None:
+					self.config[screen]["subscreens"][subscreen]["elements"]["icons"].append(icon)
 
 			# Adding link
 			elif command == "link":
 				# Creating and adding link
 				link = self.createLink(value)
-				self.config[screen]["subscreens"][subscreen]["elements"]["links"].append(link)
+				if link != None:
+					self.config[screen]["subscreens"][subscreen]["elements"]["links"].append(link)
 
 			# Adding text
 			elif command == "text":
 				# Creating and adding text
 				text = self.createText(value)
-				self.config[screen]["subscreens"][subscreen]["elements"]["texts"].append(text)
+				if text != None:
+					self.config[screen]["subscreens"][subscreen]["elements"]["texts"].append(text)
 
 			# Adding cells
 			elif command == "cells":
@@ -417,25 +437,29 @@ class Screen:
 					value = lines[start:end]
 					# Creating and adding cells
 					cells = self.createCells(value)
-					self.config[screen]["subscreens"][subscreen]["elements"]["cells"] = cells
+					if cells != None:
+						self.config[screen]["subscreens"][subscreen]["elements"]["cells"] = cells
 
 			# Adding texture
 			elif command == "texture":
 				# Creating and adding texture
 				texture = self.createTexture(value)
-				self.config[screen]["subscreens"][subscreen]["elements"]["textures"].append(texture)
+				if texture != None:
+					self.config[screen]["subscreens"][subscreen]["elements"]["textures"].append(texture)
 
 			# Adding surface
 			elif command == "surface":
 				# Creating and adding surface
 				surface = self.createSurface(value)
-				self.config[screen]["subscreens"][subscreen]["elements"]["surfaces"].append(surface)
+				if surface != None:
+					self.config[screen]["subscreens"][subscreen]["elements"]["surfaces"].append(surface)
 
 			# Adding inscription
 			elif command == "inscription":
 				# Creating and adding inscription
 				inscription = self.createInscription(value)
-				self.config[screen]["subscreens"][subscreen]["elements"]["inscriptions"].append(inscription)
+				if inscription != None:
+					self.config[screen]["subscreens"][subscreen]["elements"]["inscriptions"].append(inscription)
 
 	# Processing actions for subscreen
 	def processingSubActions(self, screen, subscreen, lines):
@@ -479,39 +503,50 @@ class Screen:
 	# Create icon
 	def createIcon(self, value):
 		# Getting data to add
-		name = re.findall(r"\w+", value)[0]
-		src = removeChar(re.findall(r"\".*?\"", value)[0])
-		parse = re.findall(r"(\(.*?\))", value)
-		xy, wh = defineSize(parse[0], self.options["size"]), None
-		if len(parse) >= 2:
-			wh = fetchSize(parse[1])
+		if re.search(r"\w+", value):
+			name = re.findall(r"\w+", value)[0]
+			if re.search(r"\".*?\"", value):
+				src = removeChar(re.findall(r"\".*?\"", value)[0])
+				if re.search(r"(\(.*?\))", value):
+					parse = re.findall(r"(\(.*?\))", value)
+					xy, wh = defineSize(parse[0], self.options["size"]), None
+					if len(parse) >= 2:
+						wh = fetchSize(parse[1])
 
-		# Create icon
-		icon = Icon(name, src, xy, wh, self.options["pathToScreen"], self.options["pathToImageStock"])
-		return icon
+					# Create icon
+					icon = Icon(name, src, xy, wh, self.options["pathToScreen"], self.options["pathToImageStock"])
+					return icon
 
 	# Create link
 	def createLink(self, value):
 		# Getting data to add
-		name = re.findall(r"\w+", value)[0]
-		val = removeChar(re.findall(r"\".*?\"", value)[0])
-		xy = defineSize(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
+		if re.search(r"\w+", value):
+			name = re.findall(r"\w+", value)[0]
+			if re.search(r"\".*?\"", value):
+				val = removeChar(re.findall(r"\".*?\"", value)[0])
+				if re.search(r"(\(.*?\))", value):
+					xy = defineSize(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
 
-		# Creating link
-		link = Link(name, val, xy, self.options["linkColor"], self.options["linkAim"], self.options["linkSelected"], self.options["linkSize"], self.options["usedFont"], self.options["typeFont"])
-		return link
+					# Creating link
+					link = Link(name, val, xy, self.options["linkColor"], self.options["linkAim"], self.options["linkSelected"], self.options["linkSize"], self.options["usedFont"], self.options["typeFont"])
+					return link
 
 	# Create text
 	def createText(self, value):
 		# Getting data to add
-		name = re.findall(r"\w+", value)[0]
-		val = removeChar(re.findall(r"\".*?\"", value)[0])
-		xy = defineSize(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
-		width = defineOneSize(re.findall(r"(\(.*?\))", value)[1], self.options["size"][0])
+		if re.search(r"\w+", value):
+			name = re.findall(r"\w+", value)[0]
+			if re.search(r"\".*?\"", value):
+				val = removeChar(re.findall(r"\".*?\"", value)[0])
+				if re.search(r"(\(.*?\))", value):
+					parse = re.findall(r"(\(.*?\))", value)
+					if len(parse) == 2:
+						xy = defineSize(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
+						width = defineOneSize(re.findall(r"(\(.*?\))", value)[1], self.options["size"][0])
 
-		# Creating text
-		text = Text(name, val, xy, width, self.options["textColor"], self.options["textSize"], self.options["textLineHeight"], self.options["usedFont"], self.options["typeFont"])
-		return text
+						# Creating text
+						text = Text(name, val, xy, width, self.options["textColor"], self.options["textSize"], self.options["textLineHeight"], self.options["usedFont"], self.options["typeFont"])
+						return text
 
 	# Create cells
 	def createCells(self, value):
@@ -538,38 +573,46 @@ class Screen:
 	# Create texture
 	def createTexture(self, value):
 		# Getting data to add
-		name = re.findall(r"\w+", value)[0]
-		src = removeChar(re.findall(r"\".*?\"", value)[0])
-		parse = re.findall(r"(\(.*?\))", value)
-		xy, wh = defineSize(parse[0], self.options["size"]), defineSize(parse[1], self.options["size"])
+		if re.search(r"\w+", value):
+			name = re.findall(r"\w+", value)[0]
+			if re.search(r"\".*?\"", value):
+				src = removeChar(re.findall(r"\".*?\"", value)[0])
+				parse = re.findall(r"(\(.*?\))", value)
+				if len(parse) == 2:
+					xy, wh = defineSize(parse[0], self.options["size"]), defineSize(parse[1], self.options["size"])
 
-		# Create texture
-		texture = Texture(name, src, xy, wh, self.options["pathToScreen"], self.options["pathToImageStock"])
-		return texture
+					# Create texture
+					texture = Texture(name, src, xy, wh, self.options["pathToScreen"], self.options["pathToImageStock"])
+					return texture
 
 	# Create surface
 	def createSurface(self, value):
 		# Getting data to add
-		parse = re.findall(r"\w+", value)
-		name, alpha = parse[0], int(parse[1])
-		parse = re.findall(r"(\(.*?\))", value)
-		color = defineColor(parse[0])
-		xy, wh = defineSize(parse[1], self.options["size"]), defineSize(parse[2], self.options["size"])
+		if re.search(r"\w+", value):
+			parse = re.findall(r"\w+", value)
+			name, alpha = parse[0], int(parse[1])
+			parse = re.findall(r"(\(.*?\))", value)
+			if len(parse) == 3:
+				color = defineColor(parse[0])
+				xy, wh = defineSize(parse[1], self.options["size"]), defineSize(parse[2], self.options["size"])
 
-		# Creating surface
-		surface = Surface(name, alpha, color, xy, wh)
-		return surface
+				# Creating surface
+				surface = Surface(name, alpha, color, xy, wh)
+				return surface
 
 	# Create inscription
 	def createInscription(self, value):
 		# Getting data to add
-		name = re.findall(r"\w+", value)[0]
-		val = removeChar(re.findall(r"\".*?\"", value)[0])
-		xy = defineSize(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
+		if re.search(r"\w+", value):
+			name = re.findall(r"\w+", value)[0]
+			if re.search(r"\".*?\"", value):
+				val = removeChar(re.findall(r"\".*?\"", value)[0])
+				if re.search(r"(\(.*?\))", value):
+					xy = defineSize(re.findall(r"(\(.*?\))", value)[0], self.options["size"])
 
-		# Creating inscription
-		inscription = Inscription(name, val, xy, self.options["inscriptionColor"], self.options["inscriptionSize"], self.options["usedFont"], self.options["typeFont"])
-		return inscription
+					# Creating inscription
+					inscription = Inscription(name, val, xy, self.options["inscriptionColor"], self.options["inscriptionSize"], self.options["usedFont"], self.options["typeFont"])
+					return inscription
 
 	# Action mouse
 	def actionMouse(self, value):

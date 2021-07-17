@@ -1,5 +1,5 @@
 # Переменные экрана
-window_size 	= (1024, 768)
+window_size 	= (1280, 720)
 project_name 	= "VN"
 fps 			= 20
 
@@ -17,15 +17,15 @@ background_stock  = backgroundstock.jpg
 
 # Шрифты
 system_font = calibri
-own_font 	= gui/fonts/rubik.ttf
+own_font 	= gui/fonts/fm.otf
 # Тип используемого шрифта, системный(system) или свой(own)
-type_font	= system
+type_font	= own
 
 # Настройки ссылок
 link_color 		= (255, 255, 255)
 link_aim		= (76, 181, 245)
 link_selected 	= (100, 100, 100)
-link_size 		= 25
+link_size 		= 30
 
 # Настройки текста
 t_text_size 		 = 20
@@ -34,7 +34,7 @@ t_text_line_height 	 = 25
 
 # Настройки надписей
 inscription_color = (255,255,255)
-inscription_size  = 50
+inscription_size  = 100
 
 # Настройки ячеек
 cells_outline_color 	= (255, 255, 255)
