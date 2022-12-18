@@ -1,6 +1,7 @@
 # Connection libraries
 import pygame
 import codecs
+import json
 import os
 import re
 
@@ -222,7 +223,7 @@ class SaveLoad:
 	# Saving data
 	def saveConfig(self, cell, config):
 		path = self.option.config["pathToSaves"] + cell["name"] + ".save"
-		with open(path, "w") as file:
+		with open(path, "w+") as file:
 			for key, value in config.items():
 				if self.printstate:
 					print("=============================")
